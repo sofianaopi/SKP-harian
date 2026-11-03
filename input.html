@@ -105,6 +105,7 @@
   <div class="avatar">SKP</div>
   <div class="judul"><b>Catatan Kegiatan</b><small id="sub">memuat…</small></div>
   <button class="ikon-btn" id="pasang" title="Pasang aplikasi" aria-label="Pasang aplikasi"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
+  <button class="ikon-btn" id="btnExcel" title="Input banyak dari Excel" aria-label="Input banyak dari Excel"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM9 17H6v-2h3v2zm0-4H6v-2h3v2zm0-4H6V7h3v2zm9 8h-7v-2h7v2zm0-4h-7v-2h7v2zm0-4h-7V7h7v2z"/></svg></button>
   <button class="ikon-btn" id="btnTgl" title="Catat untuk tanggal lain" aria-label="Pilih tanggal"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></svg></button>
   <input type="date" id="tglPick" aria-hidden="true" tabindex="-1">
 </header>
@@ -143,6 +144,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
+<script src="excel.js"></script>
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
@@ -179,7 +181,7 @@
     const nearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 120;
     const list = kegiatan.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
     const rmap = {}; rhkList.forEach((r, i) => rmap[r.id] = { r, i });
-    let html = '<div class="info">📒 Catat kegiatan seperti mengirim pesan WhatsApp. Pilih <b>bidang</b> di atas kolom ketik — kegiatan tiap bidang menjadi satu dokumen Bukti Dukung, lampirkan foto bukti dengan 📎 atau 📷, dan ketuk pesan untuk mengubah atau menghapus.</div>';
+    let html = '<div class="info">📒 Catat kegiatan seperti mengirim pesan WhatsApp. Pilih <b>bidang</b> di atas kolom ketik — kegiatan tiap bidang menjadi satu dokumen Bukti Dukung. Banyak kegiatan sekaligus? Ketuk ikon tabel ▦ di atas untuk impor dari Excel, lampirkan foto bukti dengan 📎 atau 📷, dan ketuk pesan untuk mengubah atau menghapus.</div>';
     let last = null, lastTs = 0;
     const show = list.slice(-400);
     for (const k of show) {
@@ -252,6 +254,7 @@
   }
 
   /* Catat untuk tanggal lain */
+  $('btnExcel').onclick = () => SKPExcel.bukaImpor({ kegiatanAda: () => kegiatan, selesai: () => muat().then(() => { $('chat').scrollTop = $('chat').scrollHeight; }) });
   $('btnTgl').onclick = () => { const p = $('tglPick'); p.value = tglCatat || S.ymd(new Date()); p.max = S.ymd(new Date()); if (p.showPicker) { try { p.showPicker(); return; } catch (e) { } } p.style.pointerEvents = 'auto'; p.focus(); p.click(); };
   $('tglPick').onchange = () => { const v = $('tglPick').value; setTgl(v && v !== S.ymd(new Date()) ? v : null); };
   $('bannerX').onclick = () => setTgl(null);

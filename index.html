@@ -169,7 +169,7 @@
       </div>
       <div class="kartu" style="padding:0">
         <div style="padding:16px 18px 0"><h2 style="margin-bottom:10px">Daftar kegiatan <span class="kanan" style="font-weight:400;font-size:13px;color:var(--teks2)">Klik ikon pensil untuk mengubah</span></h2>
-          <div class="alat"><input type="search" id="cari" placeholder="Cari uraian kegiatan…" aria-label="Cari"><select id="fBidang" aria-label="Saring bidang"></select><button class="btn utama" id="btnTambah">+ Tambah kegiatan</button></div></div>
+          <div class="alat"><input type="search" id="cari" placeholder="Cari uraian kegiatan…" aria-label="Cari"><select id="fBidang" aria-label="Saring bidang"></select><button class="btn" id="btnImpor" title="Masukkan banyak kegiatan sekaligus dari Excel">📥 Impor Excel</button><button class="btn" id="btnEkspor" title="Unduh kegiatan bulan ini ke Excel">📤 Ekspor Excel</button><button class="btn utama" id="btnTambah">+ Tambah kegiatan</button></div></div>
         <div class="tabel-wrap"><table class="t responsif"><thead><tr><th>Tanggal</th><th>Jam</th><th>Uraian kegiatan</th><th>Bidang</th><th>Bukti</th><th></th></tr></thead><tbody id="tblKeg"></tbody></table></div>
       </div>
     </section>
@@ -259,6 +259,7 @@
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="docx.js"></script>
+<script src="excel.js"></script>
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
@@ -349,6 +350,8 @@
   $('cari').oninput = renderTabel; $('fBidang').onchange = renderTabel;
   $('tblKeg').onclick = e => { const b = e.target.closest('[data-edit]'); if (b) bukaKeg(b.dataset.edit); const im = e.target.closest('img[data-foto]'); if (im && im.src) lihat(im.src); };
   $('btnTambah').onclick = () => bukaKeg(null);
+  $('btnImpor').onclick = () => SKPExcel.bukaImpor({ kegiatanAda: () => kegiatan, selesai: async () => { await muat(); render(current()); } });
+  $('btnEkspor').onclick = async () => { const ks = kegBulan(); if (!ks.length) { S.toast('Belum ada kegiatan pada ' + S.namaBulan(ym)); return; } try { await SKPExcel.ekspor(ks, S.namaBulan(ym)); } catch (x) { S.toast(x.message, 5000); } };
 
   /* ---------- Ubah / tambah kegiatan ---------- */
   let edit = null, fotoBaru = [], fotoHapus = [];

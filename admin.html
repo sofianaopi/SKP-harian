@@ -61,6 +61,11 @@
   .jtambah { display: flex; gap: 6px; margin-top: 8px; } .jtambah input { flex: 1; min-width: 0; padding: 7px 9px; border: 1px solid var(--garis); border-radius: 8px; font: inherit; }
   @media (max-width: 1000px) { .bidang-grid { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 640px) { .bidang-grid { grid-template-columns: 1fr; } }
+  .ip-langkah { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--garis); margin-top: 12px; }
+  .ip-no { width: 26px; height: 26px; border-radius: 50%; background: var(--biru-muda); color: var(--navy); font-weight: 700; display: grid; place-items: center; flex-shrink: 0; font-size: 13px; }
+  .ip-ring { background: #f3f8fd; border: 1px dashed #b8d0e8; border-radius: 10px; padding: 10px 12px; margin: 10px 0; font-size: 13.5px; }
+  .ip-tbl { max-height: 320px; overflow: auto; border: 1px solid var(--garis); border-radius: 10px; } .ip-tbl table { font-size: 12.5px; } .ip-tbl th { position: sticky; top: 0; }
+  .st { font-weight: 600; white-space: nowrap; } .st.ok, .st.jadi { color: #1b6e3a; } .st.salah, .st.gagal { color: #b42318; } .st.ada { color: #8a5300; }
   .kosong { text-align: center; color: var(--teks2); padding: 34px 10px; }
   .modal { position: fixed; inset: 0; background: rgba(15,25,35,.5); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
   .modal.on { display: flex; }
@@ -116,7 +121,7 @@
   </section>
   <section id="v-pengguna" hidden>
   <div class="kepala"><div style="flex:1"><h2>Daftar pengguna</h2><p>Pegawai masuk dengan NIP lama dan password masing-masing, dan hanya dapat melihat pekerjaannya sendiri. NIP baru ditampilkan di dokumen Bukti Dukung.</p></div>
-    <button class="btn utama" id="btnTambah">+ Tambah pengguna</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="btnImporPeg">📥 Impor Excel</button><button class="btn" id="btnEksporPeg">📤 Ekspor daftar</button><button class="btn utama" id="btnTambah">+ Tambah pengguna</button></div></div>
   <div class="ringkas"><div><b id="nTotal">0</b><span>pengguna terdaftar</span></div><div><b id="nAktif">0</b><span>akun aktif</span></div><div><b id="nAdmin">0</b><span>admin</span></div></div>
   <div class="kartu">
     <div class="alat"><input type="search" id="cari" placeholder="Cari nama, NIP lama/baru, jabatan, unit…" aria-label="Cari pegawai">
@@ -149,6 +154,14 @@
   <div class="aksi"><button class="btn" type="button" id="mBatal">Batal</button><button class="btn utama" type="submit" id="mSimpan">Simpan</button></div>
 </form></div>
 
+<div class="modal" id="mImpor"><div class="isi" role="dialog" aria-labelledby="ipJ" style="max-width:860px">
+  <h3 id="ipJ">Tambah banyak pegawai dari Excel</h3><div class="ket">Untuk akun pegawai. Akun admin ditambahkan satu per satu lewat “+ Tambah pengguna”.</div>
+  <div class="ip-langkah"><div class="ip-no">1</div><div style="flex:1"><b>Unduh template</b><div class="ket">Kolom: Nama Lengkap, NIP Lama, NIP Baru, Jabatan, Unit Kerja, Password Awal (opsional).</div><div style="margin-top:8px"><button class="btn" type="button" id="ipTpl">⬇ Unduh template Excel</button></div></div></div>
+  <div class="ip-langkah"><div class="ip-no">2</div><div style="flex:1"><b>Pilih file yang sudah diisi</b><div style="margin-top:8px"><button class="btn" type="button" id="ipPilih">📂 Pilih file Excel</button> <span id="ipNama" class="ket"></span></div>
+    <input type="file" id="ipFile" accept=".xlsx,.xls,.csv" hidden><div id="ipHasil"></div></div></div>
+  <div class="aksi"><button class="btn" type="button" id="ipAkun" hidden>⬇ Unduh daftar akun & password</button><button class="btn" type="button" id="ipTutup">Tutup</button><button class="btn utama" type="button" id="ipSimpan" disabled>Simpan</button></div>
+</div></div>
+
 <div class="modal" id="mKonf"><div class="isi" role="alertdialog" style="max-width:440px">
   <h3 id="kJ">Hapus pegawai?</h3><p id="kT" style="color:var(--teks2);margin:8px 0 0"></p>
   <div class="aksi"><button class="btn" id="kBatal">Batal</button><button class="btn utama" id="kYa" style="background:var(--merah);border-color:var(--merah)">Ya, hapus permanen</button></div>
@@ -158,6 +171,7 @@
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="docx.js"></script>
+<script src="excel.js"></script>
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
@@ -211,6 +225,111 @@
     $('mPeg').classList.add('on'); setTimeout(() => $(p ? 'iNama' : 'iNama').focus(), 50);
   }
   $('mBatal').onclick = () => $('mPeg').classList.remove('on');
+
+  /* Buat akun login + data pengguna. Akun dibuat lewat koneksi terpisah agar sesi admin tidak tergantikan.
+     Bila terkena batas jumlah pendaftaran Supabase, tunggu lalu coba lagi. */
+  async function buatAkun(v, pw, onTunggu) {
+    let r;
+    for (let coba = 0; coba < 6; coba++) {
+      const tmp = window.supabase.createClient(S.config.SUPABASE_URL, S.config.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'skp-tmp-' + Date.now() + coba } });
+      r = await tmp.auth.signUp({ email: S.emailDariNip(v.nip), password: pw });
+      if (r.error && (r.error.status === 429 || /rate limit|too many|security purposes/i.test(r.error.message))) {
+        for (let d = 65; d > 0; d--) { if (onTunggu) onTunggu(d); await new Promise(z => setTimeout(z, 1000)); }
+        continue;
+      }
+      if (!r.error) { try { await tmp.auth.signOut(); } catch (x) { } }
+      break;
+    }
+    if (r.error) throw new Error(/already/i.test(r.error.message) ? 'NIP lama/username ini sudah memiliki akun login (hapus di Supabase → Authentication → Users bila akun lama)' : /rate limit|too many/i.test(r.error.message) ? 'Batas pendaftaran Supabase tercapai, coba lagi nanti' : 'Gagal membuat akun: ' + r.error.message);
+    if (!r.data.user || (r.data.user.identities && r.data.user.identities.length === 0)) throw new Error('NIP lama/username ini sudah memiliki akun login');
+    if (!r.data.session) throw new Error('Akun dibuat tetapi belum aktif. Di Supabase matikan "Confirm email" (Authentication → Sign In / Providers → Email)');
+    v.id = r.data.user.id;
+    S.cek(await S.client().from('pegawai').insert(v), 'Akun login dibuat, tetapi data pengguna gagal disimpan');
+  }
+
+  /* ---------- Impor pengguna dari Excel ---------- */
+  const KOLOM = ['Nama Lengkap', 'NIP Lama', 'NIP Baru', 'Jabatan', 'Unit Kerja', 'Password Awal'];
+  function buatPassword() { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; const u = new Uint32Array(8); crypto.getRandomValues(u); return [...u].map(x => a[x % a.length]).join(''); }
+  async function unduhXlsx(nama, aoa, lebar, lembar2, teksKolom) {
+    const X = await SKPExcel.lib(); const wb = X.utils.book_new(); const ws = X.utils.aoa_to_sheet(aoa); ws['!cols'] = lebar.map(w => ({ wch: w }));
+    if (teksKolom) {   // kolom NIP diformat Teks agar 18 digit tidak berubah saat diketik
+      for (let r = 2; r <= 301; r++) teksKolom.forEach(c => { const a = c + r; if (!ws[a]) ws[a] = { t: 's', v: '', z: '@' }; else ws[a].z = '@'; });
+      const rg = X.utils.decode_range(ws['!ref']); rg.e.r = Math.max(rg.e.r, 300); ws['!ref'] = X.utils.encode_range(rg);
+    }
+    X.utils.book_append_sheet(wb, ws, 'Pengguna'); if (lembar2) { const p = X.utils.aoa_to_sheet(lembar2); p['!cols'] = [{ wch: 20 }, { wch: 90 }]; X.utils.book_append_sheet(wb, p, 'Petunjuk'); }
+    await S.download(nama, new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  }
+  $('ipTpl').onclick = () => unduhXlsx('Template_Daftar_Pegawai_SKP_Harian.xlsx', [KOLOM], [32, 14, 24, 28, 18, 16], [
+    ['PETUNJUK', 'Isi lembar "Pengguna", satu baris satu pegawai. Admin tidak diimpor lewat Excel — tambahkan lewat tombol "+ Tambah pengguna".'], [''],
+    ['Nama Lengkap', 'Wajib, dengan gelar. Contoh: Sofiana, S.Si'], ['NIP Lama', 'Wajib, angka (biasanya 9 digit). Dipakai pegawai untuk masuk. Format sel sebaiknya Teks.'],
+    ['NIP Baru', 'Wajib, 18 digit (spasi boleh). Tampil di dokumen Bukti Dukung. Format sel sebaiknya Teks agar angka tidak berubah.'],
+    ['Jabatan', 'Wajib. Contoh: Statistisi Ahli Muda'], ['Unit Kerja', 'Wajib. Contoh: ' + S.BIDANG.join(', ')],
+    ['Password Awal', 'Opsional, minimal 6 karakter. Bila kosong, dibuatkan otomatis dan bisa diunduh setelah impor.'], [''],
+    ['Pegawai yang NIP lama atau NIP barunya sudah terdaftar akan dilewati, jadi file yang sama aman diimpor ulang.']], ['B', 'C']);
+  $('btnEksporPeg').onclick = () => unduhXlsx('Daftar_Pengguna_SKP_Harian.xlsx', [['Nama Lengkap', 'NIP Lama / Username', 'NIP Baru', 'Jabatan', 'Unit Kerja', 'Peran', 'Status']].concat(daftar.map(p => [p.nama, p.nip, p.nip_baru || '', p.jabatan || '', p.unit || '', p.peran === 'admin' ? 'Admin' : 'Pegawai', p.aktif ? 'Aktif' : 'Nonaktif'])), [32, 18, 24, 28, 18, 10, 10]).catch(x => S.toast(x.message));
+  let impor = [], akunBaru = [];
+  $('btnImporPeg').onclick = () => { impor = []; akunBaru = []; $('ipHasil').innerHTML = ''; $('ipNama').textContent = ''; $('ipSimpan').disabled = true; $('ipSimpan').textContent = 'Simpan'; $('ipSimpan').hidden = false; $('ipAkun').hidden = true; $('mImpor').classList.add('on'); };
+  $('ipTutup').onclick = () => $('mImpor').classList.remove('on');
+  $('ipPilih').onclick = () => $('ipFile').click();
+  const sel = v => { if (v == null) return ''; if (typeof v === 'number') return Number.isSafeInteger(v) ? String(v) : 'RUSAK:' + String(v); return String(v).trim(); };
+  $('ipFile').onchange = async () => {
+    const f = $('ipFile').files[0]; $('ipFile').value = ''; if (!f) return; $('ipNama').textContent = f.name;
+    try {
+      const X = await SKPExcel.lib(); const wb = X.read(new Uint8Array(await f.arrayBuffer()), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames.find(n => /pengguna|pegawai/i.test(n)) || wb.SheetNames[0]];
+      const rows = X.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+      const h = rows.findIndex(r => r.some(c => /nama/i.test(String(c))) && r.some(c => /nip/i.test(String(c))));
+      let col = { nama: 0, lama: 1, baru: 2, jab: 3, unit: 4, pw: 5 };
+      if (h >= 0) { const hd = rows[h].map(c => String(c).toLowerCase()); const c = re => hd.findIndex(x => re.test(x));
+        col = { nama: c(/nama/), lama: c(/nip.*lama|username/), baru: c(/nip.*baru/), jab: c(/jabatan/), unit: c(/unit/), pw: c(/password|sandi/) };
+        if (col.lama < 0) col.lama = hd.findIndex(x => /nip/.test(x) && !/baru/.test(x)); }
+      const adaLama = new Set(daftar.map(p => bersih(p.nip))), adaBaru = new Set(daftar.map(p => (p.nip_baru || '').replace(/\s/g, '')).filter(Boolean));
+      const fLama = new Set(), fBaru = new Set(); impor = [];
+      rows.forEach((r, i) => {
+        if (i <= h) return; const g = k => col[k] >= 0 ? sel(r[col[k]]) : '';
+        const o = { baris: i + 1, nama: g('nama'), nip: g('lama').replace(/\s/g, ''), nip_baru: g('baru'), jabatan: g('jab'), unit: g('unit'), pw: g('pw') };
+        if (!o.nama && !o.nip && !o.nip_baru) return;
+        const nb = o.nip_baru.replace(/\s/g, ''); const m = [];
+        if (/^RUSAK:/.test(o.nip_baru)) { o.nip_baru = ''; m.push('NIP baru terbaca sebagai angka sehingga digit terakhir berubah — ubah format kolom NIP Baru di Excel menjadi Teks lalu ketik ulang'); }
+        else if (/^RUSAK:/.test(o.nip)) { o.nip = ''; m.push('NIP lama tidak valid'); }
+        if (!o.nama) m.push('nama kosong');
+        if (!/^\d{5,12}$/.test(o.nip)) m.push(o.nip ? 'NIP lama harus angka (' + o.nip + ')' : 'NIP lama kosong');
+        if (!m.length && !/^\d{18}$/.test(nb)) m.push(nb ? 'NIP baru harus 18 digit (' + o.nip_baru + ')' : 'NIP baru kosong');
+        if (!o.jabatan) m.push('jabatan kosong'); if (!o.unit) m.push('unit kerja kosong');
+        if (o.pw && o.pw.length < 6) m.push('password minimal 6 karakter');
+        if (m.length) { o.status = 'salah'; o.ket = m.join('; '); }
+        else if (adaLama.has(o.nip) || adaBaru.has(nb)) { o.status = 'ada'; o.ket = 'sudah terdaftar, dilewati'; }
+        else if (fLama.has(o.nip) || fBaru.has(nb)) { o.status = 'ada'; o.ket = 'baris ganda di file, dilewati'; }
+        else { o.status = 'ok'; fLama.add(o.nip); fBaru.add(nb); }
+        impor.push(o);
+      });
+      tampilImpor();
+    } catch (x) { console.error(x); $('ipHasil').innerHTML = `<div class="ip-ring" style="background:#fdf1f1">File tidak bisa dibaca: ${S.esc(x.message || x)}</div>`; }
+  };
+  const LBL = { ok: '✓ Siap', salah: '✕ Perlu diperbaiki', ada: '– Dilewati', jadi: '✓ Tersimpan', gagal: '✕ Gagal' };
+  function tampilImpor() {
+    const n = s => impor.filter(o => o.status === s).length;
+    $('ipHasil').innerHTML = `<div class="ip-ring"><b>${n('ok')} pegawai siap ditambahkan</b>${n('salah') ? ` · <span style="color:#b42318">${n('salah')} baris perlu diperbaiki</span>` : ''}${n('ada') ? ` · ${n('ada')} dilewati` : ''}${n('jadi') ? ` · <b style="color:#1b6e3a">${n('jadi')} tersimpan</b>` : ''}${n('gagal') ? ` · <span style="color:#b42318">${n('gagal')} gagal</span>` : ''}${!impor.length ? '<br>Tidak ada data pegawai di file ini.' : ''}<span id="ipProg"></span></div>` +
+      (impor.length ? `<div class="ip-tbl"><table><thead><tr><th>Baris</th><th>Nama</th><th>NIP lama</th><th>NIP baru</th><th>Jabatan / Unit</th><th>Status</th></tr></thead><tbody>${impor.map(o => `<tr><td>${o.baris}</td><td>${S.esc(o.nama)}</td><td class="nip">${S.esc(o.nip)}</td><td class="nip">${S.esc(o.nip_baru)}</td><td>${S.esc(o.jabatan)}<br><span style="color:var(--teks2)">${S.esc(o.unit)}</span></td><td class="st ${o.status}">${LBL[o.status]}${o.ket ? '<div style="font-weight:400;font-size:12px">' + S.esc(o.ket) + '</div>' : ''}</td></tr>`).join('')}</tbody></table></div>` : '');
+    const ok = n('ok'); $('ipSimpan').disabled = !ok; $('ipSimpan').textContent = ok ? 'Tambahkan ' + ok + ' pegawai' : 'Simpan';
+  }
+  $('ipSimpan').onclick = async () => {
+    const siap = impor.filter(o => o.status === 'ok'); if (!siap.length) return;
+    const b = $('ipSimpan'); b.disabled = true; $('ipTutup').disabled = true;
+    for (let i = 0; i < siap.length; i++) {
+      const o = siap[i]; const pw = o.pw || buatPassword();
+      b.textContent = 'Menyimpan ' + (i + 1) + '/' + siap.length + '…';
+      try {
+        await buatAkun({ nama: o.nama, nip: o.nip, nip_baru: o.nip_baru, jabatan: o.jabatan, unit: o.unit, peran: 'pegawai', aktif: true }, pw,
+          d => { b.textContent = 'Menunggu batas Supabase… ' + d + ' dtk (' + (i + 1) + '/' + siap.length + ')'; });
+        o.status = 'jadi'; o.ket = ''; akunBaru.push([o.nama, o.nip, o.nip_baru, pw]);
+      } catch (x) { o.status = 'gagal'; o.ket = x.message || String(x); }
+      tampilImpor(); b.disabled = true;
+    }
+    $('ipTutup').disabled = false; b.hidden = true; $('ipAkun').hidden = !akunBaru.length;
+    S.toast(akunBaru.length + ' pegawai ditambahkan', 4000); await muat();
+  };
+  $('ipAkun').onclick = () => unduhXlsx('Akun_Pegawai_Baru_SKP_Harian.xlsx', [['Nama Lengkap', 'NIP Lama (untuk masuk)', 'NIP Baru', 'Password Awal']].concat(akunBaru), [32, 22, 24, 16]).catch(x => S.toast(x.message));
   const bersih = v => String(v || '').toLowerCase().replace(/[^a-z0-9._-]/g, '');
 
   $('fPeg').onsubmit = async e => {
@@ -240,15 +359,7 @@
         if (pw) S.cek(await S.client().rpc('admin_set_password', { p_id: edit.id, p_password: pw }), 'Gagal mengganti password');
         S.toast('Data ' + v.nama + ' diperbarui' + (pw ? ' (password direset)' : ''));
       } else {
-        // Buat akun login lewat koneksi terpisah agar sesi admin tidak tergantikan
-        const tmp = window.supabase.createClient(S.config.SUPABASE_URL, S.config.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'skp-tmp-' + Date.now() } });
-        const r = await tmp.auth.signUp({ email: S.emailDariNip(v.nip), password: pw });
-        if (r.error) throw new Error(/already/i.test(r.error.message) ? 'NIP lama/username ini sudah memiliki akun login. Hapus akun lama di Supabase (Authentication → Users) atau gunakan yang lain.' : 'Gagal membuat akun: ' + r.error.message);
-        if (!r.data.user || (r.data.user.identities && r.data.user.identities.length === 0)) throw new Error('NIP lama/username ini sudah memiliki akun login.');
-        if (!r.data.session) throw new Error('Akun dibuat tetapi belum aktif. Di Supabase matikan "Confirm email" (Authentication → Sign In / Providers → Email).');
-        v.id = r.data.user.id;
-        try { await tmp.auth.signOut(); } catch (x) { }
-        S.cek(await S.client().from('pegawai').insert(v), 'Akun login dibuat, tetapi data pengguna gagal disimpan');
+        await buatAkun(v, pw);
         S.toast(v.nama + ' ditambahkan. Masuk dengan ' + (adm ? 'username ' : 'NIP lama ') + v.nip);
       }
       $('mPeg').classList.remove('on'); await muat(); rekap = []; 

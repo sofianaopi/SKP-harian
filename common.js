@@ -77,6 +77,15 @@
       else if (s === 'meta') { const v = Object.assign({}, o); delete v.id; cek(await c.from('pengaturan').upsert({ key: o.id, value: v }), 'Gagal menyimpan pengaturan'); }
       notify(); return o;
     },
+    async putBanyak(s, arr, progres) {   // simpan banyak kegiatan sekaligus (impor Excel)
+      if (s !== 'kegiatan') throw new Error('putBanyak hanya untuk kegiatan');
+      const c = client();
+      for (let i = 0; i < arr.length; i += 200) {
+        cek(await c.from('kegiatan').upsert(arr.slice(i, i + 200).map(dariK)), 'Gagal menyimpan kegiatan');
+        if (progres) progres(Math.min(arr.length, i + 200), arr.length);
+      }
+      notify();
+    },
     async del(s, id) {
       const c = client();
       if (s === 'foto') { await c.storage.from(BUCKET).remove([fotoPath(id)]); return; }
@@ -235,7 +244,7 @@
     mulai, keluar, gantiPassword, client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
-    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), del: (s, id) => db.del(s, id),
+    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), putBanyak: (s, a, p) => db.putBanyak(s, a, p), del: (s, id) => db.del(s, id),
     onChange: f => listeners.add(f),
     async profil() { return db.get('meta', 'profil'); },
     async hapusKegiatan(k) { for (const f of (k.fotoIds || [])) await db.del('foto', f); await db.del('kegiatan', k.id); },

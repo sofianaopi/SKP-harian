@@ -2,17 +2,18 @@ SKP HARIAN — PANDUAN PEMASANGAN (multi-pegawai)
 ==============================================
 
 Isi folder
-  index.html     Dashboard pegawai: ringkasan, kegiatan, Target SKP (RK & IKI),
-                 unduh laporan Word, profil
+  index.html     Halaman pegawai: Dashboard kerja harian, Upload Dokumen
+                 (Bukti Dukung), Profil
   input.html     Aplikasi "Catat SKP" gaya WhatsApp (dipasang di HP)
-  admin.html     Halaman admin: tambah / ubah / hapus pengguna, reset password,
-                 daftar jenis kegiatan per bidang
+  admin.html     Halaman admin: Dashboard monitoring pengisian + kop surat,
+                 Pengguna (tambah / ubah / hapus, reset password)
   template-bukti-dukung.docx
                  Cetakan dokumen Bukti Dukung (dari dokumen kantor). Untuk mengganti
                  tampilan dokumen, ganti berkas ini — jangan ubah tulisan {{...}} di dalamnya.
   config.js      <- DIISI alamat & kunci database (langkah 2)
   setup.sql      Skrip pembuat database (langkah 1)
-  common.js, docx.js, sw.js, manifest-*.json, icons/  (jangan dihapus)
+  common.js, docx.js, excel.js, sw.js, manifest-*.json, icons/, vendor/  (jangan dihapus)
+  vendor/xlsx.full.min.js  Pustaka SheetJS untuk membaca/menulis Excel (lisensi Apache-2.0)
 
 Cara kerja
   - Website (file HTML) disimpan di GitHub Pages — gratis.
@@ -56,19 +57,27 @@ LANGKAH 4 — Admin pertama & daftar pegawai
        Pegawai: nama lengkap, NIP lama (untuk masuk), NIP baru, jabatan, unit kerja, password awal.
        Admin  : nama, username, password.
      Sampaikan NIP lama + password awal ke pegawai.
-  3. Di halaman Admin bagian "Jenis kegiatan per bidang" isi jenis kegiatan untuk
-     Sosial, Distribusi, Produksi, Nerwilis, IPDS, TU. Satu jenis kegiatan = satu
-     dokumen Bukti Dukung. Pegawai juga bisa menambah jenis baru dari aplikasi Catat.
+     Banyak pegawai sekaligus: Pengguna -> "Impor Excel" -> unduh template -> isi
+     (kolom NIP sudah berformat Teks; jangan diubah ke angka) -> pilih file -> periksa
+     pratinjau -> "Tambahkan". Password yang dikosongkan dibuat otomatis; setelah selesai
+     klik "Unduh daftar akun & password" untuk dibagikan ke pegawai.
+     Catatan: Supabase membatasi jumlah pendaftaran akun per beberapa menit. Bila
+     batas tercapai, aplikasi otomatis menunggu ±1 menit lalu melanjutkan. Untuk impor
+     besar, batas ini bisa dinaikkan di Supabase -> Authentication -> Rate Limits.
+  3. Pegawai memilih BIDANG setiap kali mencatat. Kegiatan tiap bidang menjadi satu
+     dokumen Bukti Dukung.
   4. Ubah = ikon pensil (termasuk reset password, ganti peran, nonaktifkan).
      Hapus = ikon tempat sampah (akun + semua kegiatannya terhapus permanen).
-  5. Kop surat kantor (untuk laporan lain selain Bukti Dukung): Dashboard -> Profil & Data -> "Unggah template Word (.docx)"
-     (hanya admin). Kop berlaku untuk laporan semua pegawai.
+  5. Kop surat: Admin -> Dashboard -> "Unggah kop (.docx)". Kop berlaku untuk dokumen
+     Bukti Dukung semua pegawai. Tanpa unggahan dipakai kop bawaan cetakan.
+  6. Monitoring: Admin -> Dashboard menampilkan siapa yang sudah/belum mengisi hari ini
+     dan jumlah kegiatan per pegawai per bulan (admin tidak melihat isi kegiatan).
 
 LANGKAH 5 — Pegawai memasang di HP
   1. Buka https://NAMA-AKUN.github.io/skp-harian/input.html di Chrome HP, masuk dengan NIP lama.
   2. Menu ⋮ -> "Instal aplikasi" / "Tambahkan ke layar utama"
      (iPhone: Safari -> Bagikan -> "Tambah ke Layar Utama").
-  3. Pegawai sebaiknya mengganti password sendiri: Dashboard -> Profil & Data.
+  3. Pegawai sebaiknya mengganti password sendiri dan melengkapi jabatan: menu Profil.
 
 Catatan
   - Aplikasi memerlukan internet saat menyimpan (data langsung masuk database).
@@ -80,10 +89,14 @@ Catatan
   - Mengubah isi setup.sql tidak diperlukan; skrip aman dijalankan ulang.
 
 Mencatat & mengunduh Bukti Dukung
-  - Aplikasi Catat: pilih BIDANG (baris atas), lalu JENIS KEGIATAN (baris kedua),
-    ketik uraian kegiatan, lampirkan foto, kirim.
-  - Dashboard -> Unduh Laporan Word -> Bukti Dukung SKP -> pilih triwulan (dan bidang).
-    Muncul daftar jenis kegiatan: unduh satu per satu (.docx) atau "Unduh semua" (.zip).
+  - Menu Input: pilih BIDANG, ketik uraian kegiatan, lampirkan foto, kirim.
+  - Banyak kegiatan sekaligus: ikon tabel di menu Input, atau tombol "Impor Excel" di
+    Dashboard -> unduh template -> isi Tanggal, Jam, Bidang, Uraian -> pilih file ->
+    periksa pratinjau -> Simpan. Foto ditambahkan setelahnya lewat ikon pensil.
+    "Ekspor Excel" di Dashboard mengunduh kegiatan bulan yang dipilih.
+  - Menu Upload Dokumen -> pilih triwulan (dan bidang).
+    Muncul daftar bidang (1 dokumen per bidang): unduh satu per satu (.docx) atau
+    "Unduh semua" (.zip).
     Setiap dokumen: Nama, NIP baru, RK & IKI dikosongkan (diisi petugas), [CAPAIAN]
     berisi uraian kegiatan, lalu foto bukti.
 
