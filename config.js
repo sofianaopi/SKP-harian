@@ -4,7 +4,7 @@
    ===================================================================== */
 window.SKP_CONFIG = {
   // Project URL, contoh: 'https://abcdefghijkl.supabase.co'
-  SUPABASE_URL: 'https://pfxlxpdgdftswvbxpdqc.supabase.co',
+  SUPABASE_URL: 'Ihttps://pfxlxpdgdftswvbxpdqc.supabase.co/rest/v1/',
 
   // Kunci publik: "anon public" (eyJ...) atau "publishable" (sb_publishable_...)
   // Kunci ini memang boleh terlihat publik; keamanan data dijaga aturan di setup.sql.

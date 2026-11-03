@@ -18,7 +18,7 @@
   function cek(res, pesan) {
     if (res.error) {
       const m = res.error.message || String(res.error);
-      const e = new Error(/schema cache|does not exist|Could not find the (table|column|function)/i.test(m) ? 'Database belum diperbarui ke versi terbaru. Admin perlu menjalankan setup.sql terbaru di Supabase (SQL Editor → Run), lalu muat ulang halaman ini.' : /JWT|token/i.test(m) ? 'Sesi berakhir, silakan masuk lagi.' : /row-level security/i.test(m) ? 'Tidak diizinkan oleh aturan akses.' : (pesan ? pesan + ': ' : '') + m);
+      const e = new Error(/JWT|token/i.test(m) ? 'Sesi berakhir, silakan masuk lagi.' : /row-level security/i.test(m) ? 'Tidak diizinkan oleh aturan akses.' : (pesan ? pesan + ': ' : '') + m);
       e.asli = res.error; throw e;
     }
     return res.data;

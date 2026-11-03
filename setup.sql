@@ -135,6 +135,26 @@ end $$;
 drop trigger if exists pegawai_jaga on public.pegawai;
 create trigger pegawai_jaga before update on public.pegawai for each row execute function public.pegawai_jaga();
 
+-- Rekap untuk monitoring admin: HANYA angka (jumlah kegiatan, hari terisi, foto), bukan isi pekerjaan
+create or replace function public.admin_rekap(p_dari date, p_sampai date, p_hari_ini date)
+returns table (id uuid, nama text, nip text, nip_baru text, jabatan text, unit text, aktif boolean,
+               jumlah_kegiatan bigint, hari_terisi bigint, jumlah_foto bigint, terakhir date, isi_hari_ini boolean)
+language sql stable security definer set search_path = public as $$
+  select p.id, p.nama, p.nip, p.nip_baru, p.jabatan, p.unit, p.aktif,
+         count(k.id) filter (where k.tanggal between p_dari and p_sampai),
+         count(distinct k.tanggal) filter (where k.tanggal between p_dari and p_sampai),
+         coalesce(sum(jsonb_array_length(k.foto)) filter (where k.tanggal between p_dari and p_sampai), 0)::bigint,
+         max(k.tanggal),
+         coalesce(bool_or(k.tanggal = p_hari_ini), false)
+    from public.pegawai p
+    left join public.kegiatan k on k.user_id = p.id
+   where p.peran = 'pegawai' and public.is_admin()
+   group by p.id
+   order by p.nama;
+$$;
+revoke execute on function public.admin_rekap(date, date, date) from public, anon;
+grant execute on function public.admin_rekap(date, date, date) to authenticated;
+
 revoke execute on function public.admin_set_password(uuid, text) from public, anon;
 revoke execute on function public.admin_hapus_pegawai(uuid) from public, anon;
 revoke execute on function public.daftar_admin_pertama(text, text) from public, anon;
