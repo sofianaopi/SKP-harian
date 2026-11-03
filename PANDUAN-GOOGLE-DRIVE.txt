@@ -14,8 +14,6 @@ dan setiap pegawai mendapat link dokumennya sendiri (tombol Buka / Salin link).
 PENTING: setelah dokumen berhasil tersimpan di Drive, kegiatan dan foto yang masuk ke
 dokumen itu DIHAPUS dari database aplikasi untuk menghemat ruang (Drive menjadi arsipnya).
 Kegiatan baru pada bidang & periode yang sama disimpan sebagai dokumen tambahan "(2)", "(3)".
-Jumlah kegiatan & foto yang diarsipkan tetap tersimpan sebagai ringkasan per tanggal,
-sehingga monitoring admin dan Dashboard pegawai tetap menghitungnya.
 
 Yang dibutuhkan: satu akun Google (sebaiknya akun kantor/khusus SKP). Dokumen memakai
 ruang penyimpanan akun ini (gratis 15 GB).
