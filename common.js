@@ -119,37 +119,82 @@
   };
 
   /* ---------- Layar login ---------- */
-  const CSS = `#skp-login[hidden]{display:none!important}#skp-login{position:fixed;inset:0;z-index:1000;background:linear-gradient(160deg,#1F4E79,#0f2c47);display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow:auto}
-  #skp-login .kartu-login{background:#fff;color:#1d2733;border-radius:18px;width:100%;max-width:380px;padding:28px 26px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
-  #skp-login img{width:56px;height:56px;border-radius:14px;display:block;margin:0 auto 10px}
-  #skp-login h1{font-size:21px;text-align:center;margin:0}#skp-login .sub{text-align:center;color:#5b6878;font-size:13.5px;margin:4px 0 20px}
-  #skp-login label{display:block;font-size:12.5px;color:#5b6878;margin:12px 0 5px;font-weight:500}
-  #skp-login input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #cfd7e0;border-radius:10px;font-size:16px;font-family:inherit}
-  #skp-login input:focus{outline:2px solid #dbe8f5;border-color:#2E75B6}
-  #skp-login button{width:100%;margin-top:18px;padding:13px;border:0;border-radius:10px;background:#1F4E79;color:#fff;font-size:15.5px;font-weight:700;cursor:pointer;font-family:inherit}
-  #skp-login button:disabled{opacity:.6}#skp-login .err{color:#b42318;font-size:13.5px;margin-top:12px;min-height:1em}
-  #skp-login .link{background:none;color:#2E75B6;font-weight:500;font-size:13.5px;padding:6px;margin-top:10px}
-  #skp-login .ket{font-size:12.5px;color:#5b6878;background:#f3f8fd;border-radius:8px;padding:9px 11px;margin-top:6px;line-height:1.45}
-  #skp-login .pw{position:relative}#skp-login .pw span{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:12.5px;color:#2E75B6;user-select:none}`;
+  const CSS = `#skp-login[hidden]{display:none!important}
+  #skp-login{position:fixed;inset:0;z-index:1000;overflow:auto;font-family:"Plus Jakarta Sans","Segoe UI",-apple-system,Roboto,Arial,sans-serif;color:#13294b;
+    background:radial-gradient(120% 90% at 100% 0,rgba(255,255,255,.0) 55%,rgba(255,255,255,0) 56%),linear-gradient(135deg,#e9f2ff 0%,#cfe2fb 55%,#9cc3f2 100%)}
+  #skp-login .lg-latar{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  #skp-login .lg-hero{position:absolute;left:0;top:0;bottom:0;width:58%;background:url(img/login-hero.jpg) left center/cover no-repeat;
+    -webkit-mask-image:linear-gradient(90deg,#000 78%,transparent 100%);mask-image:linear-gradient(90deg,#000 78%,transparent 100%)}
+  #skp-login .lg-swoosh{position:absolute;right:-12%;top:-28%;width:62%;height:48%;border-radius:50%;border-bottom:26px solid #f39a1e;transform:rotate(-12deg);opacity:.95}
+  #skp-login .lg-swoosh2{position:absolute;right:-18%;top:-30%;width:70%;height:52%;border-radius:50%;background:linear-gradient(160deg,#1556c4,#0b3b8f);transform:rotate(-12deg)}
+  #skp-login .lg-bar{position:absolute;right:3%;bottom:16%;display:flex;gap:14px;align-items:flex-end;opacity:.35}
+  #skp-login .lg-bar i{display:block;width:30px;border-radius:4px 4px 0 0;background:linear-gradient(#8fb6ec,#bcd5f6)}
+  #skp-login .lg-isi{position:relative;min-height:100%;display:flex;align-items:center;justify-content:flex-end;padding:28px 6vw 28px 20px;box-sizing:border-box}
+  #skp-login .kartu-login{position:relative;background:rgba(246,250,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);
+    border-radius:26px;width:100%;max-width:440px;padding:30px 34px 28px;box-shadow:0 24px 60px rgba(11,45,105,.22);box-sizing:border-box}
+  #skp-login .lg-logo{width:96px;height:auto;display:block;margin:0 auto 8px}
+  #skp-login h1{font-size:30px;line-height:1.15;text-align:center;margin:0;padding:0;border:0;color:#0b2f6b;font-weight:800;letter-spacing:-.3px}
+  #skp-login .sub{text-align:center;color:#0d3a7e;font-size:16px;font-weight:700;margin:6px 0 0;padding:0;border:0}
+  #skp-login .sambut{text-align:center;color:#4a5d78;font-size:14.5px;line-height:1.5;margin:14px 0 18px}
+  #skp-login label{display:block;font-size:12.5px;color:#4a5d78;margin:12px 0 5px 6px;font-weight:600}
+  #skp-login .fld{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #d3deee;border-radius:999px;padding:6px 14px 6px 6px;margin-top:12px;transition:border-color .15s,box-shadow .15s}
+  #skp-login .fld:focus-within{border-color:#2f6fd0;box-shadow:0 0 0 4px rgba(47,111,208,.13)}
+  #skp-login .fld .ic{flex:0 0 40px;height:40px;border-radius:50%;background:#e6effb;display:grid;place-items:center}
+  #skp-login .fld .ic svg{width:20px;height:20px;fill:#1b4d9b}
+  #skp-login .fld input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:10px 2px;font-size:16px;font-family:inherit;color:#13294b}
+  #skp-login .fld input::placeholder{color:#8291a8}
+  #skp-login .mata{flex:0 0 auto;width:36px;height:36px;border:0;background:none;padding:0;margin:0;cursor:pointer;display:grid;place-items:center;border-radius:50%}
+  #skp-login .mata svg{width:22px;height:22px;fill:none;stroke:#4a5d78;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #skp-login .mata:hover{background:#eef3fa}
+  #skp-login .tbl{width:100%;margin-top:18px;padding:15px;border:0;border-radius:999px;background:linear-gradient(180deg,#1a4fa6,#0c3a86);color:#fff;font-size:16.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 20px rgba(12,58,134,.28)}
+  #skp-login .tbl svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #skp-login .tbl:hover{filter:brightness(1.08)}#skp-login .tbl:disabled{opacity:.6;cursor:progress}
+  #skp-login .err{color:#b42318;font-size:13.5px;margin-top:8px;text-align:center}#skp-login .err:empty{display:none}
+  #skp-login .link{width:100%;border:0;background:none;color:#1f5fbf;font-weight:600;font-size:13.5px;padding:6px;margin-top:4px;cursor:pointer;font-family:inherit}
+  #skp-login .ket{font-size:13px;color:#3f5370;background:#eaf2fd;border-radius:12px;padding:10px 12px;margin-top:6px;line-height:1.5}
+  #skp-login .lg-kaki{display:grid;grid-template-columns:1fr 1fr 1fr;margin-top:16px;padding-top:14px;border-top:1px solid #dde6f2}
+  #skp-login .lg-kaki div{text-align:center;font-size:12.5px;line-height:1.3;color:#1b4d9b;font-weight:600}
+  #skp-login .lg-kaki div+div{border-left:1px solid #cfdbeb}
+  #skp-login .lg-kaki svg{display:block;width:30px;height:30px;margin:0 auto 6px;fill:none;stroke:#2a6bd1;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  @media (max-width:860px){
+    #skp-login .lg-hero{width:100%;-webkit-mask-image:none;mask-image:none;background-position:22% center}
+    #skp-login .lg-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,40,100,.35),rgba(10,40,100,.7))}
+    #skp-login .lg-swoosh,#skp-login .lg-swoosh2,#skp-login .lg-bar{display:none}
+    #skp-login .lg-isi{justify-content:center;padding:22px 16px}
+    #skp-login .kartu-login{padding:24px 20px 18px;border-radius:22px}
+    #skp-login h1{font-size:26px}#skp-login .sub{font-size:14.5px}#skp-login .sambut{font-size:13.5px;margin:10px 0 12px}
+    #skp-login .lg-logo{width:78px}
+  }`;
+  const IKON = {
+    user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M3.8 20.5c.6-4.2 4-6.6 8.2-6.6s7.6 2.4 8.2 6.6z"/></svg>',
+    kunci: '<svg viewBox="0 0 24 24"><path d="M7 10V7.5a5 5 0 0 1 10 0V10h.5A2.5 2.5 0 0 1 20 12.5v7A2.5 2.5 0 0 1 17.5 22h-11A2.5 2.5 0 0 1 4 19.5v-7A2.5 2.5 0 0 1 6.5 10zm2.2 0h5.6V7.5a2.8 2.8 0 0 0-5.6 0zM12 14a1.6 1.6 0 0 0-.8 3v1.6h1.6V17a1.6 1.6 0 0 0-.8-3z"/></svg>',
+    lihat: '<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+    tutup: '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>',
+    masuk: '<svg viewBox="0 0 24 24"><path d="M14 3h4.5A2.5 2.5 0 0 1 21 5.5v13a2.5 2.5 0 0 1-2.5 2.5H14"/><path d="M3 12h12"/><path d="M11 7.5 15.5 12 11 16.5"/></svg>'
+  };
   function layar(html) {
     let el = document.getElementById('skp-login');
     if (!el) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); el = document.createElement('div'); el.id = 'skp-login'; document.body.appendChild(el); }
-    el.innerHTML = `<div class="kartu-login" role="dialog" aria-label="Masuk"><img src="icons/dashboard-192.png" alt=""><h1>SKP Harian</h1><div class="sub">${esc(CFG.NAMA_INSTANSI || 'Jurnal Kinerja Pegawai')}</div>${html}</div>`;
+    el.innerHTML = `<div class="lg-latar" aria-hidden="true"><div class="lg-swoosh2"></div><div class="lg-swoosh"></div><div class="lg-bar"><i style="height:70px"></i><i style="height:105px"></i><i style="height:140px"></i><i style="height:175px"></i></div><div class="lg-hero"></div></div>
+      <div class="lg-isi"><div class="kartu-login" role="dialog" aria-label="Masuk">
+      <img class="lg-logo" src="img/logo-bps.png" alt="Logo BPS"><h1>SKP Harian</h1><div class="sub">${esc(CFG.SUBJUDUL_LOGIN || 'BPS – Sasaran Kinerja Pegawai')}</div>
+      <div class="sambut">Selamat datang di aplikasi SKP<br>${esc(CFG.NAMA_INSTANSI || 'Badan Pusat Statistik')}</div>${html}</div></div>`;
     el.hidden = false; return el;
   }
-  const pwField = (id, ac) => `<div class="pw"><input id="${id}" type="password" autocomplete="${ac}" required><span data-lihat="${id}">Lihat</span></div>`;
-  function pasangLihat(el) { el.querySelectorAll('[data-lihat]').forEach(s => s.onclick = () => { const i = el.querySelector('#' + s.dataset.lihat); i.type = i.type === 'password' ? 'text' : 'password'; s.textContent = i.type === 'password' ? 'Lihat' : 'Sembunyi'; }); }
+  const pwField = (id, ac, ph = 'Password') => `<div class="fld"><span class="ic">${IKON.kunci}</span><input id="${id}" type="password" autocomplete="${ac}" required placeholder="${ph}" aria-label="${ph}"><button type="button" class="mata" data-lihat="${id}" aria-label="Tampilkan password">${IKON.tutup}</button></div>`;
+  const fldTeks = (id, ph, extra = '') => `<div class="fld"><span class="ic">${IKON.user}</span><input id="${id}" placeholder="${ph}" aria-label="${ph}" ${extra}></div>`;
+  function pasangLihat(el) { el.querySelectorAll('[data-lihat]').forEach(s => s.onclick = () => { const i = el.querySelector('#' + s.dataset.lihat); const buka = i.type === 'password'; i.type = buka ? 'text' : 'password'; s.innerHTML = buka ? IKON.lihat : IKON.tutup; s.setAttribute('aria-label', buka ? 'Sembunyikan password' : 'Tampilkan password'); }); }
 
   function formLogin(pesan) {
     return new Promise(resolve => {
-      const el = layar(`<form id="fLogin"><label for="lNip">NIP lama / username</label><input id="lNip" autocomplete="username" autocapitalize="off" required placeholder="mis. 340012345">
-        <label for="lPw">Password</label>${pwField('lPw', 'current-password')}
-        <button type="submit">Masuk</button><div class="err" id="lErr">${esc(pesan || '')}</div></form><div id="lSetup"></div>`);
+      const el = layar(`<form id="fLogin">${fldTeks('lNip', 'NIP lama / Username', 'autocomplete="username" autocapitalize="off" required')}
+        ${pwField('lPw', 'current-password')}
+        <button type="submit" class="tbl">${IKON.masuk}Masuk</button><div class="err" id="lErr">${esc(pesan || '')}</div></form><div id="lSetup"></div>`);
       pasangLihat(el);
       try { const n = localStorage.getItem('skp-nip-terakhir'); if (n) el.querySelector('#lNip').value = n; } catch (e) { }
       el.querySelector(el.querySelector('#lNip').value ? '#lPw' : '#lNip').focus();
       el.querySelector('#fLogin').onsubmit = async e => {
-        e.preventDefault(); const b = el.querySelector('button'); b.disabled = true; el.querySelector('#lErr').textContent = '';
+        e.preventDefault(); const b = el.querySelector('button[type=submit]'); b.disabled = true; el.querySelector('#lErr').textContent = '';
         const nip = el.querySelector('#lNip').value.trim();
         const r = await client().auth.signInWithPassword({ email: emailDariNip(nip), password: el.querySelector('#lPw').value });
         b.disabled = false;
@@ -168,12 +213,12 @@
   function formAdminPertama() {
     return new Promise(resolve => {
       const el = layar(`<form id="fAdm"><div class="ket">Database masih kosong. Akun pertama ini menjadi <b>admin</b> yang nanti menambahkan pegawai lain.</div>
-        <label for="aNama">Nama</label><input id="aNama" required placeholder="mis. Admin SKP"><label for="aNip">Username untuk masuk</label><input id="aNip" required autocapitalize="off" placeholder="mis. admin">
-        <label for="aPw">Password (min. 6 karakter)</label>${pwField('aPw', 'new-password')}
-        <button type="submit">Buat akun admin</button><div class="err" id="aErr"></div></form>`);
+        ${fldTeks('aNama', 'Nama admin (mis. Admin SKP)', 'required')}${fldTeks('aNip', 'Username untuk masuk (mis. admin)', 'required autocapitalize="off" autocomplete="username"')}
+        ${pwField('aPw', 'new-password', 'Password (min. 6 karakter)')}
+        <button type="submit" class="tbl">${IKON.masuk}Buat akun admin</button><div class="err" id="aErr"></div></form>`);
       pasangLihat(el);
       el.querySelector('#fAdm').onsubmit = async e => {
-        e.preventDefault(); const b = el.querySelector('button'); b.disabled = true; const er = el.querySelector('#aErr'); er.textContent = '';
+        e.preventDefault(); const b = el.querySelector('button[type=submit]'); b.disabled = true; const er = el.querySelector('#aErr'); er.textContent = '';
         try {
           const nip = el.querySelector('#aNip').value.trim().toLowerCase(), pw = el.querySelector('#aPw').value;
           if (!/^[a-z0-9._-]{3,40}$/.test(nip)) throw new Error('Username 3–40 karakter: huruf kecil, angka, titik, minus, atau garis bawah');
@@ -218,7 +263,7 @@
       saya = r.data; break;
     }
     if (opt.admin && saya.peran !== 'admin') {
-      layar(`<div class="ket">Halaman ini khusus <b>admin</b>. Anda masuk sebagai ${esc(saya.nama)}.</div><button type="button" onclick="location.href='index.html'">Ke Dashboard saya</button>`);
+      layar(`<div class="ket">Halaman ini khusus <b>admin</b>. Anda masuk sebagai ${esc(saya.nama)}.</div><button type="button" class="tbl" onclick="location.href='index.html'">Ke Dashboard saya</button>`);
       return new Promise(() => { });
     }
     const el = document.getElementById('skp-login'); if (el) el.hidden = true;
