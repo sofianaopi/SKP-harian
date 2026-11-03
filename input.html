@@ -133,8 +133,8 @@
   <label for="eTeks">Uraian kegiatan</label><textarea id="eTeks"></textarea>
   <div class="baris"><div><label for="eTgl">Tanggal</label><input type="date" id="eTgl"></div><div><label for="eJam">Jam</label><input type="time" id="eJam"></div></div>
   <label for="eBidang">Bidang</label><select id="eBidang"></select>
-  <div id="eRkBox"><label for="eRhk">Rencana Kinerja (RK) — opsional</label><select id="eRhk"></select>
-  <label for="eJml">Jumlah output</label><input type="number" id="eJml" min="1" step="1"></div>
+  <div id="eRkBox"><label for="eRhk">Rencana Kinerja (RK)</label><select id="eRhk"></select>
+  <input type="hidden" id="eJml"></div>
   <label>Foto bukti</label><div class="fotoedit" id="eFoto"></div>
   <div class="aksi"><button class="b-hapus" id="eHapus">Hapus</button><button class="b-batal" id="eBatal">Batal</button><button class="b-utama" id="eSimpan">Simpan</button></div>
   <div class="aksi" id="konfirmasi" style="display:none"><button class="b-batal" id="kTidak">Tidak jadi</button><button class="b-hapus" id="kYa" style="background:#c62828;color:#fff">Ya, hapus kegiatan ini</button></div>
@@ -155,7 +155,8 @@
   const simpanPref = () => { try { localStorage.setItem('skp-input-pref', JSON.stringify({ bidang: pilihBidang })); } catch (e) { } };
 
   async function muat() {
-    [kegiatan, profil] = await Promise.all([S.list('kegiatan'), S.profil()]);
+    [kegiatan, profil, rhkList] = await Promise.all([S.list('kegiatan'), S.profil(), S.list('rhk').catch(() => [])]);
+    rhkList.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
     rhkList.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
     if (!pilihBidang) pilihBidang = S.BIDANG.find(b => (profil.unit || '').toLowerCase().includes(b.toLowerCase())) || null;
     renderChips(); renderChat(); renderSub();
@@ -190,7 +191,7 @@
       else if ((k.dibuat || 0) - lastTs > 5 * 60000) ekor = true;
       lastTs = k.dibuat || 0;
       const rr = k.rhkId && rmap[k.rhkId];
-      const tag = k.bidang ? `<div class="tag">📁 <span>${S.esc(k.bidang)}</span></div><br>` : '<div class="tag" style="color:#b26a00;background:#fff3dc">⚠ <span>belum pilih bidang</span></div><br>';
+      const tag = k.bidang ? `<div class="tag">📁 <span>${S.esc(k.bidang)}</span>${rr ? `<em>&nbsp;· 🎯 RK ${rr.i + 1}</em>` : ''}</div><br>` : '<div class="tag" style="color:#b26a00;background:#fff3dc">⚠ <span>belum pilih bidang</span></div><br>';
       const nf = (k.fotoIds || []).length;
       const fotos = nf ? `<div class="fotos n${Math.min(nf, 4) === 4 ? 4 : Math.min(nf, 3)}">${k.fotoIds.slice(0, nf > 4 ? 4 : nf).map(id => `<div class="ph" data-foto="${id}"></div>`).join('')}</div>` : '';
       html += `<div class="gel${ekor ? ' ekor' : ''}" data-id="${k.id}">${fotos}${tag}<span class="isi">${S.esc(k.teks || '')}</span><span class="meta">${S.esc(k.jam || '')} ${centang}</span></div>`;

@@ -291,27 +291,46 @@
   }
   const paraDengan = (xml, tanda) => { const re = new RegExp('<w:p(?: [^>]*)?>(?:(?!<w:p[ >])[\\s\\S])*?' + tanda + '[\\s\\S]*?</w:p>'); const m = xml.match(re); return m ? m[0] : null; };
   async function buktiDukung(o) {
-    /* o: {template: ArrayBuffer, kop?: hasil extractKop, judul, nama, nip, rk, iki, uraian: [teks], fotos: [{data,w,h}]} */
+    /* o: {template, kop?, judul, nama, nip, bagian: [{rk, iki, uraian:[teks], fotos:[{data,w,h}]}]}
+       Setiap bagian (satu RK) menjadi satu blok sesuai cetakan, dimulai di halaman baru. */
     picId = 1;
     const z = await readZip(o.template);
-    let doc = td(await z.get('word/document.xml'));
+    const asli = td(await z.get('word/document.xml'));
     let rels = td(await z.get('word/_rels/document.xml.rels'));
     let ct = td(await z.get('[Content_Types].xml'));
-    doc = doc.replace('{{JUDUL}}', x(o.judul)).replace('{{NAMA}}', x(o.nama)).replace('{{NIP}}', x(o.nip)).replace('{{RK}}', x(o.rk || '')).replace('{{IKI}}', x(o.iki || ''));
-    const item = paraDengan(doc, '\\{\\{URAIAN\\}\\}');
-    if (item) doc = doc.replace(item, (o.uraian.length ? o.uraian : ['-']).map((t, i) => item.replace('{{NO}}. ', o.uraian.length ? (i + 1) + '. ' : '').replace('{{URAIAN}}', x(t))).join(''));
-    const pf = paraDengan(doc, '\\{\\{FOTO\\}\\}');
-    const media = []; const EMU = 914400; const maxW = 4.6 * EMU, maxH = 3.0 * EMU;
-    let fx = '';
-    o.fotos.forEach((f, i) => {
-      const rId = 'rIdFoto' + (i + 1), name = 'bukti_foto' + (i + 1) + '.jpeg';
-      media.push({ name: 'word/media/' + name, data: dataUrlBytes(f.data) });
-      rels = rels.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${name}"/></Relationships>`);
-      const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
-      fx += `<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="${i ? 60 : 160}"/><w:jc w:val="center"/></w:pPr>${imgNs(rId, Math.round(w), Math.round(h))}</w:p>`;
+    const bagian = o.bagian && o.bagian.length ? o.bagian : [{ rk: o.rk, iki: o.iki, uraian: o.uraian || [], fotos: o.fotos || [] }];
+    const i0 = asli.indexOf('<w:body>') + 8, i1 = asli.lastIndexOf('<w:sectPr');
+    const blokAsli = asli.slice(i0, i1);
+    const media = []; const EMU = 914400; const maxW = 4.6 * EMU, maxH = 3.0 * EMU; let nFoto = 0;
+    const blok = bagian.map((bg, bi) => {
+      let d = blokAsli;
+      if (bi > 0) {   // salinan: nomor objek gambar unik & tanpa bookmark ganda
+        d = d.replace(/(<wp:docPr [^>]*id=")(\d+)"/g, (m, p, n) => p + (Number(n) + 1000 * bi) + '"').replace(/(<(?:wps|pic):cNvPr [^>]*id=")(\d+)"/g, (m, p, n) => p + (Number(n) + 1000 * bi) + '"')
+          .replace(/<w:bookmarkStart [^>]*\/>/g, '').replace(/<w:bookmarkEnd [^>]*\/>/g, '');
+        // garis bawah kop (gambar) diganti garis paragraf agar tampil konsisten di halaman berikutnya
+        const garis = paraDengan(d, '(?:mc:AlternateContent|wpg:wgp)');
+        if (garis) d = d.replace(garis, '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="12" w:space="1" w:color="000000"/></w:pBdr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:ind w:left="-27"/></w:pPr></w:p>');
+      }
+      d = d.replace('{{JUDUL}}', x(o.judul)).replace('{{NAMA}}', x(o.nama)).replace('{{NIP}}', x(o.nip)).replace('{{RK}}', x(bg.rk || '')).replace('{{IKI}}', x(bg.iki || ''));
+      const item = paraDengan(d, '\\{\\{URAIAN\\}\\}');
+      const ur = bg.uraian || [];
+      if (item) d = d.replace(item, (ur.length ? ur : ['-']).map((t, i) => item.replace('{{NO}}. ', ur.length ? (i + 1) + '. ' : '').replace('{{URAIAN}}', x(t))).join(''));
+      const pf = paraDengan(d, '\\{\\{FOTO\\}\\}');
+      let fx = '';
+      (bg.fotos || []).forEach((f, i) => {
+        nFoto++; const rId = 'rIdFoto' + nFoto, name = 'bukti_foto' + nFoto + '.jpeg';
+        media.push({ name: 'word/media/' + name, data: dataUrlBytes(f.data) });
+        rels = rels.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${name}"/></Relationships>`);
+        const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
+        fx += `<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="${i ? 60 : 160}"/><w:jc w:val="center"/></w:pPr>${imgNs(rId, Math.round(w), Math.round(h))}</w:p>`;
+      });
+      fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120"/><w:jc w:val="center"/></w:pPr></w:p>';
+      if (pf) d = d.replace(pf, fx);
+      return d;
     });
-    fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120"/><w:jc w:val="center"/></w:pPr></w:p>';
-    if (pf) doc = doc.replace(pf, fx);
+    // pemisah halaman: sisipkan di paragraf terakhir setiap blok kecuali blok terakhir
+    for (let i = 0; i < blok.length - 1; i++) blok[i] = blok[i].replace(/<\/w:p>\s*$/, '<w:r><w:br w:type="page"/></w:r></w:p>');
+    const doc = asli.slice(0, i0) + blok.join('') + asli.slice(i1);
     if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
     // Kop surat unggahan admin menggantikan kop bawaan cetakan
     const ganti = {};
