@@ -122,6 +122,7 @@
   #xl-modal .xl-langkah{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid #e3e8ee;margin-top:12px}
   #xl-modal .xl-no{width:26px;height:26px;border-radius:50%;background:#e7f4ef;color:#005c4b;font-weight:700;display:grid;place-items:center;flex-shrink:0;font-size:13px}
   #xl-modal button{font:inherit;cursor:pointer;border-radius:9px;padding:9px 15px;border:1px solid #d5dce3;background:#fff;font-weight:600;color:#1d2733}
+  #xl-modal .xl-link{display:inline-block;text-decoration:none;border-radius:9px;padding:9px 15px;border:1px solid #d5dce3;background:#fff;font-weight:600;color:#1d2733}
   #xl-modal button.utama{background:#008069;border-color:#008069;color:#fff}#xl-modal button:disabled{opacity:.55;cursor:default}
   #xl-modal .xl-ring{background:#f3f8fd;border:1px dashed #b8d0e8;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13.5px}
   #xl-modal table{width:100%;border-collapse:collapse;font-size:12.5px}#xl-modal th{text-align:left;background:#fafbfc;color:#5b6878;font-weight:600;padding:7px 8px;border-bottom:1px solid #e3e8ee;position:sticky;top:0}
@@ -135,7 +136,7 @@
     m = document.createElement('div'); m.id = 'xl-modal';
     m.innerHTML = `<div class="xl-isi" role="dialog" aria-labelledby="xlJ">
       <h3 id="xlJ">Input banyak kegiatan dari Excel</h3><div class="xl-ket">Cocok untuk memasukkan banyak kegiatan sekaligus. Foto bukti ditambahkan setelahnya lewat aplikasi.</div>
-      <div class="xl-langkah"><div class="xl-no">1</div><div style="flex:1"><b>Unduh template</b><div class="xl-ket">Isi lembar "Kegiatan": Tanggal, Jam (opsional), Bidang, Uraian Kegiatan.</div><div style="margin-top:8px"><button type="button" id="xlTpl">⬇ Unduh template Excel</button></div></div></div>
+      <div class="xl-langkah"><div class="xl-no">1</div><div style="flex:1"><b>Unduh template</b><div class="xl-ket">Isi lembar "Kegiatan": Tanggal, Jam (opsional), Bidang, Uraian Kegiatan.</div><div style="margin-top:8px"><a id="xlTpl" class="xl-link" href="template/Template_Input_Kegiatan_SKP_Harian.xlsx" download="Template_Input_Kegiatan_SKP_Harian.xlsx">⬇ Unduh template Excel</a></div></div></div>
       <div class="xl-langkah"><div class="xl-no">2</div><div style="flex:1"><b>Pilih file yang sudah diisi</b><div class="xl-ket">Format .xlsx, .xls, atau .csv.</div><div style="margin-top:8px"><button type="button" id="xlPilih">📂 Pilih file Excel</button> <span id="xlNama" class="xl-ket"></span></div>
         <input type="file" id="xlFile" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
         <div id="xlHasil"></div></div></div>
@@ -144,7 +145,6 @@
     const $ = id => m.querySelector('#' + id);
     $('xlTutup').onclick = () => m.classList.remove('on');
     m.addEventListener('click', e => { if (e.target === m) m.classList.remove('on'); });
-    $('xlTpl').onclick = async () => { const b = $('xlTpl'); b.disabled = true; try { await unduhTemplate(); } catch (x) { S.toast(x.message, 5000); } finally { b.disabled = false; } };
     $('xlPilih').onclick = () => $('xlFile').click();
     $('xlFile').onchange = async () => {
       const f = $('xlFile').files[0]; $('xlFile').value = ''; if (!f) return;
@@ -173,7 +173,7 @@
       (hasil.length ? `<div class="xl-tbl"><table><thead><tr><th>Baris</th><th>Tanggal</th><th>Jam</th><th>Bidang</th><th>Uraian kegiatan</th><th>Status</th></tr></thead><tbody>${hasil.slice(0, 500).map(o => `<tr><td>${o.baris}</td><td style="white-space:nowrap">${o.tanggal ? S.esc(S.tglSedang(o.tanggal)) : S.esc(o.tglMentah)}</td><td>${S.esc(o.jam || '')}</td><td>${S.esc(o.bidang || o.bdMentah || '')}</td><td>${S.esc(o.teks)}</td><td class="st ${o.status}">${LBL[o.status]}${o.ket ? '<div style="font-weight:400;font-size:12px">' + S.esc(o.ket) + '</div>' : ''}</td></tr>`).join('')}</tbody></table></div>${hasil.length > 500 ? '<div class="xl-ket">Menampilkan 500 baris pertama.</div>' : ''}` : '');
     $('xlSimpan').disabled = !ok; $('xlSimpan').textContent = ok ? 'Simpan ' + ok + ' kegiatan' : 'Simpan';
   }
-  function bukaImpor(o) { opsi = o || {}; hasil = []; const m = siapkanModal(); m.querySelector('#xlHasil').innerHTML = ''; m.querySelector('#xlNama').textContent = ''; const b = m.querySelector('#xlSimpan'); b.disabled = true; b.textContent = 'Simpan'; m.classList.add('on'); }
+  function bukaImpor(o) { lib().catch(() => { }); opsi = o || {}; hasil = []; const m = siapkanModal(); m.querySelector('#xlHasil').innerHTML = ''; m.querySelector('#xlNama').textContent = ''; const b = m.querySelector('#xlSimpan'); b.disabled = true; b.textContent = 'Simpan'; m.classList.add('on'); }
 
   window.SKPExcel = { lib, bukaImpor, unduhTemplate, ekspor, baca, _bacaTanggal: bacaTanggal, _bacaJam: bacaJam, _bacaBidang: bacaBidang };
 })();

@@ -1,6 +1,6 @@
 /* Service worker: membuat aplikasi tetap terbuka walau sinyal hilang */
-const CACHE = 'skp-harian-v8';
-const FILES = ['./', 'index.html', 'input.html', 'admin.html', 'config.js', 'common.js', 'template-bukti-dukung.docx', 'excel.js', 'vendor/xlsx.full.min.js', 'docx.js', 'manifest-input.json', 'manifest-dashboard.json',
+const CACHE = 'skp-harian-v9';
+const FILES = ['./', 'index.html', 'input.html', 'admin.html', 'config.js', 'common.js', 'template-bukti-dukung.docx', 'excel.js', 'vendor/xlsx.full.min.js', 'template/Template_Input_Kegiatan_SKP_Harian.xlsx', 'template/Template_Daftar_Pegawai_SKP_Harian.xlsx', 'docx.js', 'manifest-input.json', 'manifest-dashboard.json',
   'icons/input-192.png', 'icons/input-512.png', 'icons/dashboard-192.png', 'icons/dashboard-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

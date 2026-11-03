@@ -231,6 +231,13 @@
     });
   }
   async function download(filename, blob) {
+    // iPhone/iPad yang membuka aplikasi dari layar utama tidak mendukung unduhan biasa: pakai menu Bagikan
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (ios && standalone && navigator.canShare && window.File) {
+      try { const f = new File([blob], filename, { type: blob.type || 'application/octet-stream' }); if (navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: filename }); return true; } }
+      catch (e) { if (e && e.name === 'AbortError') return false; }
+    }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); return true;
   }

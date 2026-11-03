@@ -156,7 +156,7 @@
 
 <div class="modal" id="mImpor"><div class="isi" role="dialog" aria-labelledby="ipJ" style="max-width:860px">
   <h3 id="ipJ">Tambah banyak pegawai dari Excel</h3><div class="ket">Untuk akun pegawai. Akun admin ditambahkan satu per satu lewat “+ Tambah pengguna”.</div>
-  <div class="ip-langkah"><div class="ip-no">1</div><div style="flex:1"><b>Unduh template</b><div class="ket">Kolom: Nama Lengkap, NIP Lama, NIP Baru, Jabatan, Unit Kerja, Password Awal (opsional).</div><div style="margin-top:8px"><button class="btn" type="button" id="ipTpl">⬇ Unduh template Excel</button></div></div></div>
+  <div class="ip-langkah"><div class="ip-no">1</div><div style="flex:1"><b>Unduh template</b><div class="ket">Kolom: Nama Lengkap, NIP Lama, NIP Baru, Jabatan, Unit Kerja, Password Awal (opsional).</div><div style="margin-top:8px"><a class="btn" id="ipTpl" href="template/Template_Daftar_Pegawai_SKP_Harian.xlsx" download="Template_Daftar_Pegawai_SKP_Harian.xlsx">⬇ Unduh template Excel</a></div></div></div>
   <div class="ip-langkah"><div class="ip-no">2</div><div style="flex:1"><b>Pilih file yang sudah diisi</b><div style="margin-top:8px"><button class="btn" type="button" id="ipPilih">📂 Pilih file Excel</button> <span id="ipNama" class="ket"></span></div>
     <input type="file" id="ipFile" accept=".xlsx,.xls,.csv" hidden><div id="ipHasil"></div></div></div>
   <div class="aksi"><button class="btn" type="button" id="ipAkun" hidden>⬇ Unduh daftar akun & password</button><button class="btn" type="button" id="ipTutup">Tutup</button><button class="btn utama" type="button" id="ipSimpan" disabled>Simpan</button></div>
@@ -259,16 +259,9 @@
     X.utils.book_append_sheet(wb, ws, 'Pengguna'); if (lembar2) { const p = X.utils.aoa_to_sheet(lembar2); p['!cols'] = [{ wch: 20 }, { wch: 90 }]; X.utils.book_append_sheet(wb, p, 'Petunjuk'); }
     await S.download(nama, new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
   }
-  $('ipTpl').onclick = () => unduhXlsx('Template_Daftar_Pegawai_SKP_Harian.xlsx', [KOLOM], [32, 14, 24, 28, 18, 16], [
-    ['PETUNJUK', 'Isi lembar "Pengguna", satu baris satu pegawai. Admin tidak diimpor lewat Excel — tambahkan lewat tombol "+ Tambah pengguna".'], [''],
-    ['Nama Lengkap', 'Wajib, dengan gelar. Contoh: Sofiana, S.Si'], ['NIP Lama', 'Wajib, angka (biasanya 9 digit). Dipakai pegawai untuk masuk. Format sel sebaiknya Teks.'],
-    ['NIP Baru', 'Wajib, 18 digit (spasi boleh). Tampil di dokumen Bukti Dukung. Format sel sebaiknya Teks agar angka tidak berubah.'],
-    ['Jabatan', 'Wajib. Contoh: Statistisi Ahli Muda'], ['Unit Kerja', 'Wajib. Contoh: ' + S.BIDANG.join(', ')],
-    ['Password Awal', 'Opsional, minimal 6 karakter. Bila kosong, dibuatkan otomatis dan bisa diunduh setelah impor.'], [''],
-    ['Pegawai yang NIP lama atau NIP barunya sudah terdaftar akan dilewati, jadi file yang sama aman diimpor ulang.']], ['B', 'C']);
   $('btnEksporPeg').onclick = () => unduhXlsx('Daftar_Pengguna_SKP_Harian.xlsx', [['Nama Lengkap', 'NIP Lama / Username', 'NIP Baru', 'Jabatan', 'Unit Kerja', 'Peran', 'Status']].concat(daftar.map(p => [p.nama, p.nip, p.nip_baru || '', p.jabatan || '', p.unit || '', p.peran === 'admin' ? 'Admin' : 'Pegawai', p.aktif ? 'Aktif' : 'Nonaktif'])), [32, 18, 24, 28, 18, 10, 10]).catch(x => S.toast(x.message));
   let impor = [], akunBaru = [];
-  $('btnImporPeg').onclick = () => { impor = []; akunBaru = []; $('ipHasil').innerHTML = ''; $('ipNama').textContent = ''; $('ipSimpan').disabled = true; $('ipSimpan').textContent = 'Simpan'; $('ipSimpan').hidden = false; $('ipAkun').hidden = true; $('mImpor').classList.add('on'); };
+  $('btnImporPeg').onclick = () => { SKPExcel.lib().catch(() => { }); impor = []; akunBaru = []; $('ipHasil').innerHTML = ''; $('ipNama').textContent = ''; $('ipSimpan').disabled = true; $('ipSimpan').textContent = 'Simpan'; $('ipSimpan').hidden = false; $('ipAkun').hidden = true; $('mImpor').classList.add('on'); };
   $('ipTutup').onclick = () => $('mImpor').classList.remove('on');
   $('ipPilih').onclick = () => $('ipFile').click();
   const sel = v => { if (v == null) return ''; if (typeof v === 'number') return Number.isSafeInteger(v) ? String(v) : 'RUSAK:' + String(v); return String(v).trim(); };
