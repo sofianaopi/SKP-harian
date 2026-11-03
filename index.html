@@ -160,7 +160,7 @@
       <div class="grid4">
         <div class="kartu stat"><div class="label">Kegiatan tercatat</div><div class="angka" id="sKeg">0</div><div class="ket" id="sKegK"></div></div>
         <div class="kartu stat"><div class="label">Hari kerja terisi</div><div class="angka" id="sHari">0</div><div class="ket" id="sHariK"></div></div>
-        <div class="kartu stat"><div class="label">Jenis kegiatan</div><div class="angka" id="sJenis">0</div><div class="ket" id="sJenisK"></div></div>
+        <div class="kartu stat"><div class="label">Bidang dikerjakan</div><div class="angka" id="sJenis">0</div><div class="ket" id="sJenisK"></div></div>
         <div class="kartu stat"><div class="label">Foto bukti dukung</div><div class="angka" id="sFoto">0</div><div class="ket" id="sFotoK"></div></div>
       </div>
       <div class="grid2">
@@ -170,13 +170,13 @@
       <div class="kartu" style="padding:0">
         <div style="padding:16px 18px 0"><h2 style="margin-bottom:10px">Daftar kegiatan <span class="kanan" style="font-weight:400;font-size:13px;color:var(--teks2)">Klik ikon pensil untuk mengubah</span></h2>
           <div class="alat"><input type="search" id="cari" placeholder="Cari uraian kegiatan…" aria-label="Cari"><select id="fBidang" aria-label="Saring bidang"></select><button class="btn utama" id="btnTambah">+ Tambah kegiatan</button></div></div>
-        <div class="tabel-wrap"><table class="t responsif"><thead><tr><th>Tanggal</th><th>Jam</th><th>Uraian kegiatan</th><th>Bidang / Jenis</th><th>Bukti</th><th></th></tr></thead><tbody id="tblKeg"></tbody></table></div>
+        <div class="tabel-wrap"><table class="t responsif"><thead><tr><th>Tanggal</th><th>Jam</th><th>Uraian kegiatan</th><th>Bidang</th><th>Bukti</th><th></th></tr></thead><tbody id="tblKeg"></tbody></table></div>
       </div>
     </section>
 
     <!-- UPLOAD -->
     <section id="v-upload" hidden>
-      <div class="kepala"><div style="flex:1"><h1>Upload Dokumen</h1><p>Dokumen Bukti Dukung Kegiatan Harian SKP — satu dokumen Word (.docx) untuk setiap jenis kegiatan, siap diunggah.</p></div></div>
+      <div class="kepala"><div style="flex:1"><h1>Upload Dokumen</h1><p>Dokumen Bukti Dukung Kegiatan Harian SKP — satu dokumen Word (.docx) untuk setiap bidang, siap diunggah.</p></div></div>
       <div class="kartu form" style="max-width:900px">
         <div class="baris2">
           <div><label for="uMode" style="margin-top:0">Periode</label><select id="uMode"><option value="triwulan">Per triwulan</option><option value="bulan">Per bulan</option><option value="rentang">Rentang tanggal</option></select></div>
@@ -243,7 +243,7 @@
   <h3 id="mKegJ">Kegiatan</h3>
   <label for="kTeks">Uraian kegiatan</label><textarea id="kTeks"></textarea>
   <div class="baris2"><div><label for="kTgl">Tanggal</label><input type="date" id="kTgl"></div><div><label for="kJam">Jam</label><input type="time" id="kJam"></div></div>
-  <div class="baris2"><div><label for="kBidang">Bidang</label><select id="kBidang"></select></div><div><label for="kJenis">Jenis kegiatan</label><select id="kJenis"></select></div></div>
+  <label for="kBidang">Bidang</label><select id="kBidang"></select>
   <label>Foto bukti dukung</label><div class="fotoedit" id="kFoto"></div>
   <input type="file" id="kFile" accept="image/*" multiple hidden>
   <div class="aksi"><button class="btn bahaya" id="kHapus" style="margin-right:auto">Hapus</button><button class="btn" id="kBatal">Batal</button><button class="btn utama" id="kSimpan">Simpan</button></div>
@@ -264,10 +264,9 @@
   const S = window.SKP, $ = id => document.getElementById(id);
   const now = new Date();
   let ym = S.ymd(now).slice(0, 7);
-  let jenisList = [], kegiatan = [], profil = {}, kop = null, templateBuf = null, masuk = false;
+  let kegiatan = [], profil = {}, kop = null, templateBuf = null, masuk = false;
   const fotoCache = new Map();
   const ambilFoto = id => { if (!fotoCache.has(id)) fotoCache.set(id, S.get('foto', id)); return fotoCache.get(id); };
-  const jenisById = id => jenisList.find(j => j.id === id);
 
   /* ---------- Menu ---------- */
   const ROUTES = ['dashboard', 'upload', 'profil'];
@@ -288,7 +287,7 @@
     });
   }
 
-  async function muat() { [jenisList, kegiatan, profil, kop] = await Promise.all([S.list('jenis'), S.list('kegiatan'), S.profil(), S.get('meta', 'kop').catch(() => null)]); }
+  async function muat() { [kegiatan, profil, kop] = await Promise.all([S.list('kegiatan'), S.profil(), S.get('meta', 'kop').catch(() => null)]); }
   const urut = arr => arr.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
   const kegBulan = (m = ym) => urut(kegiatan.filter(k => k.tanggal.slice(0, 7) === m));
 
@@ -302,13 +301,12 @@
     for (let d = 1; d <= nHari; d++) { const t = y + '-' + S.pad(m) + '-' + S.pad(d); const w = new Date(y, m - 1, d).getDay(); if (t > hariIni) break; if (w > 0 && w < 6) { hk++; if (isi.has(t)) hkIsi++; } }
     $('sKeg').textContent = ks.length; $('sKegK').textContent = isi.has(hariIni) ? '✓ Hari ini sudah mengisi' : (ym === hariIni.slice(0, 7) ? 'Hari ini belum mengisi' : '');
     $('sHari').textContent = hkIsi + (hk ? ' / ' + hk : ''); $('sHariK').textContent = hk ? 'hari kerja (Sen–Jum) sampai hari ini' : 'bulan ini belum berjalan';
-    const js = new Set(ks.filter(k => k.jenisId).map(k => k.jenisId)); const tanpa = ks.filter(k => !k.jenisId).length;
-    $('sJenis').textContent = js.size; $('sJenisK').textContent = tanpa ? '⚠ ' + tanpa + ' kegiatan tanpa jenis' : 'menjadi ' + js.size + ' dokumen Bukti Dukung';
+    const bds = new Set(ks.filter(k => k.bidang).map(k => k.bidang)); const tanpa = ks.filter(k => !k.bidang).length;
+    $('sJenis').textContent = bds.size; $('sJenisK').textContent = tanpa ? '⚠ ' + tanpa + ' kegiatan belum pilih bidang' : 'menjadi ' + bds.size + ' dokumen Bukti Dukung';
     const nf = ks.reduce((a, k) => a + (k.fotoIds || []).length, 0); $('sFoto').textContent = nf; $('sFotoK').textContent = ks.filter(k => (k.fotoIds || []).length).length + ' kegiatan memiliki foto';
     renderChart(ks, y, m, nHari);
     const perB = S.BIDANG.map(b => ({ b, ks: ks.filter(k => k.bidang === b) })).filter(x => x.ks.length); const maxB = Math.max(1, ...perB.map(x => x.ks.length));
-    $('perBidang').innerHTML = perB.length ? perB.map(x => { const per = {}; x.ks.forEach(k => { const n = (jenisById(k.jenisId) || { nama: 'Tanpa jenis' }).nama; per[n] = (per[n] || 0) + 1; });
-      return `<div class="rhk-item"><div class="atas"><b>${S.esc(x.b)}</b><span>${x.ks.length} kegiatan</span></div><div class="progress"><i style="width:${x.ks.length / maxB * 100}%"></i></div><div style="font-size:12.5px;color:var(--teks2);margin-top:5px">${Object.entries(per).sort((a, b) => b[1] - a[1]).map(([n, c]) => S.esc(n) + ' (' + c + ')').join(' · ')}</div></div>`; }).join('')
+    $('perBidang').innerHTML = perB.length ? perB.map(x => `<div class="rhk-item"><div class="atas"><b>${S.esc(x.b)}</b><span>${x.ks.length} kegiatan · ${new Set(x.ks.map(k => k.tanggal)).size} hari</span></div><div class="progress"><i style="width:${x.ks.length / maxB * 100}%"></i></div></div>`).join('')
       : '<div class="kosong">Belum ada kegiatan pada bulan ini.<br>Catat lewat menu <a href="input.html">Input</a>.</div>';
     renderTabel();
   }
@@ -336,14 +334,14 @@
   }
   function renderTabel() {
     const f = $('fBidang'); const val = f.value;
-    f.innerHTML = '<option value="">Semua bidang</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join('') + '<option value="-">⚠ Tanpa jenis kegiatan</option>'; f.value = val;
+    f.innerHTML = '<option value="">Semua bidang</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join('') + '<option value="-">⚠ Belum pilih bidang</option>'; f.value = val;
     const q = $('cari').value.trim().toLowerCase();
-    const ks = kegBulan().reverse().filter(k => (!q || (k.teks || '').toLowerCase().includes(q)) && (!f.value || (f.value === '-' ? !k.jenisId : k.bidang === f.value)));
+    const ks = kegBulan().reverse().filter(k => (!q || (k.teks || '').toLowerCase().includes(q)) && (!f.value || (f.value === '-' ? !k.bidang : k.bidang === f.value)));
     const tb = $('tblKeg');
     if (!ks.length) { tb.innerHTML = `<tr><td colspan="6"><div class="kosong">Tidak ada kegiatan pada ${S.namaBulan(ym)}${q || f.value ? ' yang cocok dengan saringan' : ''}.</div></td></tr>`; return; }
-    tb.innerHTML = ks.map(k => { const j = jenisById(k.jenisId);
+    tb.innerHTML = ks.map(k => {
       return `<tr><td data-l="Tanggal" style="white-space:nowrap">${S.esc(S.tglSedang(k.tanggal))}</td><td data-l="Jam">${S.esc(k.jam || '')}</td><td style="min-width:240px;white-space:pre-wrap">${S.esc(k.teks)}</td>
-        <td data-l="Bidang">${k.bidang ? '<b style="font-weight:600">' + S.esc(k.bidang) + '</b>' : '—'}${j ? '<br>' + S.esc(j.nama) : '<br><span style="color:#b26a00;font-size:12.5px">⚠ tanpa jenis</span>'}</td>
+        <td data-l="Bidang">${k.bidang ? '<b style="font-weight:600">' + S.esc(k.bidang) + '</b>' : '<span style="color:#b26a00;font-size:12.5px">⚠ belum pilih</span>'}</td>
         <td>${(k.fotoIds || []).map(id => `<img class="thumb" data-foto="${id}" alt="Foto bukti">`).join('')}</td>
         <td style="white-space:nowrap"><button class="ikon" data-edit="${k.id}" title="Ubah" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button></td></tr>`; }).join('');
     tb.querySelectorAll('img[data-foto]').forEach(async im => { const f = await ambilFoto(im.dataset.foto); if (f) im.src = f.data; });
@@ -354,8 +352,6 @@
 
   /* ---------- Ubah / tambah kegiatan ---------- */
   let edit = null, fotoBaru = [], fotoHapus = [];
-  function isiJenisModal(sel) { const b = $('kBidang').value; $('kJenis').innerHTML = '<option value="">— Tanpa jenis —</option>' + jenisList.filter(j => j.bidang === b).map(j => `<option value="${j.id}">${S.esc(j.nama)}</option>`).join(''); $('kJenis').value = jenisList.some(j => j.id === sel && j.bidang === b) ? sel : ''; }
-  $('kBidang').onchange = () => isiJenisModal(null);
   function bukaKeg(id) {
     const k = id ? kegiatan.find(x => x.id === id) : null;
     edit = k ? JSON.parse(JSON.stringify(k)) : { id: 'k' + S.uid(), tanggal: ym === S.ymd(now).slice(0, 7) ? S.ymd(now) : ym + '-01', jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: '', bidang: null, jenisId: null, jumlah: 1, fotoIds: [], dibuat: Date.now() };
@@ -363,7 +359,7 @@
     $('mKegJ').textContent = k ? 'Ubah kegiatan' : 'Tambah kegiatan';
     $('kTeks').value = edit.teks; $('kTgl').value = edit.tanggal; $('kJam').value = edit.jam || '';
     $('kBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('kBidang').value = edit.bidang || '';
-    isiJenisModal(edit.jenisId); $('kHapus').hidden = !k;
+    $('kHapus').hidden = !k;
     renderFotoEdit(); $('mKeg').classList.add('on'); setTimeout(() => $('kTeks').focus(), 50);
   }
   function renderFotoEdit() {
@@ -381,7 +377,7 @@
     try {
       for (const f of fotoBaru) { const id = 'f' + S.uid(); await S.put('foto', { id, data: f.data, w: f.w, h: f.h }); edit.fotoIds.push(id); }
       const baru = edit._baru; delete edit._baru;
-      Object.assign(edit, { teks, tanggal: $('kTgl').value || edit.tanggal, jam: $('kJam').value, bidang: $('kBidang').value || null, jenisId: $('kJenis').value || null });
+      Object.assign(edit, { teks, tanggal: $('kTgl').value || edit.tanggal, jam: $('kJam').value, bidang: $('kBidang').value || null });
       await S.put('kegiatan', edit); for (const f of fotoHapus) await S.del('foto', f);
       if (baru) kegiatan.push(edit); else kegiatan[kegiatan.findIndex(x => x.id === edit.id)] = edit;
       $('mKeg').classList.remove('on'); S.toast(baru ? 'Kegiatan ditambahkan' : 'Kegiatan diperbarui'); render(current());
@@ -406,7 +402,7 @@
   let judulManual = false;
   function kelompok(ks) {
     const b = $('uBidang').value; const grup = [];
-    S.BIDANG.filter(x => !b || x === b).forEach(bd => jenisList.filter(j => j.bidang === bd).forEach(j => { const kk = ks.filter(k => k.jenisId === j.id); if (kk.length) grup.push({ bidang: bd, jenis: j, ks: urut(kk) }); }));
+    S.BIDANG.filter(x => !b || x === b).forEach(bd => { const kk = ks.filter(k => k.bidang === bd); if (kk.length) grup.push({ bidang: bd, ks: urut(kk) }); });
     return grup;
   }
   function renderUpload() {
@@ -415,17 +411,17 @@
     const bv = $('uBidang').value; $('uBidang').innerHTML = '<option value="">Semua bidang</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('uBidang').value = bv;
     const p = periode(); if (!judulManual) $('uJudul').value = 'Bukti Dukung SKP ' + p.label;
     const ks = kegiatan.filter(k => k.tanggal >= p.dari && k.tanggal <= p.sampai);
-    const grup = kelompok(ks); const tanpa = ks.filter(k => !k.jenisId && (!$('uBidang').value || k.bidang === $('uBidang').value)).length;
+    const grup = kelompok(ks); const tanpa = $('uBidang').value ? 0 : ks.filter(k => !k.bidang).length;
     const kurang = ['nama', 'nip'].filter(f => !profil[f]);
     $('uRingkas').innerHTML = `<b>Periode ${S.esc(p.label)}</b> · ${ks.length} kegiatan · ${ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)} foto · <b>${grup.length} dokumen</b>` +
       '<br>Format mengikuti dokumen Bukti Dukung kantor. Rencana Kinerja (RK) dan IKI dikosongkan untuk diisi petugas.' +
       (kurang.length ? `<br><span style="color:#8a5300">⚠ ${kurang.includes('nip') ? 'NIP baru belum diisi admin' : 'Nama belum lengkap'} — <a href="#profil">cek Profil</a>.</span>` : '');
     let html = '';
-    if (!grup.length) html = '<div class="kosong">Belum ada kegiatan berjenis pada periode ini.<br>Catat lewat menu <a href="input.html">Input</a> dengan memilih bidang dan jenis kegiatan.</div>';
-    else html = '<div class="tabel-wrap"><table class="t"><thead><tr><th>Bidang</th><th>Jenis kegiatan</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>' +
-      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td>${S.esc(g.jenis.nama)}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right"><button class="btn kecil" data-unduh="${i}" type="button">Unduh .docx</button></td></tr>`).join('') +
+    if (!grup.length) html = '<div class="kosong">Belum ada kegiatan pada periode ini.<br>Catat lewat menu <a href="input.html">Input</a> dengan memilih bidang.</div>';
+    else html = '<div class="tabel-wrap"><table class="t"><thead><tr><th>Bidang (1 dokumen)</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>' +
+      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right"><button class="btn kecil" data-unduh="${i}" type="button">Unduh .docx</button></td></tr>`).join('') +
       `</tbody></table></div><div style="margin-top:14px"><button class="btn utama" type="button" id="btnZip">Unduh semua (${grup.length} dokumen, .zip)</button></div>`;
-    if (tanpa) html += `<p style="font-size:13px;color:#8a5300;margin:12px 0 0">⚠ ${tanpa} kegiatan belum punya jenis kegiatan sehingga tidak masuk dokumen. Lengkapi lewat ikon pensil di <a href="#dashboard">Dashboard</a>.</p>`;
+    if (tanpa) html += `<p style="font-size:13px;color:#8a5300;margin:12px 0 0">⚠ ${tanpa} kegiatan belum memilih bidang sehingga tidak masuk dokumen. Lengkapi lewat ikon pensil di <a href="#dashboard">Dashboard</a>.</p>`;
     $('uDaftar').innerHTML = html;
   }
   ['uTw', 'uTahun', 'uBulan', 'uDari', 'uSampai', 'uBidang'].forEach(id => $(id).onchange = renderUpload);
@@ -441,7 +437,7 @@
     const uraian = []; g.ks.forEach(k => { const t = (k.teks || '').trim(); if (t && t !== '(foto bukti)' && !uraian.includes(t)) uraian.push(t); });
     const fotos = []; for (const k of g.ks) for (const id of (k.fotoIds || [])) { const f = await ambilFoto(id); if (f && f.data) fotos.push(f); }
     const blob = await DOCX.buktiDukung({ template: await ambilTemplate(), kop, judul: $('uJudul').value.trim() || ('Bukti Dukung SKP ' + p.label), nama: profil.nama || '', nip: profil.nip || '', rk: '', iki: '', uraian, fotos });
-    return { blob, nama: 'Bukti_Dukung_' + amanNama(g.bidang) + '_' + amanNama(g.jenis.nama) + '_' + amanNama(p.label) + '.docx' };
+    return { blob, nama: 'Bukti_Dukung_' + amanNama(g.bidang) + '_' + amanNama(p.label) + '.docx' };
   }
   $('uDaftar').addEventListener('click', async e => {
     const b1 = e.target.closest('[data-unduh]'), bz = e.target.closest('#btnZip'); if (!b1 && !bz) return;
