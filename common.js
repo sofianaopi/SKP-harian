@@ -18,7 +18,7 @@
   function cek(res, pesan) {
     if (res.error) {
       const m = res.error.message || String(res.error);
-      const e = new Error(/JWT|token/i.test(m) ? 'Sesi berakhir, silakan masuk lagi.' : /row-level security/i.test(m) ? 'Tidak diizinkan oleh aturan akses.' : (pesan ? pesan + ': ' : '') + m);
+      const e = new Error(/schema cache|does not exist|Could not find the (table|column|function)/i.test(m) ? 'Database belum diperbarui ke versi terbaru. Admin perlu menjalankan setup.sql terbaru di Supabase (SQL Editor → Run), lalu muat ulang halaman ini.' : /JWT|token/i.test(m) ? 'Sesi berakhir, silakan masuk lagi.' : /row-level security/i.test(m) ? 'Tidak diizinkan oleh aturan akses.' : (pesan ? pesan + ': ' : '') + m);
       e.asli = res.error; throw e;
     }
     return res.data;
@@ -165,7 +165,19 @@
     const c = client(); let pesan = '';
     for (; ;) {
       const { data } = await c.auth.getSession();
-      if (!data.session) { await formLogin(pesan); continue; }
+      if (!data.session) {
+        // Database kosong (belum ada admin): langsung tampilkan formulir admin pertama
+        const cekAdmin = await c.rpc('ada_admin');
+        if (cekAdmin.error) {
+          const m = cekAdmin.error.message || '';
+          pesan = /schema cache|does not exist|Could not find/i.test(m) ? 'Database belum disiapkan: jalankan setup.sql di Supabase (SQL Editor), lalu muat ulang.'
+            : /Invalid API key|JWT|apikey|No API key/i.test(m) ? 'Kunci di config.js tidak valid. Periksa SUPABASE_ANON_KEY (gunakan kunci anon/publishable).'
+            : 'Tidak dapat terhubung ke database: ' + m + '. Periksa SUPABASE_URL di config.js dan koneksi internet.';
+          await formLogin(pesan); continue;
+        }
+        if (cekAdmin.data === false) { await formAdminPertama(); pesan = ''; continue; }
+        await formLogin(pesan); continue;
+      }
       uid = data.session.user.id;
       const r = await c.from('pegawai').select('*').eq('id', uid).maybeSingle();
       if (r.error) { pesan = 'Gagal memuat akun: ' + r.error.message; await c.auth.signOut(); continue; }

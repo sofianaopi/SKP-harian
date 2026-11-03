@@ -15,14 +15,23 @@
   header img { width: 34px; height: 34px; border-radius: 9px; }
   header h1 { font-size: 17px; margin: 0; flex: 1; min-width: 160px; }
   header h1 small { display: block; font-weight: 400; font-size: 12px; opacity: .75; }
+  nav.tab { background: #fff; border-bottom: 1px solid var(--garis); display: flex; gap: 4px; padding: 0 20px; position: sticky; top: 0; z-index: 10; }
+  nav.tab a { padding: 13px 16px; text-decoration: none; color: var(--teks2); font-weight: 600; border-bottom: 3px solid transparent; }
+  nav.tab a.aktif { color: var(--navy); border-bottom-color: var(--navy); }
+  .bulan { display: inline-flex; align-items: center; background: #fff; border: 1px solid var(--garis); border-radius: 10px; overflow: hidden; }
+  .bulan button { border: 0; background: none; width: 36px; height: 38px; cursor: pointer; font-size: 18px; color: var(--teks2); }
+  .bulan span { min-width: 140px; text-align: center; font-weight: 600; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .progress { height: 8px; background: #edf1f5; border-radius: 4px; overflow: hidden; margin-top: 8px; } .progress i { display: block; height: 100%; background: var(--biru); border-radius: 4px; }
+  .kop-prev img { height: 44px; border: 1px solid var(--garis); border-radius: 6px; padding: 3px; background: #fff; margin-right: 8px; }
   header a, header button { color: #fff; text-decoration: none; border: 1px solid rgba(255,255,255,.35); background: none; border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
   main { max-width: 1180px; margin: 0 auto; padding: 22px 20px 50px; }
   .kepala { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
   .kepala h2 { margin: 0; font-size: 21px; flex: 1; }
   .kepala p { margin: 3px 0 0; color: var(--teks2); font-size: 13.5px; }
   .ringkas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .ringkas div { background: #fff; border: 1px solid var(--garis); border-radius: 12px; padding: 10px 16px; min-width: 140px; }
-  .ringkas b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
+  .ringkas > div { background: #fff; border: 1px solid var(--garis); border-radius: 12px; padding: 10px 16px; min-width: 140px; }
+  .ringkas > div > b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
   .ringkas span { font-size: 12.5px; color: var(--teks2); }
   .kartu { background: #fff; border: 1px solid var(--garis); border-radius: 14px; }
   .alat { display: flex; gap: 10px; flex-wrap: wrap; padding: 14px; border-bottom: 1px solid var(--garis); }
@@ -80,10 +89,32 @@
 <header>
   <img src="icons/dashboard-192.png" alt="">
   <h1>Admin SKP Harian<small id="hdrSub">SKP Harian</small></h1>
-  <a href="index.html">Dashboard saya</a>
   <button id="btnKeluar" type="button">Keluar</button>
 </header>
+<nav class="tab" aria-label="Menu admin"><a href="#dashboard" data-r="dashboard">Dashboard</a><a href="#pengguna" data-r="pengguna">Pengguna</a></nav>
 <main>
+  <section id="v-dashboard" hidden>
+    <div class="kepala"><div style="flex:1"><h2>Monitoring pengisian SKP Harian</h2><p>Jumlah kegiatan yang dicatat setiap pegawai. Isi pekerjaan tetap hanya bisa dilihat oleh pegawai yang bersangkutan.</p></div><div class="bulan" id="bulan"></div></div>
+    <div class="ringkas">
+      <div><b id="mAktif">0</b><span>pegawai aktif</span></div>
+      <div><b id="mHari">0</b><span>mengisi hari ini</span><div class="progress"><i id="pHari"></i></div></div>
+      <div><b id="mBulan">0</b><span id="lBulan">mengisi bulan ini</span><div class="progress"><i id="pBulan"></i></div></div>
+      <div><b id="mKeg">0</b><span id="lKeg">kegiatan dicatat</span></div>
+    </div>
+    <div class="kartu" style="margin-bottom:22px">
+      <div class="alat"><input type="search" id="mCari" placeholder="Cari nama, NIP, unit…" aria-label="Cari pegawai">
+        <select id="mFilter" aria-label="Saring"><option value="">Semua pegawai</option><option value="belumHari">Belum mengisi hari ini</option><option value="belumBulan">Belum mengisi pada bulan ini</option></select></div>
+      <div class="tabel-wrap"><table><thead><tr><th>Nama</th><th>NIP baru</th><th>Unit kerja</th><th class="num">Hari terisi</th><th class="num">Kegiatan</th><th class="num">Foto</th><th>Terakhir mengisi</th><th>Hari ini</th></tr></thead><tbody id="tblRekap"></tbody></table></div>
+    </div>
+    <div class="kartu" style="padding:16px 18px;max-width:760px">
+      <h3 style="margin:0 0 6px;font-size:16px">Kop surat dokumen</h3>
+      <p style="margin:0 0 12px;font-size:13.5px;color:var(--teks2)">Kop dipakai di semua dokumen Bukti Dukung pegawai. Unggah dokumen Word (.docx) kantor yang sudah berisi kop di bagian header. Bila belum diunggah, dipakai kop bawaan cetakan.</p>
+      <div id="kopInfo" class="kop-prev" style="font-size:13.5px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn utama" id="btnKop" type="button">Unggah kop (.docx)</button><button class="btn bahaya" id="btnKopHapus" type="button" hidden>Kembali ke kop bawaan</button></div>
+      <input type="file" id="fileKop" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+    </div>
+  </section>
+  <section id="v-pengguna" hidden>
   <div class="kepala"><div style="flex:1"><h2>Daftar pengguna</h2><p>Pegawai masuk dengan NIP lama dan password masing-masing, dan hanya dapat melihat pekerjaannya sendiri. NIP baru ditampilkan di dokumen Bukti Dukung.</p></div>
     <button class="btn utama" id="btnTambah">+ Tambah pengguna</button></div>
   <div class="ringkas"><div><b id="nTotal">0</b><span>pengguna terdaftar</span></div><div><b id="nAktif">0</b><span>akun aktif</span></div><div><b id="nAdmin">0</b><span>admin</span></div></div>
@@ -92,16 +123,15 @@
       <select id="fStatus" aria-label="Saring status"><option value="">Semua status</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option><option value="admin">Admin</option></select></div>
     <div class="tabel-wrap"><table><thead><tr><th>Username / NIP lama</th><th>Nama</th><th>NIP baru</th><th>Jabatan / Unit kerja</th><th>Peran</th><th>Status</th><th></th></tr></thead><tbody id="tbl"></tbody></table></div>
   </div>
-  <div class="kepala" style="margin-top:30px"><div style="flex:1"><h2>Jenis kegiatan per bidang</h2><p>Pegawai memilih bidang lalu jenis kegiatan saat mencatat. Satu jenis kegiatan menjadi satu dokumen Bukti Dukung. Pegawai juga bisa menambah jenis baru dari aplikasi Catat.</p></div></div>
-  <div class="bidang-grid" id="gridJenis"></div>
+  </section>
 </main>
 
 <div class="modal" id="mPeg"><form class="isi form" id="fPeg" role="dialog" aria-labelledby="mJ" autocomplete="off">
   <h3 id="mJ">Tambah pengguna</h3><div class="ket" id="mKet"></div>
-  <label for="iPeran">Jenis akun</label><select id="iPeran"><option value="pegawai">Pegawai — mencatat kegiatan</option><option value="admin">Admin — mengelola pengguna & jenis kegiatan</option></select>
+  <label for="iPeran">Jenis akun</label><select id="iPeran"><option value="pegawai">Pegawai — mencatat kegiatan</option><option value="admin">Admin — monitoring, pengguna & kop</option></select>
   <div class="g2">
-    <div><label for="iNama" id="lNama">Nama lengkap (dengan gelar) *</label><input id="iNama" required></div>
-    <div><label for="iNip" id="lNip">NIP lama (dipakai untuk masuk) *</label><input id="iNip" required autocapitalize="off"><div class="ket" id="nipKet">9 digit, mis. 340012345</div></div>
+    <div><label for="iNama" id="lbNama">Nama lengkap (dengan gelar) *</label><input id="iNama" required></div>
+    <div><label for="iNip" id="lbNip">NIP lama (dipakai untuk masuk) *</label><input id="iNip" required autocapitalize="off"><div class="ket" id="nipKet">9 digit, mis. 340012345</div></div>
   </div>
   <div id="boxPegawai">
     <label for="iNipBaru">NIP baru (18 digit, tampil di dokumen) *</label><input id="iNipBaru" inputmode="numeric" placeholder="19890117 201101 2 010">
@@ -112,7 +142,7 @@
   </div>
   <div class="sub">Akun</div>
   <div class="g2">
-    <div><label for="iPw" id="lPw">Password awal *</label><input id="iPw" type="text" autocomplete="new-password" minlength="6"><div class="ket" id="pwKet"></div></div>
+    <div><label for="iPw" id="lbPw">Password awal *</label><input id="iPw" type="text" autocomplete="new-password" minlength="6"><div class="ket" id="pwKet"></div></div>
     <div><label for="iAktif">Status</label><select id="iAktif"><option value="1">Aktif — boleh masuk</option><option value="0">Nonaktif — tidak bisa masuk</option></select></div>
   </div>
   <div class="err" id="mErr"></div>
@@ -127,6 +157,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
+<script src="docx.js"></script>
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
@@ -159,8 +190,8 @@
   function aturJenisAkun() {
     const adm = $('iPeran').value === 'admin';
     $('boxPegawai').hidden = adm;
-    $('lNama').textContent = adm ? 'Nama *' : 'Nama lengkap (dengan gelar) *';
-    $('lNip').textContent = adm ? 'Username (dipakai untuk masuk) *' : 'NIP lama (dipakai untuk masuk) *';
+    $('lbNama').textContent = adm ? 'Nama *' : 'Nama lengkap (dengan gelar) *';
+    $('lbNip').textContent = adm ? 'Username (dipakai untuk masuk) *' : 'NIP lama (dipakai untuk masuk) *';
     $('nipKet').textContent = adm ? 'Huruf kecil/angka, mis. admin' : '9 digit, mis. 340012345';
     $('iNip').inputMode = adm ? 'text' : 'numeric';
     ['iNipBaru', 'iJab', 'iUnit'].forEach(id => $(id).required = !adm);
@@ -174,7 +205,7 @@
     $('iPeran').value = p ? p.peran : 'pegawai'; $('iAktif').value = !p || p.aktif ? '1' : '0';
     const diriSendiri = p && p.id === sayaId; $('iPeran').disabled = diriSendiri; $('iAktif').disabled = diriSendiri;
     $('iPw').value = ''; $('iPw').required = !p;
-    $('lPw').textContent = p ? 'Reset password (opsional)' : 'Password awal *';
+    $('lbPw').textContent = p ? 'Reset password (opsional)' : 'Password awal *';
     $('pwKet').textContent = p ? 'Kosongkan bila tidak ingin mengganti password.' : 'Minimal 6 karakter. Pengguna bisa menggantinya sendiri di menu Profil.';
     aturJenisAkun();
     $('mPeg').classList.add('on'); setTimeout(() => $(p ? 'iNama' : 'iNama').focus(), 50);
@@ -220,37 +251,56 @@
         S.cek(await S.client().from('pegawai').insert(v), 'Akun login dibuat, tetapi data pengguna gagal disimpan');
         S.toast(v.nama + ' ditambahkan. Masuk dengan ' + (adm ? 'username ' : 'NIP lama ') + v.nip);
       }
-      $('mPeg').classList.remove('on'); await muat();
+      $('mPeg').classList.remove('on'); await muat(); rekap = []; 
     } catch (x) { $('mErr').textContent = x.message || String(x); }
     finally { b.disabled = false; }
   };
 
-  /* ---------- Jenis kegiatan per bidang ---------- */
-  let jenis = [];
-  async function muatJenis() { jenis = await S.list('jenis'); renderJenis(); }
-  function renderJenis() {
-    $('gridJenis').innerHTML = S.BIDANG.map(b => { const js = jenis.filter(j => j.bidang === b);
-      return `<div class="bkartu" data-bidang="${b}"><h3>${b} <span>${js.length} jenis</span></h3>${js.map(j => `<div class="jitem" data-id="${j.id}"><input value="${S.esc(j.nama)}" aria-label="Nama jenis kegiatan"><button class="ikon hapus" data-hapusj title="Hapus" aria-label="Hapus ${S.esc(j.nama)}"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></div>`).join('') || '<div style="color:var(--teks2);font-size:13px;padding:4px 0">Belum ada jenis kegiatan.</div>'}
-        <form class="jtambah"><input placeholder="Jenis kegiatan baru…" aria-label="Jenis kegiatan baru ${b}"><button class="btn" type="submit">Tambah</button></form></div>`; }).join('');
+  /* ---------- Dashboard monitoring ---------- */
+  const now = new Date(); let ym = S.ymd(now).slice(0, 7); let rekap = [];
+  function geser(d) { const [y, m] = ym.split('-').map(Number); const t = new Date(y, m - 1 + d, 1); ym = t.getFullYear() + '-' + S.pad(t.getMonth() + 1); muatRekap(); }
+  async function muatRekap() {
+    const el = $('bulan'); el.innerHTML = `<button aria-label="Bulan sebelumnya">‹</button><span>${S.namaBulan(ym)}</span><button aria-label="Bulan berikutnya">›</button>`;
+    el.children[0].onclick = () => geser(-1); el.children[2].onclick = () => geser(1);
+    const [y, m] = ym.split('-').map(Number);
+    try { rekap = S.cek(await S.client().rpc('admin_rekap', { p_dari: ym + '-01', p_sampai: ym + '-' + S.pad(new Date(y, m, 0).getDate()), p_hari_ini: S.ymd(now) }), 'Gagal memuat rekap') || []; }
+    catch (x) { rekap = []; S.toast(x.message, 6000); }
+    renderRekap();
   }
-  $('gridJenis').addEventListener('submit', async e => {
-    e.preventDefault(); const card = e.target.closest('.bkartu'); const inp = e.target.querySelector('input'); const nama = inp.value.trim(); if (!nama) return;
-    try { await S.put('jenis', { id: 'j' + S.uid(), bidang: card.dataset.bidang, nama, urutan: jenis.filter(j => j.bidang === card.dataset.bidang).length }); await muatJenis(); S.toast('Jenis kegiatan ditambahkan'); }
-    catch (x) { S.toast(x.message, 4000); }
-  });
-  $('gridJenis').addEventListener('change', async e => {
-    const it = e.target.closest('.jitem'); if (!it || e.target.tagName !== 'INPUT') return;
-    const j = jenis.find(x => x.id === it.dataset.id); const nama = e.target.value.trim(); if (!nama || nama === j.nama) { e.target.value = j.nama; return; }
-    try { await S.put('jenis', Object.assign({}, j, { nama })); j.nama = nama; S.toast('Nama jenis kegiatan diperbarui'); } catch (x) { S.toast(x.message, 4000); e.target.value = j.nama; }
-  });
-  $('gridJenis').addEventListener('click', e => {
-    const h = e.target.closest('[data-hapusj]'); if (!h) return; const j = jenis.find(x => x.id === h.closest('.jitem').dataset.id);
-    $('kJ').textContent = 'Hapus jenis "' + j.nama + '"?';
-    $('kT').textContent = 'Kegiatan pegawai yang sudah memakai jenis ini tidak ikut terhapus, tetapi akan menjadi "tanpa jenis" sehingga tidak masuk dokumen Bukti Dukung sampai jenisnya dipilih lagi. Bila hanya ingin mengganti nama, ubah langsung di kotaknya.';
-    $('kYa').textContent = 'Ya, hapus'; $('mKonf').classList.add('on');
-    $('kBatal').onclick = () => $('mKonf').classList.remove('on');
-    $('kYa').onclick = async () => { try { await S.del('jenis', j.id); $('mKonf').classList.remove('on'); await muatJenis(); S.toast('Jenis kegiatan dihapus'); } catch (x) { S.toast(x.message, 5000); } };
-  });
+  function renderRekap() {
+    const akt = rekap.filter(r => r.aktif); const n = akt.length || 1;
+    const hari = akt.filter(r => r.isi_hari_ini).length, bln = akt.filter(r => r.hari_terisi > 0).length;
+    $('mAktif').textContent = akt.length; $('mHari').textContent = hari + ' / ' + akt.length; $('mBulan').textContent = bln + ' / ' + akt.length;
+    $('pHari').style.width = (hari / n * 100) + '%'; $('pBulan').style.width = (bln / n * 100) + '%';
+    $('lBulan').textContent = 'mengisi di ' + S.namaBulan(ym); $('mKeg').textContent = rekap.reduce((a, r) => a + Number(r.jumlah_kegiatan), 0); $('lKeg').textContent = 'kegiatan di ' + S.namaBulan(ym);
+    const q = $('mCari').value.trim().toLowerCase(), f = $('mFilter').value;
+    const rows = rekap.filter(r => (!q || [r.nama, r.nip, r.nip_baru, r.unit].join(' ').toLowerCase().includes(q)) && (!f || (f === 'belumHari' ? !r.isi_hari_ini : r.hari_terisi == 0)));
+    $('tblRekap').innerHTML = rows.length ? rows.map(r => `<tr${r.aktif ? '' : ' style="opacity:.55"'}><td><b>${S.esc(r.nama)}</b>${r.aktif ? '' : ' <span class="badge b-off">Nonaktif</span>'}${r.jabatan ? '<br><span style="color:var(--teks2);font-size:12.5px">' + S.esc(r.jabatan) + '</span>' : ''}</td>
+      <td class="nip">${S.esc(r.nip_baru || '—')}</td><td>${S.esc(r.unit || '—')}</td><td class="num">${r.hari_terisi}</td><td class="num">${r.jumlah_kegiatan}</td><td class="num">${r.jumlah_foto}</td>
+      <td>${r.terakhir ? S.esc(S.tglSedang(r.terakhir)) : '<span style="color:var(--teks2)">belum pernah</span>'}</td>
+      <td>${r.isi_hari_ini ? '<span class="badge b-on">✓ Sudah</span>' : '<span class="badge b-off">○ Belum</span>'}</td></tr>`).join('')
+      : `<tr><td colspan="8"><div class="kosong">${rekap.length ? 'Tidak ada pegawai yang cocok.' : 'Belum ada pegawai. Tambahkan di menu Pengguna.'}</div></td></tr>`;
+  }
+  $('mCari').oninput = renderRekap; $('mFilter').onchange = renderRekap;
+
+  /* ---------- Kop surat ---------- */
+  let kop = null;
+  async function muatKop() { try { kop = await S.get('meta', 'kop'); } catch (x) { kop = null; } renderKop(); }
+  function renderKop() {
+    $('kopInfo').innerHTML = kop ? `✅ Kop terpasang dari <b>${S.esc(kop.nama || 'dokumen')}</b><div style="margin-top:8px">${(kop.media || []).map(m => `<img src="data:${/png$/i.test(m.name) ? 'image/png' : 'image/jpeg'};base64,${m.b64}" alt="">`).join('')}</div>` : '<span style="color:var(--teks2)">Memakai kop bawaan cetakan (BPS Kota Kendari).</span>';
+    $('btnKopHapus').hidden = !kop;
+  }
+  $('btnKop').onclick = () => $('fileKop').click();
+  $('fileKop').onchange = async () => {
+    const f = $('fileKop').files[0]; $('fileKop').value = ''; if (!f) return;
+    try { const k = await DOCX.extractKop(await f.arrayBuffer()); k.id = 'kop'; k.nama = f.name; await S.put('meta', k); kop = k; renderKop(); S.toast('Kop surat dipasang untuk semua pegawai'); }
+    catch (x) { S.toast('Gagal membaca dokumen: ' + (x && x.message || x), 5000); }
+  };
+  $('btnKopHapus').onclick = async () => { try { await S.del('meta', 'kop'); kop = null; renderKop(); S.toast('Kembali memakai kop bawaan'); } catch (x) { S.toast(x.message); } };
+
+  /* ---------- Menu ---------- */
+  const ROUTES = ['dashboard', 'pengguna'];
+  function route() { let r = location.hash.slice(1); if (!ROUTES.includes(r)) r = 'dashboard'; ROUTES.forEach(x => $('v-' + x).hidden = x !== r); document.querySelectorAll('nav.tab a').forEach(a => a.classList.toggle('aktif', a.dataset.r === r)); if (r === 'dashboard') muatRekap(); }
 
   function hapus(p) {
     $('kYa').textContent = 'Ya, hapus permanen';
@@ -269,7 +319,8 @@
 
   S.mulai({ admin: true }).then(async ({ uid, pegawai }) => {
     sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SKP Harian');
-    try { await muat(); await muatJenis(); } catch (x) { S.toast(x.message, 6000); }
+    try { await muat(); } catch (x) { S.toast(x.message, 6000); }
+    muatKop(); route(); window.addEventListener('hashchange', route);
   });
 })();
 </script>
