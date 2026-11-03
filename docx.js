@@ -238,7 +238,6 @@
   async function laporan(o) {
     /* o: {jenis:'harian'|'realisasi'|'lengkap', profil, rhkList, kegiatan, ym, periode, tglTtd, foto:bool, getFoto:async id=>{data,w,h}} */
     const S = window.SKP; picId = 1; W = pageInfo(o.kop).W;
-    if (o.jenis === 'bukti') return buktiDukung(o);
     const pr = o.profil || {}; const rhkMap = {}; o.rhkList.forEach(r => rhkMap[r.id] = r);
     const keg = o.kegiatan.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
     const images = []; let body = '';
@@ -285,44 +284,44 @@
   }
 
 
-  /* ---------- Bukti Dukung SKP (format sesuai contoh kantor) ---------- */
+  /* ---------- Bukti Dukung SKP: mengisi cetakan Word kantor (template-bukti-dukung.docx) ---------- */
+  function imgNs(rId, wEmu, hEmu) {
+    const n = picId++;
+    return `<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${wEmu}" cy="${hEmu}"/><wp:docPr id="${900 + n}" name="Foto ${n}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${900 + n}" name="foto${n}.jpeg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${wEmu}" cy="${hEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+  }
+  const paraDengan = (xml, tanda) => { const re = new RegExp('<w:p(?: [^>]*)?>(?:(?!<w:p[ >])[\\s\\S])*?' + tanda + '[\\s\\S]*?</w:p>'); const m = xml.match(re); return m ? m[0] : null; };
   async function buktiDukung(o) {
-    const S = window.SKP; const pr = o.profil || {}; const images = []; let body = '';
-    const keg = o.kegiatan.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
-    let daftar = o.rhkList.filter(r => !o.rhkPilih || o.rhkPilih === r.id);
-    if (!o.rhkPilih) daftar = daftar.filter(r => keg.some(k => k.rhkId === r.id));
-    if (!daftar.length) daftar = [{ id: '__none', nama: '', indikator: '' }];
-    const EMU = 914400; const boxW = W; const maxW = Math.min(4.8 * EMU, (boxW - 400) / 1440 * EMU), maxH = 3.4 * EMU;
-    const bd = '<w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/>';
-    const box = (inner, minH) => `<w:tr><w:trPr>${minH ? `<w:trHeight w:val="${minH}"/>` : ''}</w:trPr><w:tc><w:tcPr><w:tcW w:w="${boxW}" w:type="dxa"/><w:gridSpan w:val="3"/><w:tcBorders>${bd}</w:tcBorders></w:tcPr>${inner}</w:tc></w:tr>`;
-    for (let ri = 0; ri < daftar.length; ri++) {
-      const r = daftar[ri];
-      const ks = keg.filter(k => k.rhkId === r.id);
-      if (o.kop) body += `<w:p><w:pPr>${ri > 0 ? '<w:pageBreakBefore/>' : ''}<w:pBdr><w:bottom w:val="single" w:sz="12" w:space="1" w:color="000000"/></w:pBdr><w:spacing w:before="0" w:after="200" w:line="20" w:lineRule="exact"/></w:pPr></w:p>`;
-      body += p(o.judul || ('Bukti Dukung SKP ' + o.periode), { b: true, jc: 'center', after: 240, pageBreak: ri > 0 && !o.kop });
-      const c1 = 2900, c2 = 300, c3 = boxW - c1 - c2;
-      const row = (l, v) => tr([tc(p(l, { before: 40, after: 40 }), c1), tc(p(':', { before: 40, after: 40 }), c2), tc(p(v || '-', { before: 40, after: 40 }), c3)]);
-      const rows = [row('Nama', pr.nama), row('NIP', pr.nip), row('Rencana Kinerja (RK)', r.nama), row('Indikator Kinerja Individu (IKI)', r.indikator), tr([tc(p(''), c1), tc(p(''), c2), tc(p(''), c3)])];
-      // daftar capaian (uraian kegiatan unik)
-      const uraian = []; ks.forEach(k => { const t = (k.teks || '').trim(); if (t && t !== '(foto bukti)' && !uraian.includes(t)) uraian.push(t); });
-      const cap = [p('[CAPAIAN]', { b: true, before: 60, after: 40 })].concat(uraian.length ? uraian.map((t, i) => `<w:p><w:pPr><w:spacing w:before="0" w:after="20" w:line="252" w:lineRule="auto"/><w:ind w:left="400" w:hanging="300"/></w:pPr>${run((i + 1) + '. ' + t)}</w:p>`) : [p('Belum ada kegiatan pada periode ini.', { i: true, after: 60 })]);
-      cap.push(p('', { after: 40 }));
-      rows.push(box(cap.join(''), 717));
-      // foto bukti
-      const fotos = []; for (const k of ks) for (const id of (k.fotoIds || [])) { const f = await o.getFoto(id); if (f && f.data) fotos.push(f); }
-      let fx = '';
-      for (const f of fotos) {
-        const rId = 'rIdImg' + (images.length + 1);
-        images.push({ rId, name: 'image' + (images.length + 1) + '.jpeg', bytes: dataUrlBytes(f.data) });
-        const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
-        fx += p(img(rId, Math.round(w), Math.round(h)), { jc: 'center', before: 120, after: 0 });
-      }
-      if (!fotos.length) fx = p('Belum ada foto bukti dukung.', { i: true, jc: 'center', before: 200, color: '808080' });
-      rows.push(box(fx + p('', { after: 120 }), 0));
-      body += tbl([c1, c2, c3], rows, { borders: false, padV: 0 });
+    /* o: {template: ArrayBuffer, judul, nama, nip, rk, iki, uraian: [teks], fotos: [{data,w,h}]} */
+    picId = 1;
+    const z = await readZip(o.template);
+    let doc = td(await z.get('word/document.xml'));
+    let rels = td(await z.get('word/_rels/document.xml.rels'));
+    let ct = td(await z.get('[Content_Types].xml'));
+    doc = doc.replace('{{JUDUL}}', x(o.judul)).replace('{{NAMA}}', x(o.nama)).replace('{{NIP}}', x(o.nip)).replace('{{RK}}', x(o.rk || '')).replace('{{IKI}}', x(o.iki || ''));
+    const item = paraDengan(doc, '\\{\\{URAIAN\\}\\}');
+    if (item) doc = doc.replace(item, (o.uraian.length ? o.uraian : ['-']).map((t, i) => item.replace('{{NO}}. ', o.uraian.length ? (i + 1) + '. ' : '').replace('{{URAIAN}}', x(t))).join(''));
+    const pf = paraDengan(doc, '\\{\\{FOTO\\}\\}');
+    const media = []; const EMU = 914400; const maxW = 4.6 * EMU, maxH = 3.0 * EMU;
+    let fx = '';
+    o.fotos.forEach((f, i) => {
+      const rId = 'rIdFoto' + (i + 1), name = 'bukti_foto' + (i + 1) + '.jpeg';
+      media.push({ name: 'word/media/' + name, data: dataUrlBytes(f.data) });
+      rels = rels.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${name}"/></Relationships>`);
+      const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
+      fx += `<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="${i ? 60 : 160}"/><w:jc w:val="center"/></w:pPr>${imgNs(rId, Math.round(w), Math.round(h))}</w:p>`;
+    });
+    fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120"/><w:jc w:val="center"/></w:pPr></w:p>';
+    if (pf) doc = doc.replace(pf, fx);
+    if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
+    const files = [];
+    for (const n of z.names) {
+      if (n === 'word/document.xml') files.push({ name: n, data: doc });
+      else if (n === 'word/_rels/document.xml.rels') files.push({ name: n, data: rels });
+      else if (n === '[Content_Types].xml') files.push({ name: n, data: ct });
+      else if (!n.endsWith('/')) files.push({ name: n, data: await z.get(n) });
     }
-    return build(body, images, { kop: o.kop, font: 'Calibri', sz: 20 });
+    return zip(files.concat(media));
   }
 
-  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop };
+  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, buktiDukung, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
 })();

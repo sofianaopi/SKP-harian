@@ -42,6 +42,16 @@
   .ikon { border: 0; background: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--teks2); }
   .ikon:hover { background: var(--bg); color: var(--teks); } .ikon.hapus:hover { color: var(--merah); }
   .ikon svg { width: 18px; height: 18px; fill: currentColor; display: block; }
+  .bidang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .bkartu { background: #fff; border: 1px solid var(--garis); border-radius: 14px; padding: 14px; }
+  .bkartu h3 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .bkartu h3 span { font-size: 12px; color: var(--teks2); font-weight: 400; }
+  .jitem { display: flex; align-items: center; gap: 4px; padding: 5px 0; border-bottom: 1px solid #f0f2f5; font-size: 13.5px; }
+  .jitem input { flex: 1; border: 1px solid transparent; border-radius: 6px; padding: 5px 7px; font: inherit; background: transparent; min-width: 0; }
+  .jitem input:hover { border-color: var(--garis); } .jitem input:focus { border-color: var(--biru); outline: 2px solid var(--biru-muda); background: #fff; }
+  .jtambah { display: flex; gap: 6px; margin-top: 8px; } .jtambah input { flex: 1; min-width: 0; padding: 7px 9px; border: 1px solid var(--garis); border-radius: 8px; font: inherit; }
+  @media (max-width: 1000px) { .bidang-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .bidang-grid { grid-template-columns: 1fr; } }
   .kosong { text-align: center; color: var(--teks2); padding: 34px 10px; }
   .modal { position: fixed; inset: 0; background: rgba(15,25,35,.5); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
   .modal.on { display: flex; }
@@ -69,40 +79,40 @@
 <body>
 <header>
   <img src="icons/dashboard-192.png" alt="">
-  <h1>Admin Pegawai<small id="hdrSub">SKP Harian</small></h1>
+  <h1>Admin SKP Harian<small id="hdrSub">SKP Harian</small></h1>
   <a href="index.html">Dashboard saya</a>
   <button id="btnKeluar" type="button">Keluar</button>
 </header>
 <main>
-  <div class="kepala"><div style="flex:1"><h2>Daftar pegawai</h2><p>Setiap pegawai masuk dengan NIP dan password masing-masing, dan hanya dapat melihat pekerjaannya sendiri.</p></div>
-    <button class="btn utama" id="btnTambah">+ Tambah pegawai</button></div>
-  <div class="ringkas"><div><b id="nTotal">0</b><span>pegawai terdaftar</span></div><div><b id="nAktif">0</b><span>akun aktif</span></div><div><b id="nAdmin">0</b><span>admin</span></div></div>
+  <div class="kepala"><div style="flex:1"><h2>Daftar pengguna</h2><p>Pegawai masuk dengan NIP lama dan password masing-masing, dan hanya dapat melihat pekerjaannya sendiri. NIP baru ditampilkan di dokumen Bukti Dukung.</p></div>
+    <button class="btn utama" id="btnTambah">+ Tambah pengguna</button></div>
+  <div class="ringkas"><div><b id="nTotal">0</b><span>pengguna terdaftar</span></div><div><b id="nAktif">0</b><span>akun aktif</span></div><div><b id="nAdmin">0</b><span>admin</span></div></div>
   <div class="kartu">
-    <div class="alat"><input type="search" id="cari" placeholder="Cari nama, NIP, atau jabatan…" aria-label="Cari pegawai">
+    <div class="alat"><input type="search" id="cari" placeholder="Cari nama, NIP lama/baru, jabatan, unit…" aria-label="Cari pegawai">
       <select id="fStatus" aria-label="Saring status"><option value="">Semua status</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option><option value="admin">Admin</option></select></div>
-    <div class="tabel-wrap"><table><thead><tr><th>NIP</th><th>Nama</th><th>Jabatan / Unit</th><th>Atasan</th><th>Peran</th><th>Status</th><th></th></tr></thead><tbody id="tbl"></tbody></table></div>
+    <div class="tabel-wrap"><table><thead><tr><th>Username / NIP lama</th><th>Nama</th><th>NIP baru</th><th>Jabatan / Unit kerja</th><th>Peran</th><th>Status</th><th></th></tr></thead><tbody id="tbl"></tbody></table></div>
   </div>
+  <div class="kepala" style="margin-top:30px"><div style="flex:1"><h2>Jenis kegiatan per bidang</h2><p>Pegawai memilih bidang lalu jenis kegiatan saat mencatat. Satu jenis kegiatan menjadi satu dokumen Bukti Dukung. Pegawai juga bisa menambah jenis baru dari aplikasi Catat.</p></div></div>
+  <div class="bidang-grid" id="gridJenis"></div>
 </main>
 
 <div class="modal" id="mPeg"><form class="isi form" id="fPeg" role="dialog" aria-labelledby="mJ" autocomplete="off">
-  <h3 id="mJ">Tambah pegawai</h3><div class="ket" id="mKet">Pegawai akan masuk memakai NIP dan password di bawah.</div>
+  <h3 id="mJ">Tambah pengguna</h3><div class="ket" id="mKet"></div>
+  <label for="iPeran">Jenis akun</label><select id="iPeran"><option value="pegawai">Pegawai — mencatat kegiatan</option><option value="admin">Admin — mengelola pengguna & jenis kegiatan</option></select>
   <div class="g2">
-    <div><label for="iNip">NIP *</label><input id="iNip" required inputmode="numeric" placeholder="19890117 201101 2 010"></div>
-    <div><label for="iNama">Nama lengkap (dengan gelar) *</label><input id="iNama" required></div>
-    <div><label for="iJab">Jabatan</label><input id="iJab" placeholder="Statistisi Ahli Muda"></div>
-    <div><label for="iUnit">Unit kerja</label><input id="iUnit"></div>
-    <div><label for="iKota">Kota (tempat tanda tangan)</label><input id="iKota"></div>
-    <div><label for="iPeran">Peran</label><select id="iPeran"><option value="pegawai">Pegawai</option><option value="admin">Admin (bisa mengelola pegawai)</option></select></div>
+    <div><label for="iNama" id="lNama">Nama lengkap (dengan gelar) *</label><input id="iNama" required></div>
+    <div><label for="iNip" id="lNip">NIP lama (dipakai untuk masuk) *</label><input id="iNip" required autocapitalize="off"><div class="ket" id="nipKet">9 digit, mis. 340012345</div></div>
   </div>
-  <div class="sub">Pejabat penilai kinerja (atasan)</div>
-  <div class="g2">
-    <div><label for="iANama">Nama atasan</label><input id="iANama"></div>
-    <div><label for="iANip">NIP atasan</label><input id="iANip" inputmode="numeric"></div>
+  <div id="boxPegawai">
+    <label for="iNipBaru">NIP baru (18 digit, tampil di dokumen) *</label><input id="iNipBaru" inputmode="numeric" placeholder="19890117 201101 2 010">
+    <div class="g2">
+      <div><label for="iJab">Jabatan *</label><input id="iJab" placeholder="Statistisi Ahli Muda"></div>
+      <div><label for="iUnit">Unit kerja *</label><input id="iUnit" list="dlUnit" placeholder="mis. Nerwilis"><datalist id="dlUnit"></datalist></div>
+    </div>
   </div>
-  <label for="iAJab">Jabatan atasan</label><input id="iAJab">
   <div class="sub">Akun</div>
   <div class="g2">
-    <div><label for="iPw" id="lPw">Password awal *</label><input id="iPw" type="text" autocomplete="new-password" minlength="6"><div class="ket" id="pwKet">Minimal 6 karakter. Sampaikan ke pegawai; ia bisa menggantinya sendiri di menu Profil.</div></div>
+    <div><label for="iPw" id="lPw">Password awal *</label><input id="iPw" type="text" autocomplete="new-password" minlength="6"><div class="ket" id="pwKet"></div></div>
     <div><label for="iAktif">Status</label><select id="iAktif"><option value="1">Aktif — boleh masuk</option><option value="0">Nonaktif — tidak bisa masuk</option></select></div>
   </div>
   <div class="err" id="mErr"></div>
@@ -129,45 +139,67 @@
   function render() {
     $('nTotal').textContent = daftar.length; $('nAktif').textContent = daftar.filter(p => p.aktif).length; $('nAdmin').textContent = daftar.filter(p => p.peran === 'admin').length;
     const q = $('cari').value.trim().toLowerCase(), f = $('fStatus').value;
-    const rows = daftar.filter(p => (!q || [p.nama, p.nip, p.jabatan, p.unit].join(' ').toLowerCase().includes(q)) && (!f || (f === 'aktif' ? p.aktif : f === 'nonaktif' ? !p.aktif : p.peran === 'admin')));
+    const rows = daftar.filter(p => (!q || [p.nama, p.nip, p.nip_baru, p.jabatan, p.unit].join(' ').toLowerCase().includes(q)) && (!f || (f === 'aktif' ? p.aktif : f === 'nonaktif' ? !p.aktif : p.peran === 'admin')));
     $('tbl').innerHTML = rows.length ? rows.map(p => `<tr>
       <td class="nip">${S.esc(p.nip)}</td>
       <td><b>${S.esc(p.nama)}</b>${p.id === sayaId ? ' <span class="badge b-peg">Anda</span>' : ''}</td>
+      <td class="nip">${S.esc(p.nip_baru || '—')}</td>
       <td>${S.esc(p.jabatan || '—')}${p.unit ? '<br><span style="color:var(--teks2);font-size:12.5px">' + S.esc(p.unit) + '</span>' : ''}</td>
-      <td>${S.esc(p.atasan_nama || '—')}</td>
       <td><span class="badge ${p.peran === 'admin' ? 'b-admin' : 'b-peg'}">${p.peran === 'admin' ? 'Admin' : 'Pegawai'}</span></td>
       <td><span class="badge ${p.aktif ? 'b-on' : 'b-off'}">${p.aktif ? 'Aktif' : 'Nonaktif'}</span></td>
       <td class="aksi-td" style="white-space:nowrap"><button class="ikon" data-edit="${p.id}" title="Ubah" aria-label="Ubah ${S.esc(p.nama)}"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>${p.id === sayaId ? '' : `<button class="ikon hapus" data-hapus="${p.id}" title="Hapus" aria-label="Hapus ${S.esc(p.nama)}"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>`}</td></tr>`).join('')
-      : `<tr><td colspan="7"><div class="kosong">${daftar.length ? 'Tidak ada pegawai yang cocok.' : 'Belum ada pegawai. Klik “+ Tambah pegawai”.'}</div></td></tr>`;
+      : `<tr><td colspan="7"><div class="kosong">${daftar.length ? 'Tidak ada pegawai yang cocok.' : 'Belum ada pengguna. Klik “+ Tambah pengguna”.'}</div></td></tr>`;
   }
   $('cari').oninput = render; $('fStatus').onchange = render;
   $('tbl').onclick = e => { const a = e.target.closest('[data-edit]'); if (a) buka(daftar.find(p => p.id === a.dataset.edit)); const h = e.target.closest('[data-hapus]'); if (h) hapus(daftar.find(p => p.id === h.dataset.hapus)); };
   $('btnTambah').onclick = () => buka(null);
 
-  const F = { iNip: 'nip', iNama: 'nama', iJab: 'jabatan', iUnit: 'unit', iKota: 'kota', iANama: 'atasan_nama', iANip: 'atasan_nip', iAJab: 'atasan_jabatan' };
+  const F = { iNip: 'nip', iNama: 'nama', iNipBaru: 'nip_baru', iJab: 'jabatan', iUnit: 'unit' };
+  $('dlUnit').innerHTML = S.BIDANG.map(b => `<option value="${b}">`).join('');
+  function aturJenisAkun() {
+    const adm = $('iPeran').value === 'admin';
+    $('boxPegawai').hidden = adm;
+    $('lNama').textContent = adm ? 'Nama *' : 'Nama lengkap (dengan gelar) *';
+    $('lNip').textContent = adm ? 'Username (dipakai untuk masuk) *' : 'NIP lama (dipakai untuk masuk) *';
+    $('nipKet').textContent = adm ? 'Huruf kecil/angka, mis. admin' : '9 digit, mis. 340012345';
+    $('iNip').inputMode = adm ? 'text' : 'numeric';
+    ['iNipBaru', 'iJab', 'iUnit'].forEach(id => $(id).required = !adm);
+  }
+  $('iPeran').onchange = aturJenisAkun;
   function buka(p) {
     edit = p; $('mErr').textContent = '';
-    $('mJ').textContent = p ? 'Ubah data pegawai' : 'Tambah pegawai';
-    $('mKet').textContent = p ? 'Mengubah NIP juga mengubah NIP yang dipakai untuk masuk.' : 'Pegawai akan masuk memakai NIP dan password di bawah.';
+    $('mJ').textContent = p ? 'Ubah data ' + (p.peran === 'admin' ? 'admin' : 'pegawai') : 'Tambah pengguna';
+    $('mKet').textContent = p ? 'Mengubah NIP lama/username juga mengubah yang dipakai untuk masuk.' : 'Admin cukup nama, username, dan password. Pegawai diisi lengkap.';
     Object.entries(F).forEach(([id, f]) => $(id).value = p ? (p[f] || '') : '');
-    if (!p) { const contoh = daftar.find(x => x.id === sayaId) || {}; $('iUnit').value = contoh.unit || ''; $('iKota').value = contoh.kota || ''; }
     $('iPeran').value = p ? p.peran : 'pegawai'; $('iAktif').value = !p || p.aktif ? '1' : '0';
     const diriSendiri = p && p.id === sayaId; $('iPeran').disabled = diriSendiri; $('iAktif').disabled = diriSendiri;
     $('iPw').value = ''; $('iPw').required = !p;
     $('lPw').textContent = p ? 'Reset password (opsional)' : 'Password awal *';
-    $('pwKet').textContent = p ? 'Kosongkan bila tidak ingin mengganti password pegawai ini.' : 'Minimal 6 karakter. Sampaikan ke pegawai; ia bisa menggantinya sendiri di menu Profil.';
-    $('mPeg').classList.add('on'); setTimeout(() => $(p ? 'iNama' : 'iNip').focus(), 50);
+    $('pwKet').textContent = p ? 'Kosongkan bila tidak ingin mengganti password.' : 'Minimal 6 karakter. Pengguna bisa menggantinya sendiri di menu Profil.';
+    aturJenisAkun();
+    $('mPeg').classList.add('on'); setTimeout(() => $(p ? 'iNama' : 'iNama').focus(), 50);
   }
   $('mBatal').onclick = () => $('mPeg').classList.remove('on');
+  const bersih = v => String(v || '').toLowerCase().replace(/[^a-z0-9._-]/g, '');
 
   $('fPeg').onsubmit = async e => {
     e.preventDefault(); const b = $('mSimpan'); b.disabled = true; $('mErr').textContent = '';
     try {
+      const adm = $('iPeran').value === 'admin';
       const v = {}; Object.entries(F).forEach(([id, f]) => v[f] = $(id).value.trim() || null);
-      if (!v.nip || !v.nama) throw new Error('NIP dan nama wajib diisi');
-      if (!/^[\d\s]{8,25}$/.test(v.nip)) throw new Error('NIP hanya boleh berisi angka (dan spasi)');
-      const bentrok = daftar.find(p => p.nip.replace(/\s/g, '') === v.nip.replace(/\s/g, '') && (!edit || p.id !== edit.id));
-      if (bentrok) throw new Error('NIP ini sudah dipakai oleh ' + bentrok.nama);
+      if (!v.nama || !v.nip) throw new Error(adm ? 'Nama dan username wajib diisi' : 'Nama dan NIP lama wajib diisi');
+      if (adm) { v.nip = v.nip.toLowerCase(); if (!/^[a-z0-9._-]{3,40}$/.test(v.nip)) throw new Error('Username 3–40 karakter: huruf kecil, angka, titik, minus, atau garis bawah'); }
+      else {
+        if (!/^\d{5,12}$/.test(v.nip.replace(/\s/g, ''))) throw new Error('NIP lama hanya angka (mis. 9 digit)');
+        v.nip = v.nip.replace(/\s/g, '');
+        if (!v.nip_baru || v.nip_baru.replace(/\s/g, '').length !== 18 || !/^[\d\s]+$/.test(v.nip_baru)) throw new Error('NIP baru harus 18 digit angka (spasi boleh)');
+        if (!v.jabatan || !v.unit) throw new Error('Jabatan dan unit kerja wajib diisi');
+      }
+      if (adm && !edit) { v.nip_baru = null; v.jabatan = v.jabatan || null; }
+      if (adm) { delete v.nip_baru; delete v.jabatan; delete v.unit; }
+      const bentrok = daftar.find(p => bersih(p.nip) === bersih(v.nip) && (!edit || p.id !== edit.id));
+      if (bentrok) throw new Error('NIP lama/username ini sudah dipakai oleh ' + bentrok.nama);
+      if (!adm) { const b2 = daftar.find(p => p.nip_baru && p.nip_baru.replace(/\s/g, '') === v.nip_baru.replace(/\s/g, '') && (!edit || p.id !== edit.id)); if (b2) throw new Error('NIP baru ini sudah dipakai oleh ' + b2.nama); }
       v.peran = $('iPeran').value; v.aktif = $('iAktif').value === '1';
       const pw = $('iPw').value;
       if (pw && pw.length < 6) throw new Error('Password minimal 6 karakter');
@@ -180,20 +212,48 @@
         // Buat akun login lewat koneksi terpisah agar sesi admin tidak tergantikan
         const tmp = window.supabase.createClient(S.config.SUPABASE_URL, S.config.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'skp-tmp-' + Date.now() } });
         const r = await tmp.auth.signUp({ email: S.emailDariNip(v.nip), password: pw });
-        if (r.error) throw new Error(/already/i.test(r.error.message) ? 'NIP ini sudah memiliki akun login. Hapus akun lama di Supabase (Authentication → Users) atau gunakan NIP lain.' : 'Gagal membuat akun: ' + r.error.message);
-        if (!r.data.user || (r.data.user.identities && r.data.user.identities.length === 0)) throw new Error('NIP ini sudah memiliki akun login.');
-        if (!r.data.session) throw new Error('Akun dibuat tetapi belum aktif. Di Supabase matikan "Confirm email" (Authentication → Sign In / Providers → Email), lalu hubungi saya untuk langkah selanjutnya.');
+        if (r.error) throw new Error(/already/i.test(r.error.message) ? 'NIP lama/username ini sudah memiliki akun login. Hapus akun lama di Supabase (Authentication → Users) atau gunakan yang lain.' : 'Gagal membuat akun: ' + r.error.message);
+        if (!r.data.user || (r.data.user.identities && r.data.user.identities.length === 0)) throw new Error('NIP lama/username ini sudah memiliki akun login.');
+        if (!r.data.session) throw new Error('Akun dibuat tetapi belum aktif. Di Supabase matikan "Confirm email" (Authentication → Sign In / Providers → Email).');
         v.id = r.data.user.id;
         try { await tmp.auth.signOut(); } catch (x) { }
-        S.cek(await S.client().from('pegawai').insert(v), 'Akun login dibuat, tetapi data pegawai gagal disimpan');
-        S.toast(v.nama + ' ditambahkan. Masuk dengan NIP ' + v.nip);
+        S.cek(await S.client().from('pegawai').insert(v), 'Akun login dibuat, tetapi data pengguna gagal disimpan');
+        S.toast(v.nama + ' ditambahkan. Masuk dengan ' + (adm ? 'username ' : 'NIP lama ') + v.nip);
       }
       $('mPeg').classList.remove('on'); await muat();
     } catch (x) { $('mErr').textContent = x.message || String(x); }
     finally { b.disabled = false; }
   };
 
+  /* ---------- Jenis kegiatan per bidang ---------- */
+  let jenis = [];
+  async function muatJenis() { jenis = await S.list('jenis'); renderJenis(); }
+  function renderJenis() {
+    $('gridJenis').innerHTML = S.BIDANG.map(b => { const js = jenis.filter(j => j.bidang === b);
+      return `<div class="bkartu" data-bidang="${b}"><h3>${b} <span>${js.length} jenis</span></h3>${js.map(j => `<div class="jitem" data-id="${j.id}"><input value="${S.esc(j.nama)}" aria-label="Nama jenis kegiatan"><button class="ikon hapus" data-hapusj title="Hapus" aria-label="Hapus ${S.esc(j.nama)}"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></div>`).join('') || '<div style="color:var(--teks2);font-size:13px;padding:4px 0">Belum ada jenis kegiatan.</div>'}
+        <form class="jtambah"><input placeholder="Jenis kegiatan baru…" aria-label="Jenis kegiatan baru ${b}"><button class="btn" type="submit">Tambah</button></form></div>`; }).join('');
+  }
+  $('gridJenis').addEventListener('submit', async e => {
+    e.preventDefault(); const card = e.target.closest('.bkartu'); const inp = e.target.querySelector('input'); const nama = inp.value.trim(); if (!nama) return;
+    try { await S.put('jenis', { id: 'j' + S.uid(), bidang: card.dataset.bidang, nama, urutan: jenis.filter(j => j.bidang === card.dataset.bidang).length }); await muatJenis(); S.toast('Jenis kegiatan ditambahkan'); }
+    catch (x) { S.toast(x.message, 4000); }
+  });
+  $('gridJenis').addEventListener('change', async e => {
+    const it = e.target.closest('.jitem'); if (!it || e.target.tagName !== 'INPUT') return;
+    const j = jenis.find(x => x.id === it.dataset.id); const nama = e.target.value.trim(); if (!nama || nama === j.nama) { e.target.value = j.nama; return; }
+    try { await S.put('jenis', Object.assign({}, j, { nama })); j.nama = nama; S.toast('Nama jenis kegiatan diperbarui'); } catch (x) { S.toast(x.message, 4000); e.target.value = j.nama; }
+  });
+  $('gridJenis').addEventListener('click', e => {
+    const h = e.target.closest('[data-hapusj]'); if (!h) return; const j = jenis.find(x => x.id === h.closest('.jitem').dataset.id);
+    $('kJ').textContent = 'Hapus jenis "' + j.nama + '"?';
+    $('kT').textContent = 'Kegiatan pegawai yang sudah memakai jenis ini tidak ikut terhapus, tetapi akan menjadi "tanpa jenis" sehingga tidak masuk dokumen Bukti Dukung sampai jenisnya dipilih lagi. Bila hanya ingin mengganti nama, ubah langsung di kotaknya.';
+    $('kYa').textContent = 'Ya, hapus'; $('mKonf').classList.add('on');
+    $('kBatal').onclick = () => $('mKonf').classList.remove('on');
+    $('kYa').onclick = async () => { try { await S.del('jenis', j.id); $('mKonf').classList.remove('on'); await muatJenis(); S.toast('Jenis kegiatan dihapus'); } catch (x) { S.toast(x.message, 5000); } };
+  });
+
   function hapus(p) {
+    $('kYa').textContent = 'Ya, hapus permanen';
     $('kJ').textContent = 'Hapus ' + p.nama + '?';
     $('kT').textContent = 'Akun login, Rencana Kinerja, dan seluruh catatan kegiatan pegawai ini akan dihapus permanen dan tidak bisa dikembalikan. Bila hanya ingin memblokir sementara, ubah statusnya menjadi Nonaktif.';
     $('mKonf').classList.add('on');
@@ -209,7 +269,7 @@
 
   S.mulai({ admin: true }).then(async ({ uid, pegawai }) => {
     sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SKP Harian');
-    try { await muat(); } catch (x) { S.toast(x.message, 6000); }
+    try { await muat(); await muatJenis(); } catch (x) { S.toast(x.message, 6000); }
   });
 })();
 </script>

@@ -22,6 +22,19 @@ create table if not exists public.pegawai (
   dibuat         timestamptz not null default now()
 );
 
+alter table public.pegawai add column if not exists nip_baru text;   -- NIP 18 digit (tampil di dokumen)
+comment on column public.pegawai.nip is 'Username login: NIP lama (9 digit) untuk pegawai, atau nama pengguna untuk admin';
+
+create table if not exists public.jenis_kegiatan (   -- daftar jenis kegiatan per bidang (dipakai bersama)
+  id      text primary key,
+  bidang  text not null check (bidang in ('Sosial', 'Distribusi', 'Produksi', 'Nerwilis', 'IPDS', 'TU')),
+  nama    text not null,
+  urutan  int not null default 0,
+  dibuat_oleh uuid default auth.uid() references auth.users(id) on delete set null,
+  dibuat  timestamptz not null default now()
+);
+create unique index if not exists jenis_kegiatan_unik on public.jenis_kegiatan (bidang, lower(nama));
+
 create table if not exists public.rk (            -- Rencana Kinerja milik tiap pegawai
   id           text primary key,
   user_id      uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -46,6 +59,8 @@ create table if not exists public.kegiatan (     -- catatan kegiatan harian
   dibuat  bigint
 );
 create index if not exists kegiatan_user_tgl on public.kegiatan(user_id, tanggal);
+alter table public.kegiatan add column if not exists bidang text;
+alter table public.kegiatan add column if not exists jenis_id text references public.jenis_kegiatan(id) on delete set null;
 
 create table if not exists public.pengaturan (   -- pengaturan kantor (mis. kop surat)
   key   text primary key,
@@ -105,12 +120,12 @@ language plpgsql security definer set search_path = public as $$
 declare v_email text;
 begin
   if not public.is_admin() then
-    new.nip := old.nip; new.peran := old.peran; new.aktif := old.aktif;
+    new.nip := old.nip; new.nip_baru := old.nip_baru; new.peran := old.peran; new.aktif := old.aktif;
   elsif new.id = auth.uid() and (new.peran <> 'admin' or not new.aktif) then
     raise exception 'Admin tidak dapat menurunkan peran atau menonaktifkan akunnya sendiri';
   end if;
-  if new.nip is distinct from old.nip then   -- NIP dipakai untuk login: ikut perbarui akun
-    select regexp_replace(new.nip, '\s', '', 'g') || '@' || split_part(email, '@', 2) into v_email from auth.users where id = new.id;
+  if new.nip is distinct from old.nip then   -- username (NIP lama) dipakai untuk login: ikut perbarui akun
+    select lower(regexp_replace(new.nip, '[^A-Za-z0-9._-]', '', 'g')) || '@' || split_part(email, '@', 2) into v_email from auth.users where id = new.id;
     update auth.users set email = v_email, updated_at = now() where id = new.id;
     update auth.identities set identity_data = jsonb_set(identity_data, '{email}', to_jsonb(v_email))
      where user_id = new.id and provider = 'email';
@@ -133,6 +148,7 @@ alter table public.pegawai    enable row level security;
 alter table public.rk         enable row level security;
 alter table public.kegiatan   enable row level security;
 alter table public.pengaturan enable row level security;
+alter table public.jenis_kegiatan enable row level security;
 
 -- pegawai: tiap orang melihat & mengubah profilnya sendiri; admin mengelola semua
 drop policy if exists pegawai_baca  on public.pegawai;
@@ -151,6 +167,16 @@ create policy rk_milik_sendiri on public.rk for all to authenticated
 drop policy if exists kegiatan_milik_sendiri on public.kegiatan;
 create policy kegiatan_milik_sendiri on public.kegiatan for all to authenticated
   using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());
+
+-- jenis kegiatan: semua pegawai membaca & menambah; admin atau pembuatnya yang mengubah/menghapus
+drop policy if exists jenis_baca on public.jenis_kegiatan;
+drop policy if exists jenis_tambah on public.jenis_kegiatan;
+drop policy if exists jenis_ubah on public.jenis_kegiatan;
+drop policy if exists jenis_hapus on public.jenis_kegiatan;
+create policy jenis_baca   on public.jenis_kegiatan for select to authenticated using (public.is_pegawai());
+create policy jenis_tambah on public.jenis_kegiatan for insert to authenticated with check (public.is_pegawai() and (dibuat_oleh = auth.uid() or public.is_admin()));
+create policy jenis_ubah   on public.jenis_kegiatan for update to authenticated using (public.is_admin() or dibuat_oleh = auth.uid()) with check (public.is_admin() or dibuat_oleh = auth.uid());
+create policy jenis_hapus  on public.jenis_kegiatan for delete to authenticated using (public.is_admin() or dibuat_oleh = auth.uid());
 
 -- pengaturan kantor: semua pegawai membaca, hanya admin yang mengubah
 drop policy if exists pengaturan_baca on public.pengaturan;

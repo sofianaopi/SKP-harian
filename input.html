@@ -40,6 +40,7 @@
   .gel .tag { white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--hijau-tua); background: rgba(0,128,105,.1); border-radius: 6px; padding: 2px 7px; margin-bottom: 4px; max-width: 100%; }
   .gel .tag span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .gel .tag em { font-style: normal; flex-shrink: 0; }
+  [hidden] { display: none !important; }
   .gel .isi { font-size: 14.6px; line-height: 1.38; white-space: pre-wrap; word-wrap: break-word; }
   .gel .meta { float: right; margin: 6px 0 -4px 12px; font-size: 11px; color: var(--abu); display: inline-flex; align-items: center; gap: 3px; position: relative; top: 4px; }
   .gel .meta svg { width: 16px; height: 11px; fill: var(--biru); }
@@ -52,7 +53,11 @@
   #banner { display: none; align-items: center; gap: 8px; background: #fff7d6; color: #6b5300; font-size: 13px; padding: 7px 10px; border-radius: 10px; margin: 0 2px 6px; box-shadow: 0 1px .5px rgba(11,20,26,.13); }
   #banner.on { display: flex; } #banner span { flex: 1; } #banner button { border: 0; background: #6b5300; color: #fff; border-radius: 6px; padding: 4px 9px; font-size: 12px; cursor: pointer; }
   #chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 7px; scrollbar-width: none; }
-  #chips::-webkit-scrollbar { display: none; }
+  #chips::-webkit-scrollbar, #bidang::-webkit-scrollbar { display: none; }
+  #bidang { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
+  .bd { flex-shrink: 0; border: 0; background: rgba(0,128,105,.1); color: var(--hijau-tua); font: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+  .bd.on { background: var(--hijau-tua); color: #fff; }
+  .chip.baru { border-style: dashed; color: var(--hijau); font-weight: 600; }
   .chip { flex-shrink: 0; border: 1px solid #d1d7db; background: #fff; color: #3b4a54; font-size: 13px; padding: 6px 11px; border-radius: 16px; cursor: pointer; max-width: 230px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: inherit; }
   .chip.on { background: var(--hijau); border-color: var(--hijau); color: #fff; }
   .chip.atur { border-style: dashed; color: var(--hijau); }
@@ -108,7 +113,8 @@
 
 <div id="bawah">
   <div id="banner"><span id="bannerTeks"></span><button id="bannerX">Hari ini</button></div>
-  <div id="chips"></div>
+  <div id="bidang" role="tablist" aria-label="Bidang"></div>
+  <div id="chips" aria-label="Jenis kegiatan"></div>
   <div id="pratinjau"></div>
   <div class="bar">
     <div class="kolom">
@@ -126,11 +132,18 @@
   <h3>Ubah kegiatan</h3>
   <label for="eTeks">Uraian kegiatan</label><textarea id="eTeks"></textarea>
   <div class="baris"><div><label for="eTgl">Tanggal</label><input type="date" id="eTgl"></div><div><label for="eJam">Jam</label><input type="time" id="eJam"></div></div>
-  <label for="eRhk">Rencana Kinerja (RK)</label><select id="eRhk"></select>
-  <label for="eJml">Jumlah output</label><input type="number" id="eJml" min="1" step="1">
+  <div class="baris"><div><label for="eBidang">Bidang</label><select id="eBidang"></select></div><div><label for="eJenis">Jenis kegiatan</label><select id="eJenis"></select></div></div>
+  <div id="eRkBox"><label for="eRhk">Rencana Kinerja (RK) — opsional</label><select id="eRhk"></select>
+  <label for="eJml">Jumlah output</label><input type="number" id="eJml" min="1" step="1"></div>
   <label>Foto bukti</label><div class="fotoedit" id="eFoto"></div>
   <div class="aksi"><button class="b-hapus" id="eHapus">Hapus</button><button class="b-batal" id="eBatal">Batal</button><button class="b-utama" id="eSimpan">Simpan</button></div>
   <div class="aksi" id="konfirmasi" style="display:none"><button class="b-batal" id="kTidak">Tidak jadi</button><button class="b-hapus" id="kYa" style="background:#c62828;color:#fff">Ya, hapus kegiatan ini</button></div>
+</div></div>
+<div class="lapis" id="lapisJenis"><div class="sheet" role="dialog" aria-label="Jenis kegiatan baru">
+  <h3>Jenis kegiatan baru — <span id="jBidang"></span></h3>
+  <label for="jNama">Nama jenis kegiatan</label><input id="jNama" placeholder="mis. Penghitungan PDRB Pengeluaran Triwulanan">
+  <div style="font-size:12.5px;color:#667781;margin-top:6px">Satu jenis kegiatan = satu dokumen Bukti Dukung. Daftar ini dipakai bersama oleh semua pegawai.</div>
+  <div class="aksi"><button class="b-batal" id="jBatal">Batal</button><button class="b-utama" id="jSimpan">Tambahkan</button></div>
 </div></div>
 <div id="viewer"><img alt="Foto bukti"></div>
 
@@ -140,16 +153,18 @@
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
-  let rhkList = [], kegiatan = [], profil = {}, pilihRhk = null, jumlah = 1, tglCatat = null, lampiran = [], editing = null;
+  let rhkList = [], jenisList = [], kegiatan = [], profil = {}, pilihBidang = null, pilihJenis = null, tglCatat = null, lampiran = [], editing = null;
   const fotoCache = new Map();
 
-  try { const v = JSON.parse(localStorage.getItem('skp-input-pref') || '{}'); pilihRhk = v.rhk || null; } catch (e) { }
-  const simpanPref = () => { try { localStorage.setItem('skp-input-pref', JSON.stringify({ rhk: pilihRhk })); } catch (e) { } };
+  try { const v = JSON.parse(localStorage.getItem('skp-input-pref') || '{}'); pilihBidang = v.bidang || null; pilihJenis = v.jenis || null; } catch (e) { }
+  const simpanPref = () => { try { localStorage.setItem('skp-input-pref', JSON.stringify({ bidang: pilihBidang, jenis: pilihJenis })); } catch (e) { } };
+  const jenisById = id => jenisList.find(j => j.id === id);
 
   async function muat() {
-    [rhkList, kegiatan, profil] = await Promise.all([S.list('rhk'), S.list('kegiatan'), S.profil()]);
+    [rhkList, jenisList, kegiatan, profil] = await Promise.all([S.list('rhk'), S.list('jenis'), S.list('kegiatan'), S.profil()]);
     rhkList.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
-    if (pilihRhk && !rhkList.find(r => r.id === pilihRhk)) pilihRhk = null;
+    if (!pilihBidang) pilihBidang = S.BIDANG.find(b => (profil.unit || '').toLowerCase().includes(b.toLowerCase())) || null;
+    if (pilihJenis && !(jenisById(pilihJenis) && jenisById(pilihJenis).bidang === pilihBidang)) pilihJenis = null;
     renderChips(); renderChat(); renderSub();
   }
 
@@ -160,19 +175,28 @@
   }
 
   function renderChips() {
+    const bd = $('bidang'); bd.innerHTML = '';
+    S.BIDANG.forEach(n => { const b = document.createElement('button'); b.className = 'bd' + (pilihBidang === n ? ' on' : ''); b.textContent = n; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', pilihBidang === n);
+      b.onclick = () => { if (pilihBidang !== n) { pilihBidang = n; pilihJenis = null; } simpanPref(); renderChips(); }; bd.appendChild(b); });
     const c = $('chips'); c.innerHTML = '';
-    const mk = (label, on, fn, cls) => { const b = document.createElement('button'); b.className = 'chip' + (on ? ' on' : '') + (cls ? ' ' + cls : ''); b.textContent = label; b.onclick = fn; c.appendChild(b); return b; };
-    if (!rhkList.length) { const a = mk('+ Atur RK / target SKP di Dashboard', false, () => location.href = 'index.html#target', 'atur'); return; }
-    mk('Tanpa RK', !pilihRhk, () => { pilihRhk = null; jumlah = 1; simpanPref(); renderChips(); });
-    rhkList.forEach((r, i) => { const b = mk((i + 1) + '. ' + r.nama, pilihRhk === r.id, () => { pilihRhk = pilihRhk === r.id ? null : r.id; jumlah = 1; simpanPref(); renderChips(); }); b.title = r.nama; });
-    const j = document.createElement('div'); j.id = 'jml';
-    const r = rhkList.find(x => x.id === pilihRhk);
-    if (r) { j.className = 'on'; j.innerHTML = `<button aria-label="Kurangi">−</button><b>${jumlah} ${S.esc(r.satuan || '')}</b><button aria-label="Tambah">+</button>`;
-      const [m, , p] = j.children; m.onclick = () => { jumlah = Math.max(1, jumlah - 1); renderChips(); }; p.onclick = () => { jumlah++; renderChips(); };
-      c.insertBefore(j, c.children[[...c.children].findIndex(x => x.classList.contains('on')) + 1] || null);
-      setTimeout(() => { const on = c.querySelector('.chip.on'); on && on.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }, 0);
-    }
+    const mk = (label, on, fn, cls) => { const b = document.createElement('button'); b.className = 'chip' + (on ? ' on' : '') + (cls ? ' ' + cls : ''); b.textContent = label; b.title = label; b.onclick = fn; c.appendChild(b); return b; };
+    if (!pilihBidang) { mk('↑ Pilih bidang kegiatan terlebih dahulu', false, () => { }, 'atur'); return; }
+    jenisList.filter(j => j.bidang === pilihBidang).forEach(j => mk(j.nama, pilihJenis === j.id, () => { pilihJenis = pilihJenis === j.id ? null : j.id; simpanPref(); renderChips(); }));
+    mk('+ Jenis baru', false, bukaJenisBaru, 'baru');
+    setTimeout(() => { const on = c.querySelector('.chip.on') || null; on && on.scrollIntoView({ inline: 'nearest', block: 'nearest' }); const ob = bd.querySelector('.on'); ob && ob.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }, 0);
   }
+  function bukaJenisBaru() { $('jBidang').textContent = pilihBidang; $('jNama').value = ''; $('lapisJenis').classList.add('on'); setTimeout(() => $('jNama').focus(), 50); }
+  $('jBatal').onclick = () => $('lapisJenis').classList.remove('on');
+  $('lapisJenis').onclick = e => { if (e.target.id === 'lapisJenis') $('lapisJenis').classList.remove('on'); };
+  $('jSimpan').onclick = async () => {
+    const nama = $('jNama').value.trim(); if (!nama) { $('jNama').focus(); return; }
+    const ada = jenisList.find(j => j.bidang === pilihBidang && j.nama.toLowerCase() === nama.toLowerCase());
+    if (ada) { pilihJenis = ada.id; } else {
+      const j = { id: 'j' + S.uid(), bidang: pilihBidang, nama };
+      try { await S.put('jenis', j); jenisList.push(j); pilihJenis = j.id; } catch (e) { S.toast(e.message); return; }
+    }
+    simpanPref(); $('lapisJenis').classList.remove('on'); renderChips(); $('teks').focus();
+  };
 
   const centang = '<svg viewBox="0 0 16 11"><path d="M11.07.65 4.98 7.3 2.4 4.73 1.33 5.8l3.68 3.68L12.14 1.7zM14.6.65 8.5 7.3l-.78-.78-1.06 1.07 1.87 1.87L15.67 1.7z"/></svg>';
 
@@ -181,7 +205,7 @@
     const nearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 120;
     const list = kegiatan.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
     const rmap = {}; rhkList.forEach((r, i) => rmap[r.id] = { r, i });
-    let html = '<div class="info">📒 Catat kegiatan seperti mengirim pesan WhatsApp. Pilih <b>RK</b> di atas kolom ketik agar terhitung ke realisasi SKP, lampirkan foto bukti dengan 📎 atau 📷, dan ketuk pesan untuk mengubah atau menghapus.</div>';
+    let html = '<div class="info">📒 Catat kegiatan seperti mengirim pesan WhatsApp. Pilih <b>bidang</b> dan <b>jenis kegiatan</b> di atas kolom ketik — satu jenis kegiatan menjadi satu dokumen Bukti Dukung, lampirkan foto bukti dengan 📎 atau 📷, dan ketuk pesan untuk mengubah atau menghapus.</div>';
     let last = null, lastTs = 0;
     const show = list.slice(-400);
     for (const k of show) {
@@ -190,7 +214,8 @@
       else if ((k.dibuat || 0) - lastTs > 5 * 60000) ekor = true;
       lastTs = k.dibuat || 0;
       const rr = k.rhkId && rmap[k.rhkId];
-      const tag = rr ? `<div class="tag" title="${S.esc(rr.r.nama)}">🎯 <span>${rr.i + 1}. ${S.esc(rr.r.nama)}</span><em>· ${k.jumlah || 1} ${S.esc(rr.r.satuan || '')}</em></div><br>` : '';
+      const jj = k.jenisId && jenisById(k.jenisId);
+      const tag = k.bidang ? `<div class="tag" title="${S.esc(k.bidang + (jj ? ' · ' + jj.nama : ''))}">📁 <em>${S.esc(k.bidang)}</em><span>${jj ? '&nbsp;· ' + S.esc(jj.nama) : ''}</span></div><br>` : (rr ? `<div class="tag" title="${S.esc(rr.r.nama)}">🎯 <span>${rr.i + 1}. ${S.esc(rr.r.nama)}</span></div><br>` : '');
       const nf = (k.fotoIds || []).length;
       const fotos = nf ? `<div class="fotos n${Math.min(nf, 4) === 4 ? 4 : Math.min(nf, 3)}">${k.fotoIds.slice(0, nf > 4 ? 4 : nf).map(id => `<div class="ph" data-foto="${id}"></div>`).join('')}</div>` : '';
       html += `<div class="gel${ekor ? ' ekor' : ''}" data-id="${k.id}">${fotos}${tag}<span class="isi">${S.esc(k.teks || '')}</span><span class="meta">${S.esc(k.jam || '')} ${centang}</span></div>`;
@@ -242,9 +267,9 @@
       const now = new Date();
       const fotoIds = [];
       for (const f of lampiran) { const id = 'f' + S.uid(); await S.put('foto', { id, data: f.data, w: f.w, h: f.h }); fotoIds.push(id); fotoCache.set(id, Promise.resolve({ id, data: f.data })); }
-      const k = { id: 'k' + S.uid(), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', rhkId: pilihRhk || null, jumlah: pilihRhk ? jumlah : 1, fotoIds, dibuat: Date.now() };
+      const k = { id: 'k' + S.uid(), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang || null, jenisId: pilihJenis || null, rhkId: null, jumlah: 1, fotoIds, dibuat: Date.now() };
       await S.put('kegiatan', k);
-      kegiatan.push(k); ta.value = ''; autosize(); lampiran = []; renderPratinjau(); jumlah = 1; renderChips();
+      kegiatan.push(k); ta.value = ''; autosize(); lampiran = []; renderPratinjau();
       $('chat').scrollTop = $('chat').scrollHeight; renderChat(); $('chat').scrollTop = $('chat').scrollHeight; renderSub();
       if (navigator.vibrate) try { navigator.vibrate(15); } catch (e) { }
     } catch (e) {
@@ -263,7 +288,9 @@
     const k = kegiatan.find(x => x.id === id); if (!k) return; editing = JSON.parse(JSON.stringify(k));
     $('eTeks').value = k.teks || ''; $('eTgl').value = k.tanggal; $('eJam').value = k.jam || ''; $('eJml').value = k.jumlah || 1;
     $('eRhk').innerHTML = '<option value="">— Tanpa RK —</option>' + rhkList.map((r, i) => `<option value="${r.id}">${i + 1}. ${S.esc(r.nama)}${r.satuan ? ' (' + S.esc(r.satuan) + ')' : ''}</option>`).join('');
-    $('eRhk').value = k.rhkId || '';
+    $('eRhk').value = k.rhkId || ''; $('eRkBox').hidden = !rhkList.length;
+    $('eBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('eBidang').value = k.bidang || '';
+    isiJenisEdit(k.jenisId);
     const ef = $('eFoto'); ef.innerHTML = (k.fotoIds || []).length ? '' : '<small style="color:#667781">Tidak ada foto</small>';
     (k.fotoIds || []).forEach(fid => { const w = document.createElement('div'); w.style.position = 'relative'; w.innerHTML = `<img alt=""><button aria-label="Hapus foto" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#3b4a54;color:#fff;cursor:pointer">×</button>`;
       ambilFoto(fid).then(f => f && (w.querySelector('img').src = f.data));
@@ -271,13 +298,15 @@
       ef.appendChild(w); });
     $('konfirmasi').style.display = 'none'; $('lapisEdit').classList.add('on');
   }
+  function isiJenisEdit(sel) { const b = $('eBidang').value; $('eJenis').innerHTML = '<option value="">— Tanpa jenis —</option>' + jenisList.filter(j => j.bidang === b).map(j => `<option value="${j.id}">${S.esc(j.nama)}</option>`).join(''); $('eJenis').value = jenisList.some(j => j.id === sel && j.bidang === b) ? sel : ''; }
+  $('eBidang').onchange = () => isiJenisEdit(null);
   const tutupEdit = () => { $('lapisEdit').classList.remove('on'); editing = null; };
   $('eBatal').onclick = tutupEdit;
   $('lapisEdit').onclick = e => { if (e.target.id === 'lapisEdit') tutupEdit(); };
   $('eSimpan').onclick = async () => {
     if (!editing) return;
     const hapus = editing._hapusFoto || []; delete editing._hapusFoto;
-    Object.assign(editing, { teks: $('eTeks').value.trim() || '(foto bukti)', tanggal: $('eTgl').value || editing.tanggal, jam: $('eJam').value, rhkId: $('eRhk').value || null, jumlah: Math.max(1, parseInt($('eJml').value) || 1) });
+    Object.assign(editing, { teks: $('eTeks').value.trim() || '(foto bukti)', tanggal: $('eTgl').value || editing.tanggal, jam: $('eJam').value, bidang: $('eBidang').value || null, jenisId: $('eJenis').value || null, rhkId: $('eRhk').value || null, jumlah: Math.max(1, parseInt($('eJml').value) || 1) });
     try { await S.put('kegiatan', editing); for (const f of hapus) await S.del('foto', f); const i = kegiatan.findIndex(x => x.id === editing.id); kegiatan[i] = editing; tutupEdit(); renderChat(); renderSub(); S.toast('Kegiatan diperbarui'); }
     catch (e) { S.toast('Gagal menyimpan'); }
   };

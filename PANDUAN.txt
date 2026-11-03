@@ -5,7 +5,11 @@ Isi folder
   index.html     Dashboard pegawai: ringkasan, kegiatan, Target SKP (RK & IKI),
                  unduh laporan Word, profil
   input.html     Aplikasi "Catat SKP" gaya WhatsApp (dipasang di HP)
-  admin.html     Halaman admin: tambah / ubah / hapus pegawai, reset password
+  admin.html     Halaman admin: tambah / ubah / hapus pengguna, reset password,
+                 daftar jenis kegiatan per bidang
+  template-bukti-dukung.docx
+                 Cetakan dokumen Bukti Dukung (dari dokumen kantor). Untuk mengganti
+                 tampilan dokumen, ganti berkas ini — jangan ubah tulisan {{...}} di dalamnya.
   config.js      <- DIISI alamat & kunci database (langkah 2)
   setup.sql      Skrip pembuat database (langkah 1)
   common.js, docx.js, sw.js, manifest-*.json, icons/  (jangan dihapus)
@@ -13,7 +17,8 @@ Isi folder
 Cara kerja
   - Website (file HTML) disimpan di GitHub Pages — gratis.
   - Data pegawai, kegiatan, dan foto bukti disimpan di database Supabase — gratis.
-  - Setiap pegawai masuk dengan NIP + password. Database hanya mengizinkan
+  - Pegawai masuk dengan NIP LAMA + password; NIP BARU (18 digit) tampil di dokumen.
+    Akun admin cukup nama + username + password. Database hanya mengizinkan
     pegawai membaca dan mengubah datanya sendiri. Admin mengelola daftar
     pegawai, tetapi juga TIDAK bisa melihat isi pekerjaan pegawai lain.
 
@@ -45,17 +50,22 @@ LANGKAH 3 — Unggah ke GitHub Pages
 
 LANGKAH 4 — Admin pertama & daftar pegawai
   1. Buka alamat tadi. Di halaman masuk klik "Penyiapan awal: daftarkan admin pertama",
-     isi nama, NIP, password. Akun ini menjadi admin.
+     isi nama, username (mis. admin), password. Akun ini menjadi admin.
      (Tautan ini hilang otomatis setelah admin pertama terdaftar.)
-  2. Buka menu "Admin Pegawai" -> "+ Tambah pegawai": NIP, nama, jabatan, atasan,
-     password awal. Sampaikan NIP + password awal ke pegawai.
-  3. Ubah = ikon pensil (termasuk reset password, ganti peran, nonaktifkan).
+  2. Buka menu "Admin" -> "+ Tambah pengguna":
+       Pegawai: nama lengkap, NIP lama (untuk masuk), NIP baru, jabatan, unit kerja, password awal.
+       Admin  : nama, username, password.
+     Sampaikan NIP lama + password awal ke pegawai.
+  3. Di halaman Admin bagian "Jenis kegiatan per bidang" isi jenis kegiatan untuk
+     Sosial, Distribusi, Produksi, Nerwilis, IPDS, TU. Satu jenis kegiatan = satu
+     dokumen Bukti Dukung. Pegawai juga bisa menambah jenis baru dari aplikasi Catat.
+  4. Ubah = ikon pensil (termasuk reset password, ganti peran, nonaktifkan).
      Hapus = ikon tempat sampah (akun + semua kegiatannya terhapus permanen).
-  4. Kop surat kantor: Dashboard -> Profil & Data -> "Unggah template Word (.docx)"
+  5. Kop surat kantor (untuk laporan lain selain Bukti Dukung): Dashboard -> Profil & Data -> "Unggah template Word (.docx)"
      (hanya admin). Kop berlaku untuk laporan semua pegawai.
 
 LANGKAH 5 — Pegawai memasang di HP
-  1. Buka https://NAMA-AKUN.github.io/skp-harian/input.html di Chrome HP, masuk dengan NIP.
+  1. Buka https://NAMA-AKUN.github.io/skp-harian/input.html di Chrome HP, masuk dengan NIP lama.
   2. Menu ⋮ -> "Instal aplikasi" / "Tambahkan ke layar utama"
      (iPhone: Safari -> Bagikan -> "Tambah ke Layar Utama").
   3. Pegawai sebaiknya mengganti password sendiri: Dashboard -> Profil & Data.
@@ -68,3 +78,16 @@ Catatan
     dari dashboard Supabase (data tidak hilang).
   - Pegawai lupa password: admin -> ikon pensil -> isi "Reset password".
   - Mengubah isi setup.sql tidak diperlukan; skrip aman dijalankan ulang.
+
+Mencatat & mengunduh Bukti Dukung
+  - Aplikasi Catat: pilih BIDANG (baris atas), lalu JENIS KEGIATAN (baris kedua),
+    ketik uraian kegiatan, lampirkan foto, kirim.
+  - Dashboard -> Unduh Laporan Word -> Bukti Dukung SKP -> pilih triwulan (dan bidang).
+    Muncul daftar jenis kegiatan: unduh satu per satu (.docx) atau "Unduh semua" (.zip).
+    Setiap dokumen: Nama, NIP baru, RK & IKI dikosongkan (diisi petugas), [CAPAIAN]
+    berisi uraian kegiatan, lalu foto bukti.
+
+MEMPERBARUI VERSI (bila sebelumnya sudah memasang versi lama)
+  1. Supabase -> SQL Editor -> jalankan setup.sql yang baru (data lama tetap aman).
+  2. GitHub -> unggah semua berkas baru (termasuk template-bukti-dukung.docx),
+     KECUALI config.js milik Anda yang sudah berisi kunci — jangan ditimpa.

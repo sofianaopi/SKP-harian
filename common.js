@@ -5,6 +5,7 @@
   const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const CFG = window.SKP_CONFIG || {};
   const BUCKET = 'bukti';
+  const BIDANG = ['Sosial', 'Distribusi', 'Produksi', 'Nerwilis', 'IPDS', 'TU'];
 
   /* ---------- Koneksi ---------- */
   let sb = null, uid = null, saya = null;
@@ -13,7 +14,7 @@
     if (!sb) sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'skp-harian-auth' } });
     return sb;
   }
-  const emailDariNip = nip => String(nip || '').replace(/\s+/g, '') + '@' + (CFG.EMAIL_DOMAIN || 'pegawai.skpharian.id');
+  const emailDariNip = nip => String(nip || '').toLowerCase().replace(/[^a-z0-9._-]/g, '') + '@' + (CFG.EMAIL_DOMAIN || 'pegawai.skpharian.id');
   function cek(res, pesan) {
     if (res.error) {
       const m = res.error.message || String(res.error);
@@ -24,12 +25,13 @@
   }
 
   /* ---------- Pemetaan baris database <-> objek aplikasi ---------- */
-  const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0 });
-  const dariK = k => ({ id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() });
+  const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', bidang: r.bidang || null, jenisId: r.jenis_id || null, rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0 });
+  const dariK = k => ({ id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() });
   const keR = r => ({ id: r.id, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0 });
   const dariR = r => ({ id: r.id, user_id: uid, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0 });
-  const PROFIL = { nama: 'nama', nip: 'nip', jabatan: 'jabatan', unit: 'unit', kota: 'kota', atasanNama: 'atasan_nama', atasanNip: 'atasan_nip', atasanJabatan: 'atasan_jabatan' };
-  const keP = r => { const o = { id: 'profil', peran: r.peran, aktif: r.aktif }; Object.entries(PROFIL).forEach(([a, b]) => o[a] = r[b] || ''); return o; };
+  const keJ = r => ({ id: r.id, bidang: r.bidang, nama: r.nama, urutan: r.urutan || 0, dibuatOleh: r.dibuat_oleh });
+  const PROFIL = { nama: 'nama', nip: 'nip_baru', jabatan: 'jabatan', unit: 'unit', kota: 'kota', atasanNama: 'atasan_nama', atasanNip: 'atasan_nip', atasanJabatan: 'atasan_jabatan' };
+  const keP = r => { const o = { id: 'profil', peran: r.peran, aktif: r.aktif, username: r.nip }; Object.entries(PROFIL).forEach(([a, b]) => o[a] = r[b] || ''); return o; };
   const fotoPath = id => uid + '/' + id + '.jpg';
 
   function dataUrlKeBlob(d) { const [h, b] = d.split(','); const bin = atob(b); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: (h.match(/data:([^;]+)/) || [])[1] || 'image/jpeg' }); }
@@ -46,6 +48,7 @@
       const c = client();
       if (s === 'kegiatan') return cek(await c.from('kegiatan').select('*').eq('user_id', uid).order('tanggal').limit(10000)).map(keK);
       if (s === 'rhk') return cek(await c.from('rk').select('*').eq('user_id', uid).order('urutan')).map(keR);
+      if (s === 'jenis') return cek(await c.from('jenis_kegiatan').select('*').order('bidang').order('urutan').order('nama')).map(keJ);
       if (s === 'foto') { const ks = await db.list('kegiatan'); const out = []; for (const k of ks) for (const id of k.fotoIds) { const f = await db.get('foto', id); if (f) out.push(f); } return out; }
       return [];
     },
@@ -66,6 +69,7 @@
       if (s === 'foto') { cek(await c.storage.from(BUCKET).upload(fotoPath(o.id), dataUrlKeBlob(o.data), { upsert: true, contentType: 'image/jpeg' }), 'Gagal mengunggah foto'); return o; }
       if (s === 'kegiatan') cek(await c.from('kegiatan').upsert(dariK(o)), 'Gagal menyimpan kegiatan');
       else if (s === 'rhk') cek(await c.from('rk').upsert(dariR(o)), 'Gagal menyimpan RK');
+      else if (s === 'jenis') { const r = { id: o.id, bidang: o.bidang, nama: (o.nama || '').trim(), urutan: o.urutan || 0 }; if (!o.dibuatOleh) r.dibuat_oleh = uid; const res = await c.from('jenis_kegiatan').upsert(r); if (res.error && /duplicate|unik/i.test(res.error.message)) throw new Error('Jenis kegiatan "' + r.nama + '" sudah ada di bidang ' + r.bidang); cek(res, 'Gagal menyimpan jenis kegiatan'); }
       else if (s === 'meta' && o.id === 'profil') { const u = {}; Object.entries(PROFIL).forEach(([a, b]) => { if (a !== 'nip') u[b] = (o[a] || '').trim() || null; }); u.nama = u.nama || saya.nama; cek(await c.from('pegawai').update(u).eq('id', uid), 'Gagal menyimpan profil'); Object.assign(saya, u); }
       else if (s === 'meta') { const v = Object.assign({}, o); delete v.id; cek(await c.from('pengaturan').upsert({ key: o.id, value: v }), 'Gagal menyimpan pengaturan'); }
       notify(); return o;
@@ -75,6 +79,7 @@
       if (s === 'foto') { await c.storage.from(BUCKET).remove([fotoPath(id)]); return; }
       if (s === 'kegiatan') cek(await c.from('kegiatan').delete().eq('id', id));
       else if (s === 'rhk') cek(await c.from('rk').delete().eq('id', id));
+      else if (s === 'jenis') cek(await c.from('jenis_kegiatan').delete().eq('id', id), 'Gagal menghapus jenis kegiatan');
       else if (s === 'meta' && id !== 'profil') cek(await c.from('pengaturan').delete().eq('key', id));
       notify();
     }
@@ -104,7 +109,7 @@
 
   function formLogin(pesan) {
     return new Promise(resolve => {
-      const el = layar(`<form id="fLogin"><label for="lNip">NIP</label><input id="lNip" inputmode="numeric" autocomplete="username" required placeholder="18 digit NIP">
+      const el = layar(`<form id="fLogin"><label for="lNip">NIP lama / username</label><input id="lNip" autocomplete="username" autocapitalize="off" required placeholder="mis. 340012345">
         <label for="lPw">Password</label>${pwField('lPw', 'current-password')}
         <button type="submit">Masuk</button><div class="err" id="lErr">${esc(pesan || '')}</div></form><div id="lSetup"></div>`);
       pasangLihat(el);
@@ -115,7 +120,7 @@
         const nip = el.querySelector('#lNip').value.trim();
         const r = await client().auth.signInWithPassword({ email: emailDariNip(nip), password: el.querySelector('#lPw').value });
         b.disabled = false;
-        if (r.error) { el.querySelector('#lErr').textContent = /invalid/i.test(r.error.message) ? 'NIP atau password salah.' : r.error.message; return; }
+        if (r.error) { el.querySelector('#lErr').textContent = /invalid/i.test(r.error.message) ? 'NIP lama/username atau password salah.' : r.error.message; return; }
         try { localStorage.setItem('skp-nip-terakhir', nip); } catch (er) { }
         resolve();
       };
@@ -130,14 +135,15 @@
   function formAdminPertama() {
     return new Promise(resolve => {
       const el = layar(`<form id="fAdm"><div class="ket">Database masih kosong. Akun pertama ini menjadi <b>admin</b> yang nanti menambahkan pegawai lain.</div>
-        <label for="aNama">Nama lengkap</label><input id="aNama" required><label for="aNip">NIP</label><input id="aNip" inputmode="numeric" required>
+        <label for="aNama">Nama</label><input id="aNama" required placeholder="mis. Admin SKP"><label for="aNip">Username untuk masuk</label><input id="aNip" required autocapitalize="off" placeholder="mis. admin">
         <label for="aPw">Password (min. 6 karakter)</label>${pwField('aPw', 'new-password')}
         <button type="submit">Buat akun admin</button><div class="err" id="aErr"></div></form>`);
       pasangLihat(el);
       el.querySelector('#fAdm').onsubmit = async e => {
         e.preventDefault(); const b = el.querySelector('button'); b.disabled = true; const er = el.querySelector('#aErr'); er.textContent = '';
         try {
-          const nip = el.querySelector('#aNip').value.trim(), pw = el.querySelector('#aPw').value;
+          const nip = el.querySelector('#aNip').value.trim().toLowerCase(), pw = el.querySelector('#aPw').value;
+          if (!/^[a-z0-9._-]{3,40}$/.test(nip)) throw new Error('Username 3–40 karakter: huruf kecil, angka, titik, minus, atau garis bawah');
           if (pw.length < 6) throw new Error('Password minimal 6 karakter');
           let r = await client().auth.signUp({ email: emailDariNip(nip), password: pw });
           if (r.error && /already/i.test(r.error.message)) r = await client().auth.signInWithPassword({ email: emailDariNip(nip), password: pw });
@@ -210,7 +216,7 @@
   }
 
   const api = {
-    BULAN, HARI, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast,
+    BULAN, HARI, BIDANG, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast,
     mulai, keluar, gantiPassword, client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
