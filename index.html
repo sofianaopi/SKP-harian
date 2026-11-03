@@ -692,9 +692,16 @@
   async function buatBukti(g, p) {
     const bagian = [];
     for (const kel of perRk(g.ks)) {
-      const uraian = []; kel.ks.forEach(k => { const t = (k.teks || '').trim(); if (t && t !== '(foto bukti)' && !uraian.includes(t)) uraian.push(t); });
-      const fotos = []; for (const k of kel.ks) for (const id of (k.fotoIds || [])) { const f = await ambilFoto(id); if (f && f.data) fotos.push(f); }
-      bagian.push({ rk: kel.rk ? kel.rk.nama : '', iki: kel.rk ? (kel.rk.indikator || '') : '', uraian, fotos });
+      // satu kegiatan = satu uraian + fotonya; uraian sama digabung, foto tanpa uraian ikut kegiatan sebelumnya
+      const items = [];
+      for (const k of kel.ks) {
+        const fotos = []; for (const id of (k.fotoIds || [])) { const f = await ambilFoto(id); if (f && f.data) fotos.push(f); }
+        const t = (k.teks || '').trim(); const tanpaTeks = !t || t === '(foto bukti)';
+        let it = tanpaTeks ? items[items.length - 1] : items.find(x => x.teks === t);
+        if (!it) { it = { teks: tanpaTeks ? 'Dokumentasi kegiatan' : t, fotos: [] }; items.push(it); }
+        it.fotos.push(...fotos);
+      }
+      bagian.push({ rk: kel.rk ? kel.rk.nama : '', iki: kel.rk ? (kel.rk.indikator || '') : '', items });
     }
     const blob = await DOCX.buktiDukung({ template: await ambilTemplate(), kop, judul: $('uJudul').value.trim() || ('Bukti Dukung SKP ' + p.label), nama: profil.nama || '', nip: profil.nip || '', bagian });
     return { blob, nama: 'Bukti_Dukung_' + amanNama(g.bidang) + '_' + amanNama(p.label) + '.docx' };

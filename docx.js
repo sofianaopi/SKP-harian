@@ -290,8 +290,15 @@
     return `<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${wEmu}" cy="${hEmu}"/><wp:docPr id="${900 + n}" name="Foto ${n}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${900 + n}" name="foto${n}.jpeg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${wEmu}" cy="${hEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
   }
   const paraDengan = (xml, tanda) => { const re = new RegExp('<w:p(?: [^>]*)?>(?:(?!<w:p[ >])[\\s\\S])*?' + tanda + '[\\s\\S]*?</w:p>'); const m = xml.match(re); return m ? m[0] : null; };
+  /* Potongan <w:tr>…</w:tr> yang memuat teks tertentu */
+  function barisDengan(d, teks) {
+    const i = d.indexOf(teks); if (i < 0) return null;
+    const a = Math.max(d.lastIndexOf('<w:tr>', i), d.lastIndexOf('<w:tr ', i)); const b = d.indexOf('</w:tr>', i);
+    return a < 0 || b < 0 ? null : d.slice(a, b + 7);
+  }
   async function buktiDukung(o) {
-    /* o: {template, kop?, judul, nama, nip, bagian: [{rk, iki, uraian:[teks], fotos:[{data,w,h}]}]}
+    /* o: {template, kop?, judul, nama, nip, bagian: [{rk, iki, items:[{teks, fotos:[{data,w,h}]}]}]}
+       Tiap kegiatan = baris uraian diikuti baris fotonya.
        Setiap bagian (satu RK) menjadi satu blok sesuai cetakan, dimulai di halaman baru. */
     picId = 1;
     const z = await readZip(o.template);
@@ -312,20 +319,27 @@
         if (garis) d = d.replace(garis, '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="12" w:space="1" w:color="000000"/></w:pBdr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:ind w:left="-27"/></w:pPr></w:p>');
       }
       d = d.replace('{{JUDUL}}', x(o.judul)).replace('{{NAMA}}', x(o.nama)).replace('{{NIP}}', x(o.nip)).replace('{{RK}}', x(bg.rk || '')).replace('{{IKI}}', x(bg.iki || ''));
-      const item = paraDengan(d, '\\{\\{URAIAN\\}\\}');
-      const ur = bg.uraian || [];
-      if (item) d = d.replace(item, (ur.length ? ur : ['-']).map((t, i) => item.replace('{{NO}}. ', ur.length ? (i + 1) + '. ' : '').replace('{{URAIAN}}', x(t))).join(''));
-      const pf = paraDengan(d, '\\{\\{FOTO\\}\\}');
-      let fx = '';
-      (bg.fotos || []).forEach((f, i) => {
-        nFoto++; const rId = 'rIdFoto' + nFoto, name = 'bukti_foto' + nFoto + '.jpeg';
-        media.push({ name: 'word/media/' + name, data: dataUrlBytes(f.data) });
-        rels = rels.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${name}"/></Relationships>`);
-        const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
-        fx += `<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="${i ? 60 : 160}"/><w:jc w:val="center"/></w:pPr>${imgNs(rId, Math.round(w), Math.round(h))}</w:p>`;
-      });
-      fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120"/><w:jc w:val="center"/></w:pPr></w:p>';
-      if (pf) d = d.replace(pf, fx);
+      // Baris uraian + baris foto diulang untuk setiap kegiatan: uraian 1, foto 1, uraian 2, foto 2, ...
+      const items = bg.items || (bg.uraian || []).map((t, i) => ({ teks: t, fotos: i === 0 ? (bg.fotos || []) : [] }));
+      const rowU = barisDengan(d, '{{URAIAN}}'), rowF = barisDengan(d, '{{FOTO}}');
+      if (rowU && rowF) {
+        const isi = (items.length ? items : [{ teks: '-', fotos: [] }]).map((it, i) => {
+          let u = rowU.replace('{{NO}}. ', items.length ? (i + 1) + '. ' : '').replace('{{URAIAN}}', x(it.teks));
+          const pf = paraDengan(rowF, '\\{\\{FOTO\\}\\}');
+          let fx = '';
+          (it.fotos || []).forEach((f, j) => {
+            nFoto++; const rId = 'rIdFoto' + nFoto, name = 'bukti_foto' + nFoto + '.jpeg';
+            media.push({ name: 'word/media/' + name, data: dataUrlBytes(f.data) });
+            rels = rels.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${name}"/></Relationships>`);
+            const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
+            fx += `<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="${j ? 60 : 120}"/><w:jc w:val="center"/></w:pPr>${imgNs(rId, Math.round(w), Math.round(h))}</w:p>`;
+          });
+          if (fx) fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="60"/><w:jc w:val="center"/></w:pPr></w:p>';
+          else fx = '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120" w:after="120"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:i/><w:color w:val="808080"/><w:sz w:val="18"/></w:rPr><w:t>(tidak ada foto)</w:t></w:r></w:p>';
+          return u + rowF.replace(pf, fx);
+        }).join('');
+        d = d.replace(rowF, '').replace(rowU, isi);
+      }
       return d;
     });
     // pemisah halaman: sisipkan di paragraf terakhir setiap blok kecuali blok terakhir
