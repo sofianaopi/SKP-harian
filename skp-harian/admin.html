@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin Pegawai – SKP Harian</title>
+<meta name="theme-color" content="#1F4E79">
+<link rel="icon" href="icons/dashboard-192.png">
+<style>
+  :root { --navy:#1F4E79; --navy2:#173b5c; --biru:#2E75B6; --biru-muda:#dbe8f5; --bg:#f4f6f9; --teks:#1d2733; --teks2:#5b6878; --garis:#e3e8ee; --merah:#c62828; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--teks); font-size: 14.5px; line-height: 1.45; }
+  button, input, select { font: inherit; color: inherit; }
+  header { background: var(--navy); color: #fff; padding: 14px 24px; padding-top: calc(14px + env(safe-area-inset-top)); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  header img { width: 34px; height: 34px; border-radius: 9px; }
+  header h1 { font-size: 17px; margin: 0; flex: 1; min-width: 160px; }
+  header h1 small { display: block; font-weight: 400; font-size: 12px; opacity: .75; }
+  header a, header button { color: #fff; text-decoration: none; border: 1px solid rgba(255,255,255,.35); background: none; border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  main { max-width: 1180px; margin: 0 auto; padding: 22px 20px 50px; }
+  .kepala { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .kepala h2 { margin: 0; font-size: 21px; flex: 1; }
+  .kepala p { margin: 3px 0 0; color: var(--teks2); font-size: 13.5px; }
+  .ringkas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .ringkas div { background: #fff; border: 1px solid var(--garis); border-radius: 12px; padding: 10px 16px; min-width: 140px; }
+  .ringkas b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
+  .ringkas span { font-size: 12.5px; color: var(--teks2); }
+  .kartu { background: #fff; border: 1px solid var(--garis); border-radius: 14px; }
+  .alat { display: flex; gap: 10px; flex-wrap: wrap; padding: 14px; border-bottom: 1px solid var(--garis); }
+  .alat input, .alat select { padding: 9px 11px; border: 1px solid var(--garis); border-radius: 9px; background: #fff; }
+  .alat input { flex: 1; min-width: 200px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 9px; border: 1px solid var(--garis); background: #fff; cursor: pointer; font-weight: 600; white-space: nowrap; text-decoration: none; color: var(--teks); }
+  .btn:hover { background: #f6f8fa; } .btn.utama { background: var(--navy); color: #fff; border-color: var(--navy); } .btn.utama:hover { background: var(--navy2); }
+  .btn.bahaya { color: var(--merah); } .btn:disabled { opacity: .55; cursor: default; }
+  .tabel-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .3px; color: var(--teks2); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--garis); background: #fafbfc; white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--garis); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  .nip { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 10px; }
+  .b-admin { background: #e8eefc; color: #2848a8; } .b-peg { background: #eef1f4; color: #4b5866; } .b-on { background: #e3f4ea; color: #1b6e3a; } .b-off { background: #fde8e8; color: #a12020; }
+  .ikon { border: 0; background: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--teks2); }
+  .ikon:hover { background: var(--bg); color: var(--teks); } .ikon.hapus:hover { color: var(--merah); }
+  .ikon svg { width: 18px; height: 18px; fill: currentColor; display: block; }
+  .kosong { text-align: center; color: var(--teks2); padding: 34px 10px; }
+  .modal { position: fixed; inset: 0; background: rgba(15,25,35,.5); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+  .modal.on { display: flex; }
+  .modal .isi { background: #fff; border-radius: 16px; width: 100%; max-width: 620px; max-height: 94dvh; overflow-y: auto; padding: 22px 24px; }
+  .modal h3 { margin: 0 0 4px; font-size: 18px; }
+  .form label { display: block; font-size: 12.5px; color: var(--teks2); margin: 12px 0 5px; font-weight: 500; }
+  .form input, .form select { width: 100%; padding: 10px 11px; border: 1px solid #cfd7e0; border-radius: 9px; background: #fff; }
+  .form input:focus, .form select:focus { outline: 2px solid var(--biru-muda); border-color: var(--biru); }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .sub { font-size: 13px; font-weight: 700; color: var(--navy); margin: 18px 0 0; padding-top: 12px; border-top: 1px solid var(--garis); }
+  .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+  .err { color: #b42318; font-size: 13.5px; margin-top: 10px; min-height: 1em; }
+  .ket { font-size: 12.5px; color: var(--teks2); margin-top: 4px; }
+  #skp-toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); background: #1d2733; color: #fff; padding: 10px 18px; border-radius: 22px; font-size: 13.5px; opacity: 0; pointer-events: none; transition: .2s; z-index: 70; max-width: 90%; text-align: center; }
+  #skp-toast.show { opacity: 1; transform: translateX(-50%); }
+  [hidden] { display: none !important; }
+  @media (max-width: 720px) {
+    header { padding: 12px 14px; } main { padding: 16px 12px 40px; }
+    .g2 { grid-template-columns: 1fr; }
+    thead { display: none; } tr { display: block; padding: 10px 6px; border-bottom: 1px solid var(--garis); } td { display: block; border: 0; padding: 2px 8px; }
+    td.aksi-td { text-align: right; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <img src="icons/dashboard-192.png" alt="">
+  <h1>Admin Pegawai<small id="hdrSub">SKP Harian</small></h1>
+  <a href="index.html">Dashboard saya</a>
+  <button id="btnKeluar" type="button">Keluar</button>
+</header>
+<main>
+  <div class="kepala"><div style="flex:1"><h2>Daftar pegawai</h2><p>Setiap pegawai masuk dengan NIP dan password masing-masing, dan hanya dapat melihat pekerjaannya sendiri.</p></div>
+    <button class="btn utama" id="btnTambah">+ Tambah pegawai</button></div>
+  <div class="ringkas"><div><b id="nTotal">0</b><span>pegawai terdaftar</span></div><div><b id="nAktif">0</b><span>akun aktif</span></div><div><b id="nAdmin">0</b><span>admin</span></div></div>
+  <div class="kartu">
+    <div class="alat"><input type="search" id="cari" placeholder="Cari nama, NIP, atau jabatan…" aria-label="Cari pegawai">
+      <select id="fStatus" aria-label="Saring status"><option value="">Semua status</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option><option value="admin">Admin</option></select></div>
+    <div class="tabel-wrap"><table><thead><tr><th>NIP</th><th>Nama</th><th>Jabatan / Unit</th><th>Atasan</th><th>Peran</th><th>Status</th><th></th></tr></thead><tbody id="tbl"></tbody></table></div>
+  </div>
+</main>
+
+<div class="modal" id="mPeg"><form class="isi form" id="fPeg" role="dialog" aria-labelledby="mJ" autocomplete="off">
+  <h3 id="mJ">Tambah pegawai</h3><div class="ket" id="mKet">Pegawai akan masuk memakai NIP dan password di bawah.</div>
+  <div class="g2">
+    <div><label for="iNip">NIP *</label><input id="iNip" required inputmode="numeric" placeholder="19890117 201101 2 010"></div>
+    <div><label for="iNama">Nama lengkap (dengan gelar) *</label><input id="iNama" required></div>
+    <div><label for="iJab">Jabatan</label><input id="iJab" placeholder="Statistisi Ahli Muda"></div>
+    <div><label for="iUnit">Unit kerja</label><input id="iUnit"></div>
+    <div><label for="iKota">Kota (tempat tanda tangan)</label><input id="iKota"></div>
+    <div><label for="iPeran">Peran</label><select id="iPeran"><option value="pegawai">Pegawai</option><option value="admin">Admin (bisa mengelola pegawai)</option></select></div>
+  </div>
+  <div class="sub">Pejabat penilai kinerja (atasan)</div>
+  <div class="g2">
+    <div><label for="iANama">Nama atasan</label><input id="iANama"></div>
+    <div><label for="iANip">NIP atasan</label><input id="iANip" inputmode="numeric"></div>
+  </div>
+  <label for="iAJab">Jabatan atasan</label><input id="iAJab">
+  <div class="sub">Akun</div>
+  <div class="g2">
+    <div><label for="iPw" id="lPw">Password awal *</label><input id="iPw" type="text" autocomplete="new-password" minlength="6"><div class="ket" id="pwKet">Minimal 6 karakter. Sampaikan ke pegawai; ia bisa menggantinya sendiri di menu Profil.</div></div>
+    <div><label for="iAktif">Status</label><select id="iAktif"><option value="1">Aktif — boleh masuk</option><option value="0">Nonaktif — tidak bisa masuk</option></select></div>
+  </div>
+  <div class="err" id="mErr"></div>
+  <div class="aksi"><button class="btn" type="button" id="mBatal">Batal</button><button class="btn utama" type="submit" id="mSimpan">Simpan</button></div>
+</form></div>
+
+<div class="modal" id="mKonf"><div class="isi" role="alertdialog" style="max-width:440px">
+  <h3 id="kJ">Hapus pegawai?</h3><p id="kT" style="color:var(--teks2);margin:8px 0 0"></p>
+  <div class="aksi"><button class="btn" id="kBatal">Batal</button><button class="btn utama" id="kYa" style="background:var(--merah);border-color:var(--merah)">Ya, hapus permanen</button></div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+(function () {
+  const S = window.SKP, $ = id => document.getElementById(id);
+  let daftar = [], edit = null, sayaId = null;
+
+  async function muat() {
+    daftar = S.cek(await S.client().from('pegawai').select('*').order('nama'));
+    render();
+  }
+  function render() {
+    $('nTotal').textContent = daftar.length; $('nAktif').textContent = daftar.filter(p => p.aktif).length; $('nAdmin').textContent = daftar.filter(p => p.peran === 'admin').length;
+    const q = $('cari').value.trim().toLowerCase(), f = $('fStatus').value;
+    const rows = daftar.filter(p => (!q || [p.nama, p.nip, p.jabatan, p.unit].join(' ').toLowerCase().includes(q)) && (!f || (f === 'aktif' ? p.aktif : f === 'nonaktif' ? !p.aktif : p.peran === 'admin')));
+    $('tbl').innerHTML = rows.length ? rows.map(p => `<tr>
+      <td class="nip">${S.esc(p.nip)}</td>
+      <td><b>${S.esc(p.nama)}</b>${p.id === sayaId ? ' <span class="badge b-peg">Anda</span>' : ''}</td>
+      <td>${S.esc(p.jabatan || '—')}${p.unit ? '<br><span style="color:var(--teks2);font-size:12.5px">' + S.esc(p.unit) + '</span>' : ''}</td>
+      <td>${S.esc(p.atasan_nama || '—')}</td>
+      <td><span class="badge ${p.peran === 'admin' ? 'b-admin' : 'b-peg'}">${p.peran === 'admin' ? 'Admin' : 'Pegawai'}</span></td>
+      <td><span class="badge ${p.aktif ? 'b-on' : 'b-off'}">${p.aktif ? 'Aktif' : 'Nonaktif'}</span></td>
+      <td class="aksi-td" style="white-space:nowrap"><button class="ikon" data-edit="${p.id}" title="Ubah" aria-label="Ubah ${S.esc(p.nama)}"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>${p.id === sayaId ? '' : `<button class="ikon hapus" data-hapus="${p.id}" title="Hapus" aria-label="Hapus ${S.esc(p.nama)}"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>`}</td></tr>`).join('')
+      : `<tr><td colspan="7"><div class="kosong">${daftar.length ? 'Tidak ada pegawai yang cocok.' : 'Belum ada pegawai. Klik “+ Tambah pegawai”.'}</div></td></tr>`;
+  }
+  $('cari').oninput = render; $('fStatus').onchange = render;
+  $('tbl').onclick = e => { const a = e.target.closest('[data-edit]'); if (a) buka(daftar.find(p => p.id === a.dataset.edit)); const h = e.target.closest('[data-hapus]'); if (h) hapus(daftar.find(p => p.id === h.dataset.hapus)); };
+  $('btnTambah').onclick = () => buka(null);
+
+  const F = { iNip: 'nip', iNama: 'nama', iJab: 'jabatan', iUnit: 'unit', iKota: 'kota', iANama: 'atasan_nama', iANip: 'atasan_nip', iAJab: 'atasan_jabatan' };
+  function buka(p) {
+    edit = p; $('mErr').textContent = '';
+    $('mJ').textContent = p ? 'Ubah data pegawai' : 'Tambah pegawai';
+    $('mKet').textContent = p ? 'Mengubah NIP juga mengubah NIP yang dipakai untuk masuk.' : 'Pegawai akan masuk memakai NIP dan password di bawah.';
+    Object.entries(F).forEach(([id, f]) => $(id).value = p ? (p[f] || '') : '');
+    if (!p) { const contoh = daftar.find(x => x.id === sayaId) || {}; $('iUnit').value = contoh.unit || ''; $('iKota').value = contoh.kota || ''; }
+    $('iPeran').value = p ? p.peran : 'pegawai'; $('iAktif').value = !p || p.aktif ? '1' : '0';
+    const diriSendiri = p && p.id === sayaId; $('iPeran').disabled = diriSendiri; $('iAktif').disabled = diriSendiri;
+    $('iPw').value = ''; $('iPw').required = !p;
+    $('lPw').textContent = p ? 'Reset password (opsional)' : 'Password awal *';
+    $('pwKet').textContent = p ? 'Kosongkan bila tidak ingin mengganti password pegawai ini.' : 'Minimal 6 karakter. Sampaikan ke pegawai; ia bisa menggantinya sendiri di menu Profil.';
+    $('mPeg').classList.add('on'); setTimeout(() => $(p ? 'iNama' : 'iNip').focus(), 50);
+  }
+  $('mBatal').onclick = () => $('mPeg').classList.remove('on');
+
+  $('fPeg').onsubmit = async e => {
+    e.preventDefault(); const b = $('mSimpan'); b.disabled = true; $('mErr').textContent = '';
+    try {
+      const v = {}; Object.entries(F).forEach(([id, f]) => v[f] = $(id).value.trim() || null);
+      if (!v.nip || !v.nama) throw new Error('NIP dan nama wajib diisi');
+      if (!/^[\d\s]{8,25}$/.test(v.nip)) throw new Error('NIP hanya boleh berisi angka (dan spasi)');
+      const bentrok = daftar.find(p => p.nip.replace(/\s/g, '') === v.nip.replace(/\s/g, '') && (!edit || p.id !== edit.id));
+      if (bentrok) throw new Error('NIP ini sudah dipakai oleh ' + bentrok.nama);
+      v.peran = $('iPeran').value; v.aktif = $('iAktif').value === '1';
+      const pw = $('iPw').value;
+      if (pw && pw.length < 6) throw new Error('Password minimal 6 karakter');
+      if (edit) {
+        if (edit.id === sayaId) { delete v.peran; delete v.aktif; }
+        S.cek(await S.client().from('pegawai').update(v).eq('id', edit.id), 'Gagal menyimpan');
+        if (pw) S.cek(await S.client().rpc('admin_set_password', { p_id: edit.id, p_password: pw }), 'Gagal mengganti password');
+        S.toast('Data ' + v.nama + ' diperbarui' + (pw ? ' (password direset)' : ''));
+      } else {
+        // Buat akun login lewat koneksi terpisah agar sesi admin tidak tergantikan
+        const tmp = window.supabase.createClient(S.config.SUPABASE_URL, S.config.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'skp-tmp-' + Date.now() } });
+        const r = await tmp.auth.signUp({ email: S.emailDariNip(v.nip), password: pw });
+        if (r.error) throw new Error(/already/i.test(r.error.message) ? 'NIP ini sudah memiliki akun login. Hapus akun lama di Supabase (Authentication → Users) atau gunakan NIP lain.' : 'Gagal membuat akun: ' + r.error.message);
+        if (!r.data.user || (r.data.user.identities && r.data.user.identities.length === 0)) throw new Error('NIP ini sudah memiliki akun login.');
+        if (!r.data.session) throw new Error('Akun dibuat tetapi belum aktif. Di Supabase matikan "Confirm email" (Authentication → Sign In / Providers → Email), lalu hubungi saya untuk langkah selanjutnya.');
+        v.id = r.data.user.id;
+        try { await tmp.auth.signOut(); } catch (x) { }
+        S.cek(await S.client().from('pegawai').insert(v), 'Akun login dibuat, tetapi data pegawai gagal disimpan');
+        S.toast(v.nama + ' ditambahkan. Masuk dengan NIP ' + v.nip);
+      }
+      $('mPeg').classList.remove('on'); await muat();
+    } catch (x) { $('mErr').textContent = x.message || String(x); }
+    finally { b.disabled = false; }
+  };
+
+  function hapus(p) {
+    $('kJ').textContent = 'Hapus ' + p.nama + '?';
+    $('kT').textContent = 'Akun login, Rencana Kinerja, dan seluruh catatan kegiatan pegawai ini akan dihapus permanen dan tidak bisa dikembalikan. Bila hanya ingin memblokir sementara, ubah statusnya menjadi Nonaktif.';
+    $('mKonf').classList.add('on');
+    $('kBatal').onclick = () => $('mKonf').classList.remove('on');
+    $('kYa').onclick = async () => {
+      $('kYa').disabled = true;
+      try { S.cek(await S.client().rpc('admin_hapus_pegawai', { p_id: p.id }), 'Gagal menghapus'); $('mKonf').classList.remove('on'); S.toast(p.nama + ' dihapus'); await muat(); }
+      catch (x) { S.toast(x.message, 5000); } finally { $('kYa').disabled = false; }
+    };
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.on').forEach(m => m.classList.remove('on')); });
+  $('btnKeluar').onclick = () => S.keluar();
+
+  S.mulai({ admin: true }).then(async ({ uid, pegawai }) => {
+    sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SKP Harian');
+    try { await muat(); } catch (x) { S.toast(x.message, 6000); }
+  });
+})();
+</script>
+</body>
+</html>
