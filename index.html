@@ -105,6 +105,13 @@
   .cek input { width: 18px; height: 18px; }
   .ringkas { background: #f3f8fd; border: 1px dashed #b8d0e8; border-radius: 10px; padding: 12px 14px; font-size: 13.5px; margin: 16px 0; }
   .bawah-nav { display: none; }
+  .rk-tabel td { vertical-align: top; } .rk-tabel .rk-teks { font-weight: 600; line-height: 1.4; } .rk-tabel .iki { color: var(--teks2); line-height: 1.4; }
+  .rk-tabel mark { background: #fff1a8; padding: 0; }
+  .rk-pilih { display: block; width: 100%; min-width: 200px; max-width: 320px; text-align: left; font: inherit; font-size: 12.5px; line-height: 1.35; padding: 6px 8px; border: 1px solid #cfd7e0; border-radius: 8px; background: #fff; cursor: pointer; color: var(--teks); }
+  .rk-pilih.kosong-rk { border-color: #e8b35a; background: #fff9ec; color: #8a5300; }
+  .ri-ring { background: #f3f8fd; border: 1px dashed #b8d0e8; border-radius: 10px; padding: 10px 12px; margin: 12px 0 8px; font-size: 13.5px; }
+  .ri-tbl { max-height: 330px; overflow: auto; border: 1px solid var(--garis); border-radius: 10px; } .ri-tbl table { font-size: 12.5px; }
+  .st { font-weight: 600; white-space: nowrap; } .st.ok { color: #1b6e3a; } .st.salah { color: #b42318; } .st.ada { color: #8a5300; }
   .rk-baru { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--garis); }
   .rk-baru label, .rk-row label { display: block; font-size: 12px; color: var(--teks2); margin-bottom: 4px; font-weight: 500; }
   .rk-baru textarea, .rk-row textarea, table.rekap textarea { width: 100%; font: inherit; font-size: 13.5px; padding: 8px 9px; border: 1px solid #cfd7e0; border-radius: 8px; resize: vertical; background: #fff; }
@@ -164,6 +171,7 @@
     <a class="menu" href="#dashboard" data-r="dashboard"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a>
     <a class="menu" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
     <a class="menu" href="#rekap" data-r="rekap"><svg viewBox="0 0 24 24"><path d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-2 14-4-4 1.4-1.4 2.6 2.6 6.6-6.6L19 9l-8 8z"/></svg>Rekap Kegiatan</a>
+    <a class="menu" href="#rk" data-r="rk"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-14a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2z"/></svg>RK &amp; IKI</a>
     <a class="menu" href="#upload" data-r="upload"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Upload Dokumen</a>
     <a class="menu" href="#profil" data-r="profil"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg>Profil</a>
     <div class="akun" id="akunBox"></div>
@@ -189,21 +197,25 @@
     <!-- REKAP KEGIATAN -->
     <section id="v-rekap" hidden>
       <div class="kepala"><div style="flex:1"><h1>Rekap Kegiatan</h1><p>Ubah uraian, bidang, dan RK langsung di tabel — tersimpan otomatis. Kegiatan baru dicatat lewat menu <a href="input.html">Catat Kegiatan</a>.</p></div><div class="bulan" data-bulan></div></div>
-      <div class="kartu" style="margin-bottom:16px">
-        <h2>Rencana Kinerja (RK) &amp; Indikator Kinerja Individu (IKI) saya <span class="kanan" id="rkJumlah" style="font-weight:400;font-size:13px;color:var(--teks2)"></span></h2>
-        <div id="rkList"></div>
-        <form id="rkBaru" class="rk-baru">
-          <div><label for="rkNama">RK baru</label><textarea id="rkNama" rows="2" placeholder="mis. Terlaksananya Kegiatan Penghitungan PDRB Kab/Kota Menurut Pengeluaran yang tepat waktu"></textarea></div>
-          <div><label for="rkIki">IKI</label><textarea id="rkIki" rows="2" placeholder="mis. Jumlah Data PDRB Kabupaten/Kota Menurut Pengeluaran yang selesai disusun sebanyak 54 tabel"></textarea></div>
-          <div style="align-self:end"><button class="btn utama" type="submit">+ Tambah RK</button></div>
-        </form>
-      </div>
       <div class="kartu" style="padding:0">
         <div style="padding:16px 18px 0"><h2 style="margin-bottom:10px">Daftar kegiatan <span class="kanan" id="rekapInfo" style="font-weight:400;font-size:13px;color:var(--teks2)"></span></h2>
           <div class="alat"><input type="search" id="cari" placeholder="Cari uraian kegiatan…" aria-label="Cari"><select id="fBidang" aria-label="Saring bidang"></select><select id="fRk" aria-label="Saring RK"></select><button class="btn" id="btnEkspor" title="Unduh kegiatan bulan ini ke Excel">📤 Ekspor Excel</button></div>
-          <div class="massal" id="massal" hidden><b id="mJumlah"></b> dipilih → pasangkan ke <select id="mRk" aria-label="RK tujuan"></select><button class="btn kecil utama" type="button" id="mTerapkan">Terapkan</button><button class="btn kecil" type="button" id="mBatal">Batal pilih</button></div>
+          <div class="massal" id="massal" hidden><b id="mJumlah"></b> dipilih → <button class="btn kecil utama" type="button" id="mTerapkan">🎯 Pasangkan ke RK…</button><button class="btn kecil" type="button" id="mBatal">Batal pilih</button></div>
         </div>
         <div class="tabel-wrap"><table class="t rekap"><thead><tr><th style="width:30px"><input type="checkbox" id="pilihSemua" aria-label="Pilih semua"></th><th>Tanggal</th><th>Uraian kegiatan</th><th>Bidang</th><th>RK</th><th>Foto</th><th></th></tr></thead><tbody id="tblKeg"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- RK & IKI -->
+    <section id="v-rk" hidden>
+      <div class="kepala"><div style="flex:1"><h1>RK &amp; IKI</h1><p>Daftar Rencana Kinerja (RK) dan Indikator Kinerja Individu (IKI) Anda per bidang. RK yang bidangnya sama dengan kegiatan akan ditawarkan saat memasangkan kegiatan.</p></div></div>
+      <div class="kartu" style="padding:0">
+        <div style="padding:16px 18px 0">
+          <div class="alat"><input type="search" id="rkCari" placeholder="Cari kata dalam RK atau IKI…" aria-label="Cari RK"><select id="rkFBidang" aria-label="Saring bidang"></select>
+            <button class="btn" type="button" id="rkImpor">📥 Impor Excel</button><button class="btn" type="button" id="rkEkspor">📤 Ekspor</button><button class="btn utama" type="button" id="rkTambah">+ Tambah RK</button></div>
+          <div id="rkRingkas" style="font-size:13px;color:var(--teks2);margin:-4px 0 10px"></div>
+        </div>
+        <div class="tabel-wrap"><table class="t rk-tabel"><thead><tr><th style="width:44px">No</th><th style="width:120px">Bidang</th><th>Rencana Kinerja (RK)</th><th>Indikator Kinerja Individu (IKI)</th><th class="num" style="width:80px">Kegiatan</th><th style="width:76px"></th></tr></thead><tbody id="rkTbl"></tbody></table></div>
       </div>
     </section>
 
@@ -273,6 +285,7 @@
   <a href="#dashboard" data-r="dashboard"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a>
   <a href="input.html" class="catat"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat</a>
   <a href="#rekap" data-r="rekap"><svg viewBox="0 0 24 24"><path d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-2 14-4-4 1.4-1.4 2.6 2.6 6.6-6.6L19 9l-8 8z"/></svg>Rekap</a>
+  <a href="#rk" data-r="rk"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-14a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2z"/></svg>RK</a>
   <a href="#upload" data-r="upload"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Upload</a>
   <a href="#profil" data-r="profil"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg>Profil</a>
 </nav>
@@ -281,10 +294,25 @@
   <h3 id="mKegJ">Kegiatan</h3>
   <label for="kTeks">Uraian kegiatan</label><textarea id="kTeks"></textarea>
   <div class="baris2"><div><label for="kTgl">Tanggal</label><input type="date" id="kTgl"></div><div><label for="kJam">Jam</label><input type="time" id="kJam"></div></div>
-  <div class="baris2"><div><label for="kBidang">Bidang</label><select id="kBidang"></select></div><div><label for="kRk">Rencana Kinerja (RK)</label><select id="kRk"></select></div></div>
+  <div class="baris2"><div><label for="kBidang">Bidang</label><select id="kBidang"></select></div><div><label for="kRkBtn">Rencana Kinerja (RK)</label><button type="button" id="kRkBtn" class="rk-pilih" style="max-width:none;min-height:40px"></button><input type="hidden" id="kRk"></div></div>
   <label>Foto bukti dukung</label><div class="fotoedit" id="kFoto"></div>
   <input type="file" id="kFile" accept="image/*" multiple hidden>
   <div class="aksi"><button class="btn bahaya" id="kHapus" style="margin-right:auto">Hapus</button><button class="btn" id="kBatal">Batal</button><button class="btn utama" id="kSimpan">Simpan</button></div>
+</div></div>
+
+<div class="modal" id="mRkEdit"><form class="isi form" id="formRk" role="dialog" aria-labelledby="rkEJ">
+  <h3 id="rkEJ">Tambah RK</h3>
+  <label for="rkEBidang">Bidang</label><select id="rkEBidang" required></select>
+  <label for="rkENama">Rencana Kinerja (RK)</label><textarea id="rkENama" rows="3" required placeholder="mis. Terlaksananya Kegiatan Penghitungan PDRB Kab/Kota Menurut Pengeluaran yang tepat waktu"></textarea>
+  <label for="rkEIki">Indikator Kinerja Individu (IKI)</label><textarea id="rkEIki" rows="3" placeholder="mis. Jumlah Data PDRB Kabupaten/Kota Menurut Pengeluaran yang selesai disusun sebanyak 54 tabel"></textarea>
+  <div class="aksi"><button class="btn bahaya" type="button" id="rkEHapus" style="margin-right:auto">Hapus</button><button class="btn" type="button" id="rkEBatal">Batal</button><button class="btn utama" type="submit" id="rkESimpan">Simpan</button></div>
+</form></div>
+<div class="modal" id="mRkImpor"><div class="isi" role="dialog" aria-labelledby="riJ" style="max-width:860px">
+  <h3 id="riJ">Impor RK &amp; IKI dari Excel</h3><p style="color:var(--teks2);margin:4px 0 10px;font-size:13.5px">Satu baris satu RK, dengan kolom <b>Bidang</b>, <b>RK</b>, dan <b>IKI</b>. RK yang sudah ada (bidang dan kalimat sama) dilewati.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn" href="template/Template_RK_IKI_SKP_Harian.xlsx" download="Template_RK_IKI_SKP_Harian.xlsx">⬇ Unduh template</a><button class="btn" type="button" id="riPilih">📂 Pilih file Excel</button><span id="riNama" style="font-size:13px;color:var(--teks2);align-self:center"></span></div>
+  <input type="file" id="riFile" accept=".xlsx,.xls,.csv" hidden>
+  <div id="riHasil"></div>
+  <div class="aksi"><button class="btn" type="button" id="riTutup">Tutup</button><button class="btn utama" type="button" id="riSimpan" disabled>Simpan</button></div>
 </div></div>
 
 <div class="modal" id="mKonf"><div class="isi" role="alertdialog" style="max-width:420px">
@@ -298,17 +326,18 @@
 <script src="common.js"></script>
 <script src="docx.js"></script>
 <script src="excel.js"></script>
+<script src="rkpicker.js"></script>
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
   const now = new Date();
   let ym = S.ymd(now).slice(0, 7);
-  let kegiatan = [], rhkList = [], profil = {}, kop = null, driveCfg = null, dokumen = [], templateBuf = null, masuk = false;
+  let kegiatan = [], ringkas = [], rhkList = [], profil = {}, kop = null, driveCfg = null, dokumen = [], templateBuf = null, masuk = false;
   const fotoCache = new Map();
   const ambilFoto = id => { if (!fotoCache.has(id)) fotoCache.set(id, S.get('foto', id)); return fotoCache.get(id); };
 
   /* ---------- Menu ---------- */
-  const ROUTES = ['dashboard', 'rekap', 'upload', 'profil'];
+  const ROUTES = ['dashboard', 'rekap', 'rk', 'upload', 'profil'];
   const current = () => { const r = location.hash.slice(1); return ROUTES.includes(r) ? r : 'dashboard'; };
   function route() {
     const r = current(); ROUTES.forEach(x => $('v-' + x).hidden = x !== r);
@@ -316,7 +345,7 @@
     render(r); window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', () => { if (masuk) route(); });
-  function render(r) { renderBulan(); if (r === 'dashboard') renderDashboard(); if (r === 'rekap') renderRekap(); if (r === 'upload') renderUpload(); if (r === 'profil') renderProfil(); }
+  function render(r) { renderBulan(); if (r === 'dashboard') renderDashboard(); if (r === 'rekap') renderRekap(); if (r === 'rk') renderRkMenu(); if (r === 'upload') renderUpload(); if (r === 'profil') renderProfil(); }
 
   function geserBulan(d) { const [y, m] = ym.split('-').map(Number); const t = new Date(y, m - 1 + d, 1); ym = t.getFullYear() + '-' + S.pad(t.getMonth() + 1); render(current()); }
   function renderBulan() {
@@ -326,7 +355,7 @@
     });
   }
 
-  async function muat() { [kegiatan, rhkList, profil, kop, driveCfg, dokumen] = await Promise.all([S.list('kegiatan'), S.list('rhk').catch(() => []), S.profil(), S.get('meta', 'kop').catch(() => null), S.get('meta', 'drive').catch(() => null), S.list('dokumen').catch(() => [])]); }
+  async function muat() { [kegiatan, ringkas, rhkList, profil, kop, driveCfg, dokumen] = await Promise.all([S.list('kegiatan'), S.list('ringkas').catch(() => []), S.list('rhk').catch(() => []), S.profil(), S.get('meta', 'kop').catch(() => null), S.get('meta', 'drive').catch(() => null), S.list('dokumen').catch(() => [])]); }
   const rhkById = id => rhkList.find(r => r.id === id);
   const urut = arr => arr.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
   const kegBulan = (m = ym) => urut(kegiatan.filter(k => k.tanggal.slice(0, 7) === m));
@@ -337,20 +366,22 @@
     $('sapa').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (profil.nama ? ', ' + profil.nama.split(/[ ,]/)[0] : '');
     $('sapaSub').textContent = 'Kerja harian ' + S.namaBulan(ym) + (profil.jabatan ? ' · ' + profil.jabatan : '');
     const [y, m] = ym.split('-').map(Number); const nHari = new Date(y, m, 0).getDate();
-    const hariIni = S.ymd(now); const isi = new Set(ks.map(k => k.tanggal));
-    $('sKeg').textContent = ks.length; $('sKegK').textContent = isi.has(hariIni) ? '✓ Hari ini sudah mengisi' : (ym === hariIni.slice(0, 7) ? 'Hari ini belum mengisi' : '');
+    const hariIni = S.ymd(now); const arsip = ringkas.filter(r => r.tanggal.slice(0, 7) === ym && r.jumlah > 0);
+    const nArsip = arsip.reduce((a, r) => a + r.jumlah, 0), fArsip = arsip.reduce((a, r) => a + r.foto, 0);
+    const isi = new Set(ks.map(k => k.tanggal).concat(arsip.map(r => r.tanggal)));
+    $('sKeg').textContent = ks.length + nArsip; $('sKegK').textContent = (isi.has(hariIni) ? '✓ Hari ini sudah mengisi' : (ym === hariIni.slice(0, 7) ? 'Hari ini belum mengisi' : '')) + (nArsip ? (isi.has(hariIni) || ym === hariIni.slice(0, 7) ? ' · ' : '') + nArsip + ' sudah diarsipkan ke Drive' : '');
     const tanpaRk = ks.filter(k => !k.rhkId || !rhkById(k.rhkId)).length;
-    $('sRk').textContent = tanpaRk; $('sRkK').innerHTML = !rhkList.length ? '<a href="#rekap">Tambahkan RK &amp; IKI</a> lalu pasangkan' : tanpaRk ? '<a href="#rekap">Pasangkan di Rekap Kegiatan</a>' : '✓ Semua kegiatan sudah ber-RK';
+    $('sRk').textContent = tanpaRk; $('sRkK').innerHTML = !rhkList.length ? '<a href="#rk">Tambahkan RK &amp; IKI</a> lalu pasangkan' : tanpaRk ? '<a href="#rekap">Pasangkan di Rekap Kegiatan</a>' : '✓ Semua kegiatan sudah ber-RK';
     const bds = new Set(ks.filter(k => k.bidang).map(k => k.bidang)); const tanpa = ks.filter(k => !k.bidang).length;
     $('sJenis').textContent = bds.size; $('sJenisK').textContent = tanpa ? '⚠ ' + tanpa + ' kegiatan belum pilih bidang' : 'menjadi ' + bds.size + ' dokumen Bukti Dukung';
-    const nf = ks.reduce((a, k) => a + (k.fotoIds || []).length, 0); $('sFoto').textContent = nf; $('sFotoK').textContent = ks.filter(k => (k.fotoIds || []).length).length + ' kegiatan memiliki foto';
-    renderChart(ks, y, m, nHari);
+    const nf = ks.reduce((a, k) => a + (k.fotoIds || []).length, 0) + fArsip; $('sFoto').textContent = nf; $('sFotoK').textContent = ks.filter(k => (k.fotoIds || []).length).length + ' kegiatan memiliki foto';
+    renderChart(ks, y, m, nHari, arsip);
     const perB = S.BIDANG.map(b => ({ b, ks: ks.filter(k => k.bidang === b) })).filter(x => x.ks.length); const maxB = Math.max(1, ...perB.map(x => x.ks.length));
     $('perBidang').innerHTML = perB.length ? perB.map(x => `<div class="rhk-item"><div class="atas"><b>${S.esc(x.b)}</b><span>${x.ks.length} kegiatan · ${new Set(x.ks.map(k => k.tanggal)).size} hari</span></div><div class="progress"><i style="width:${x.ks.length / maxB * 100}%"></i></div></div>`).join('')
       : '<div class="kosong">Belum ada kegiatan pada bulan ini.<br>Catat lewat menu <a href="input.html">Catat Kegiatan</a>.</div>';
   }
-  function renderChart(ks, y, m, nHari) {
-    const per = new Array(nHari).fill(0); ks.forEach(k => per[Number(k.tanggal.slice(8)) - 1]++);
+  function renderChart(ks, y, m, nHari, arsip) {
+    const per = new Array(nHari).fill(0); ks.forEach(k => per[Number(k.tanggal.slice(8)) - 1]++); (arsip || []).forEach(r => per[Number(r.tanggal.slice(8)) - 1] += r.jumlah);
     const max = Math.max(4, ...per); const step = max <= 5 ? 1 : max <= 10 ? 2 : Math.ceil(max / 5); const top = Math.ceil(max / step) * step;
     const W = Math.max(300, Math.round($('chart').clientWidth || 640)), H = 220, L = 28, R = 6, T = 10, B = 26; const pw = W - L - R, ph = H - T - B; const bw = pw / nHari;
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jumlah kegiatan per hari, ${S.namaBulan(ym)}">`;
@@ -372,36 +403,96 @@
     });
   }
   /* ---------- Rekap Kegiatan: RK & IKI + daftar kegiatan ---------- */
-  function renderRekap() { renderRK(); renderTabel(); }
-  function renderRK() {
-    const n = id => kegiatan.filter(k => k.rhkId === id).length;
-    $('rkJumlah').textContent = rhkList.length ? rhkList.length + ' RK' : '';
-    $('rkList').innerHTML = rhkList.length ? rhkList.map((r, i) => `<div class="rk-row" data-id="${r.id}"><div class="no">${i + 1}</div>
-        <div><label>RK</label><textarea data-f="nama" rows="2">${S.esc(r.nama)}</textarea></div>
-        <div><label>IKI</label><textarea data-f="indikator" rows="2">${S.esc(r.indikator || '')}</textarea></div>
-        <div class="info"><span>${n(r.id)} kegiatan</span><button class="ikon hapus" type="button" data-hapusrk title="Hapus RK" aria-label="Hapus RK"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></div></div>`).join('')
-      : '<div class="kosong" style="padding:12px">Belum ada RK. Salin RK dan IKI dari dokumen SKP Anda ke formulir di bawah.</div>';
+  function renderRekap() { renderTabel(); }
+  /* ---------- Menu RK & IKI ---------- */
+  const tandai = (t, q) => { const e = S.esc(t || ''); if (!q) return e; const i = e.toLowerCase().indexOf(S.esc(q)); return i < 0 ? e : e.slice(0, i) + '<mark>' + e.slice(i, i + S.esc(q).length) + '</mark>' + e.slice(i + S.esc(q).length); };
+  function renderRkMenu() {
+    const f = $('rkFBidang'), v = f.value;
+    f.innerHTML = '<option value="">Semua bidang</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join('') + '<option value="-">Tanpa bidang</option>'; f.value = v;
+    const q = $('rkCari').value.trim().toLowerCase();
+    const jml = id => kegiatan.filter(k => k.rhkId === id).length;
+    const rows = rhkList.map((r, i) => ({ r, no: i + 1 })).filter(x => (!f.value || (f.value === '-' ? !x.r.bidang : x.r.bidang === f.value)) && (!q || ((x.r.nama || '') + ' ' + (x.r.indikator || '')).toLowerCase().includes(q)));
+    const perB = S.BIDANG.map(b => [b, rhkList.filter(r => r.bidang === b).length]).filter(x => x[1]);
+    $('rkRingkas').textContent = rhkList.length ? rhkList.length + ' RK · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') + (rhkList.some(r => !r.bidang) ? ' · tanpa bidang ' + rhkList.filter(r => !r.bidang).length : '') : '';
+    $('rkTbl').innerHTML = rows.length ? rows.map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td><td>${x.r.bidang ? '<b>' + S.esc(x.r.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}</td>
+        <td class="rk-teks">${tandai(x.r.nama, q)}</td><td class="iki">${tandai(x.r.indikator, q) || '—'}</td><td class="num">${jml(x.r.id)}</td>
+        <td style="white-space:nowrap"><button class="ikon" data-ubahrk title="Ubah" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapusrk title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('')
+      : `<tr><td colspan="6"><div class="kosong">${rhkList.length ? 'Tidak ada RK yang cocok.' : 'Belum ada RK. Klik “+ Tambah RK”, atau “📥 Impor Excel” untuk memasukkan banyak RK sekaligus.'}</div></td></tr>`;
   }
-  const tundaRk = {};
-  $('rkList').addEventListener('input', e => {
-    const row = e.target.closest('.rk-row'); const f = e.target.dataset.f; if (!row || !f) return;
-    const r = rhkById(row.dataset.id); r[f] = e.target.value;
-    clearTimeout(tundaRk[r.id]); tundaRk[r.id] = setTimeout(async () => { try { await S.put('rhk', r); } catch (x) { S.toast(x.message); } }, 700);
-  });
-  $('rkList').addEventListener('click', async e => {
-    const h = e.target.closest('[data-hapusrk]'); if (!h) return; const r = rhkById(h.closest('.rk-row').dataset.id);
-    const terkait = kegiatan.filter(k => k.rhkId === r.id);
-    if (!await konfirmasi('Hapus RK ini?', (r.nama || 'RK tanpa nama') + (terkait.length ? ` — ${terkait.length} kegiatan yang terpasang akan menjadi "belum ber-RK" (kegiatannya tidak dihapus).` : ''))) return;
-    try { for (const k of terkait) { k.rhkId = null; await S.put('kegiatan', k); } await S.del('rhk', r.id); rhkList = rhkList.filter(x => x.id !== r.id); renderRekap(); S.toast('RK dihapus'); } catch (x) { S.toast(x.message); }
-  });
-  $('rkBaru').onsubmit = async e => {
-    e.preventDefault(); const nama = $('rkNama').value.trim(); if (!nama) { $('rkNama').focus(); return; }
-    const r = { id: 'r' + S.uid(), nama, indikator: $('rkIki').value.trim(), satuan: '', target: 0, targetBulan: {}, urutan: rhkList.length };
-    const btn = $('rkBaru').querySelector('button'); btn.disabled = true; $('rkNama').value = ''; $('rkIki').value = ''; rhkList.push(r);
-    try { await S.put('rhk', r); renderRekap(); S.toast('RK ditambahkan'); }
-    catch (x) { rhkList = rhkList.filter(y => y !== r); $('rkNama').value = r.nama; $('rkIki').value = r.indikator; S.toast(x.message); }
-    finally { btn.disabled = false; }
+  $('rkCari').oninput = renderRkMenu; $('rkFBidang').onchange = renderRkMenu;
+  let rkEdit = null;
+  function bukaRk(r) {
+    rkEdit = r; $('rkEJ').textContent = r ? 'Ubah RK' : 'Tambah RK';
+    $('rkEBidang').innerHTML = '<option value="">— pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join('');
+    $('rkEBidang').value = r ? (r.bidang || '') : ($('rkFBidang').value && $('rkFBidang').value !== '-' ? $('rkFBidang').value : '');
+    $('rkENama').value = r ? r.nama : ''; $('rkEIki').value = r ? (r.indikator || '') : ''; $('rkEHapus').hidden = !r;
+    $('mRkEdit').classList.add('on'); setTimeout(() => $(r ? 'rkENama' : 'rkEBidang').focus(), 50);
+  }
+  $('rkTambah').onclick = () => bukaRk(null);
+  $('rkEBatal').onclick = () => $('mRkEdit').classList.remove('on');
+  $('formRk').onsubmit = async e => {
+    e.preventDefault(); const nama = $('rkENama').value.trim(), bidang = $('rkEBidang').value || null; if (!nama) return;
+    if (!bidang) { S.toast('Pilih bidang RK ini'); return; }
+    const ganda = rhkList.find(x => x !== rkEdit && x.bidang === bidang && x.nama.trim().toLowerCase() === nama.toLowerCase());
+    if (ganda) { S.toast('RK yang sama sudah ada di bidang ' + bidang); return; }
+    const r = rkEdit ? Object.assign({}, rkEdit) : { id: 'r' + S.uid(), satuan: '', target: 0, targetBulan: {}, urutan: rhkList.length };
+    Object.assign(r, { bidang, nama, indikator: $('rkEIki').value.trim() });
+    $('rkESimpan').disabled = true;
+    try { await S.put('rhk', r); if (rkEdit) rhkList[rhkList.indexOf(rkEdit)] = r; else rhkList.push(r); $('mRkEdit').classList.remove('on'); renderRkMenu(); S.toast(rkEdit ? 'RK diperbarui' : 'RK ditambahkan'); }
+    catch (x) { S.toast(x.message); } finally { $('rkESimpan').disabled = false; }
   };
+  async function hapusRk(r) {
+    const terkait = kegiatan.filter(k => k.rhkId === r.id);
+    if (!await konfirmasi('Hapus RK ini?', (r.nama || '').slice(0, 140) + (terkait.length ? ` — ${terkait.length} kegiatan yang terpasang akan menjadi "belum ber-RK" (kegiatannya tidak dihapus).` : ''))) return false;
+    try { terkait.forEach(k => k.rhkId = null); if (terkait.length) await S.putBanyak('kegiatan', terkait); await S.del('rhk', r.id); rhkList = rhkList.filter(x => x.id !== r.id); renderRkMenu(); S.toast('RK dihapus'); return true; } catch (x) { S.toast(x.message); return false; }
+  }
+  $('rkEHapus').onclick = async () => { if (await hapusRk(rkEdit)) $('mRkEdit').classList.remove('on'); };
+  $('rkTbl').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (!tr) return; const r = rhkById(tr.dataset.id);
+    if (e.target.closest('[data-ubahrk]')) bukaRk(r); else if (e.target.closest('[data-hapusrk]')) hapusRk(r); });
+  $('rkEkspor').onclick = async () => {
+    if (!rhkList.length) { S.toast('Belum ada RK'); return; }
+    try { const X = await SKPExcel.lib(); const wb = X.utils.book_new(); const ws = X.utils.aoa_to_sheet([['Bidang', 'RK', 'IKI']].concat(rhkList.map(r => [r.bidang || '', r.nama || '', r.indikator || ''])));
+      ws['!cols'] = [{ wch: 12 }, { wch: 70 }, { wch: 70 }]; X.utils.book_append_sheet(wb, ws, 'RK IKI');
+      await S.download('RK_IKI_' + (profil.nama || 'pegawai').replace(/[^\w]+/g, '_') + '.xlsx', new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); }
+    catch (x) { S.toast(x.message, 5000); }
+  };
+  /* Impor RK & IKI */
+  let riBaris = [];
+  $('rkImpor').onclick = () => { SKPExcel.lib().catch(() => { }); riBaris = []; $('riHasil').innerHTML = ''; $('riNama').textContent = ''; $('riSimpan').disabled = true; $('riSimpan').textContent = 'Simpan'; $('mRkImpor').classList.add('on'); };
+  $('riTutup').onclick = () => $('mRkImpor').classList.remove('on');
+  $('riPilih').onclick = () => $('riFile').click();
+  $('riFile').onchange = async () => {
+    const f = $('riFile').files[0]; $('riFile').value = ''; if (!f) return; $('riNama').textContent = f.name;
+    try {
+      const X = await SKPExcel.lib(); const wb = X.read(new Uint8Array(await f.arrayBuffer()), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames.find(n => /rk|iki|rencana/i.test(n)) || wb.SheetNames[0]];
+      const rows = X.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+      const h = rows.findIndex(r => r.some(c => /^\s*(rk|rencana)/i.test(String(c))));
+      let col = { bd: 0, rk: 1, iki: 2 };
+      if (h >= 0) { const hd = rows[h].map(c => String(c).trim().toLowerCase()); const c = re => hd.findIndex(x => re.test(x)); col = { bd: c(/bidang/), rk: c(/^(rk|rencana)/), iki: c(/^(iki|indikator)/) }; }
+      const ada = new Set(rhkList.map(r => (r.bidang || '') + '|' + r.nama.trim().toLowerCase())); const diFile = new Set(); riBaris = [];
+      rows.forEach((r, i) => {
+        if (i <= h) return; const g = k => col[k] >= 0 ? String(r[col[k]] || '').trim() : '';
+        const o = { baris: i + 1, bidMentah: g('bd'), bidang: SKPExcel._bacaBidang(g('bd')), nama: g('rk').replace(/\s+/g, ' '), iki: g('iki').replace(/\s+/g, ' ') };
+        if (!o.nama && !o.iki && !o.bidMentah) return;
+        const m = []; if (!o.bidang) m.push(o.bidMentah ? 'bidang tidak dikenali (' + o.bidMentah + ')' : 'bidang kosong'); if (!o.nama) m.push('RK kosong');
+        const kunci = (o.bidang || '') + '|' + o.nama.toLowerCase();
+        if (m.length) { o.status = 'salah'; o.ket = m.join('; '); } else if (ada.has(kunci)) { o.status = 'ada'; o.ket = 'sudah ada, dilewati'; } else if (diFile.has(kunci)) { o.status = 'ada'; o.ket = 'baris ganda di file'; } else { o.status = 'ok'; diFile.add(kunci); }
+        riBaris.push(o);
+      });
+      const n = st => riBaris.filter(o => o.status === st).length; const LBL = { ok: '✓ Siap', salah: '✕ Perlu diperbaiki', ada: '– Dilewati' };
+      $('riHasil').innerHTML = `<div class="ri-ring"><b>${n('ok')} RK siap disimpan</b>${n('salah') ? ` · <span style="color:#b42318">${n('salah')} baris perlu diperbaiki</span>` : ''}${n('ada') ? ` · ${n('ada')} dilewati` : ''}${!riBaris.length ? '<br>Tidak ada data RK di file ini.' : ''}</div>` +
+        (riBaris.length ? `<div class="ri-tbl"><table class="t"><thead><tr><th>Baris</th><th>Bidang</th><th>RK</th><th>IKI</th><th>Status</th></tr></thead><tbody>${riBaris.map(o => `<tr><td>${o.baris}</td><td>${S.esc(o.bidang || o.bidMentah)}</td><td>${S.esc(o.nama)}</td><td>${S.esc(o.iki)}</td><td class="st ${o.status}">${LBL[o.status]}${o.ket ? '<div style="font-weight:400;font-size:12px">' + S.esc(o.ket) + '</div>' : ''}</td></tr>`).join('')}</tbody></table></div>` : '');
+      $('riSimpan').disabled = !n('ok'); $('riSimpan').textContent = n('ok') ? 'Simpan ' + n('ok') + ' RK' : 'Simpan';
+    } catch (x) { console.error(x); $('riHasil').innerHTML = `<div class="ri-ring" style="background:#fdf1f1">File tidak bisa dibaca: ${S.esc(x.message || x)}</div>`; }
+  };
+  $('riSimpan').onclick = async () => {
+    const siap = riBaris.filter(o => o.status === 'ok'); if (!siap.length) return; const b = $('riSimpan'); b.disabled = true; b.textContent = 'Menyimpan…';
+    const baru = siap.map((o, i) => ({ id: 'r' + S.uid() + i.toString(36), bidang: o.bidang, nama: o.nama, indikator: o.iki, satuan: '', target: 0, targetBulan: {}, urutan: rhkList.length + i }));
+    try { await S.putBanyak('rhk', baru); rhkList = rhkList.concat(baru); $('mRkImpor').classList.remove('on'); renderRkMenu(); S.toast(baru.length + ' RK berhasil diimpor', 4000); }
+    catch (x) { S.toast(x.message, 6000); b.disabled = false; b.textContent = 'Coba lagi'; }
+  };
+
   const opsiRk = sel => '<option value="">— belum ada RK —</option>' + rhkList.map((r, i) => `<option value="${r.id}"${r.id === sel ? ' selected' : ''}>${i + 1}. ${S.esc(r.nama.length > 70 ? r.nama.slice(0, 68) + '…' : r.nama)}</option>`).join('');
   let dipilih = new Set();
   function renderTabel() {
@@ -420,14 +511,14 @@
         <td style="white-space:nowrap">${S.esc(S.tglSedang(k.tanggal))}${k.jam ? '<br><span style="color:var(--teks2);font-size:12px">' + S.esc(k.jam) + '</span>' : ''}</td>
         <td style="min-width:260px"><textarea data-f="teks" rows="2" aria-label="Uraian kegiatan">${S.esc(k.teks)}</textarea></td>
         <td><select data-f="bidang" aria-label="Bidang"${k.bidang ? '' : ' class="kosong-rk"'}><option value="">— pilih —</option>${S.BIDANG.map(b => `<option${b === k.bidang ? ' selected' : ''}>${b}</option>`).join('')}</select></td>
-        <td><select data-f="rhkId" aria-label="RK"${rhkById(k.rhkId) ? '' : ' class="kosong-rk"'}>${opsiRk(k.rhkId)}</select></td>
+        <td><button type="button" class="rk-pilih${rhkById(k.rhkId) ? '' : ' kosong-rk'}" data-pilihrk title="${rhkById(k.rhkId) ? S.esc(rhkById(k.rhkId).nama) : ''}">${rhkById(k.rhkId) ? '🎯 ' + (rhkList.indexOf(rhkById(k.rhkId)) + 1) + '. ' + S.esc(rhkById(k.rhkId).nama.length > 90 ? rhkById(k.rhkId).nama.slice(0, 88) + '…' : rhkById(k.rhkId).nama) : '+ Pilih RK'}</button></td>
         <td style="white-space:nowrap">${(k.fotoIds || []).slice(0, 3).map(id => `<img class="thumb" data-foto="${id}" alt="Foto bukti">`).join('')}${(k.fotoIds || []).length > 3 ? ' +' + ((k.fotoIds.length) - 3) : ''}</td>
         <td style="white-space:nowrap"><button class="ikon" data-edit="${k.id}" title="Ubah tanggal & foto" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapus="${k.id}" title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('');
     tb.querySelectorAll('img[data-foto]').forEach(async im => { const f = await ambilFoto(im.dataset.foto); if (f) im.src = f.data; });
     aturMassal();
   }
   function aturMassal() {
-    $('massal').hidden = !dipilih.size; $('mJumlah').textContent = dipilih.size + ' kegiatan'; $('mRk').innerHTML = opsiRk(null).replace('— belum ada RK —', '— lepaskan RK —');
+    $('massal').hidden = !dipilih.size; $('mJumlah').textContent = dipilih.size + ' kegiatan';
     const cbs = [...$('tblKeg').querySelectorAll('[data-pilih]')]; $('pilihSemua').checked = cbs.length > 0 && cbs.every(c => c.checked);
   }
   $('cari').oninput = renderTabel; $('fBidang').onchange = renderTabel; $('fRk').onchange = renderTabel;
@@ -440,16 +531,24 @@
   $('tblKeg').addEventListener('change', e => {
     const tr = e.target.closest('tr[data-id]'); if (!tr) return; const k = kegiatan.find(x => x.id === tr.dataset.id);
     if (e.target.dataset.pilih !== undefined) { e.target.checked ? dipilih.add(k.id) : dipilih.delete(k.id); tr.classList.toggle('dipilih', e.target.checked); aturMassal(); return; }
-    const f = e.target.dataset.f; if (f === 'bidang' || f === 'rhkId') { k[f] = e.target.value || null; simpanKeg(k, e.target); S.toast(f === 'rhkId' ? (k.rhkId ? 'RK dipasangkan' : 'RK dilepas') : 'Bidang diperbarui', 1400); }
+    const f = e.target.dataset.f; if (f === 'bidang') { k.bidang = e.target.value || null; simpanKeg(k, e.target); S.toast('Bidang diperbarui', 1400); }
   });
   $('pilihSemua').onchange = e => { $('tblKeg').querySelectorAll('tr[data-id]').forEach(tr => { const cb = tr.querySelector('[data-pilih]'); cb.checked = e.target.checked; tr.classList.toggle('dipilih', cb.checked); cb.checked ? dipilih.add(tr.dataset.id) : dipilih.delete(tr.dataset.id); }); aturMassal(); };
   $('mBatal').onclick = () => { dipilih.clear(); renderTabel(); };
-  $('mTerapkan').onclick = async () => {
-    const rk = $('mRk').value || null; const b = $('mTerapkan'); b.disabled = true;
-    try { const ks = kegiatan.filter(k => dipilih.has(k.id)); ks.forEach(k => k.rhkId = rk); await S.putBanyak('kegiatan', ks); S.toast(ks.length + ' kegiatan ' + (rk ? 'dipasangkan ke RK' : 'dilepas dari RK')); dipilih.clear(); renderRekap(); }
-    catch (x) { S.toast(x.message, 5000); } finally { b.disabled = false; }
+  async function pasangRk(ks, rk) {
+    ks.forEach(k => k.rhkId = rk ? rk.id : null); await S.putBanyak('kegiatan', ks);
+    S.toast(ks.length > 1 ? ks.length + ' kegiatan ' + (rk ? 'dipasangkan ke RK' : 'dilepas dari RK') : (rk ? 'RK dipasangkan' : 'RK dilepas'), 1800);
+  }
+  $('mTerapkan').onclick = () => {
+    const ks = kegiatan.filter(k => dipilih.has(k.id)); if (!ks.length) return;
+    const bd = [...new Set(ks.map(k => k.bidang).filter(Boolean))];
+    SKPPilihRK.buka({ rhkList, bidang: bd.length === 1 ? bd[0] : '', judul: 'Pasangkan ' + ks.length + ' kegiatan ke RK', onPilih: async rk => { try { await pasangRk(ks, rk); dipilih.clear(); renderRekap(); } catch (x) { S.toast(x.message, 5000); } } });
   };
   $('tblKeg').addEventListener('click', async e => {
+    const pr = e.target.closest('[data-pilihrk]');
+    if (pr) { if (!rhkList.length) { S.toast('Belum ada RK — tambahkan di menu RK & IKI'); location.hash = 'rk'; return; }
+      const k = kegiatan.find(x => x.id === pr.closest('tr').dataset.id);
+      SKPPilihRK.buka({ rhkList, bidang: k.bidang, terpilih: k.rhkId, judul: 'RK untuk: ' + (k.teks || '').slice(0, 60), onPilih: async rk => { try { await pasangRk([k], rk); renderTabel(); } catch (x) { S.toast(x.message, 5000); } } }); return; }
     const b = e.target.closest('[data-edit]'); if (b) { bukaKeg(b.dataset.edit); return; }
     const im = e.target.closest('img[data-foto]'); if (im && im.src) { lihat(im.src); return; }
     const h = e.target.closest('[data-hapus]'); if (!h) return; const k = kegiatan.find(x => x.id === h.dataset.hapus);
@@ -467,10 +566,12 @@
     $('mKegJ').textContent = k ? 'Ubah kegiatan' : 'Tambah kegiatan';
     $('kTeks').value = edit.teks; $('kTgl').value = edit.tanggal; $('kJam').value = edit.jam || '';
     $('kBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('kBidang').value = edit.bidang || '';
-    $('kRk').innerHTML = opsiRk(edit.rhkId);
+    $('kRk').value = edit.rhkId || ''; tampilKRk();
     $('kHapus').hidden = !k;
     renderFotoEdit(); $('mKeg').classList.add('on'); setTimeout(() => $('kTeks').focus(), 50);
   }
+  function tampilKRk() { const r = rhkById($('kRk').value); $('kRkBtn').classList.toggle('kosong-rk', !r); $('kRkBtn').textContent = r ? '🎯 ' + (rhkList.indexOf(r) + 1) + '. ' + r.nama : '+ Pilih RK'; }
+  $('kRkBtn').onclick = () => SKPPilihRK.buka({ rhkList, bidang: $('kBidang').value, terpilih: $('kRk').value, onPilih: r => { $('kRk').value = r ? r.id : ''; tampilKRk(); } });
   function renderFotoEdit() {
     const box = $('kFoto'); box.innerHTML = '';
     edit.fotoIds.forEach(fid => { const d = document.createElement('div'); d.innerHTML = '<img alt=""><button class="x" aria-label="Hapus foto">×</button>'; ambilFoto(fid).then(f => f && (d.querySelector('img').src = f.data));
@@ -528,8 +629,8 @@
     let html = '';
     if (!grup.length) html = '<div class="kosong">Belum ada kegiatan pada periode ini.<br>Catat lewat menu <a href="input.html">Input</a> dengan memilih bidang.</div>';
     else html = '<div class="tabel-wrap"><table class="t"><thead><tr><th>Bidang (1 dokumen)</th><th>Isi per RK</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>' +
-      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${perRk(g.ks).map(x => x.rk ? '🎯 ' + S.esc(x.rk.nama.length > 55 ? x.rk.nama.slice(0, 53) + '…' : x.rk.nama) + ' (' + x.ks.length + ')' : '<span style="color:#b26a00">⚠ Tanpa RK (' + x.ks.length + ') — RK & IKI kosong</span>').join('<br>')}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button">Unduh .docx</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a">☁ Simpan ke Drive</button>` : ''}</td></tr>`).join('') +
-      `</tbody></table></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn utama" type="button" id="btnZip">Unduh semua (${grup.length} dokumen, .zip)</button>${adaDrive() ? `<button class="btn" type="button" id="btnDriveSemua" style="color:#0b6b3a;border-color:#9fd3b5">☁ Simpan semua ke Drive (${grup.length})</button>` : ''}</div>`;
+      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${perRk(g.ks).map(x => x.rk ? '🎯 ' + S.esc(x.rk.nama.length > 55 ? x.rk.nama.slice(0, 53) + '…' : x.rk.nama) + ' (' + x.ks.length + ')' : '<span style="color:#b26a00">⚠ Tanpa RK (' + x.ks.length + ') — RK & IKI kosong</span>').join('<br>')}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button">Unduh .docx</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a" title="Simpan ke Google Drive lalu hapus kegiatan & foto ini dari aplikasi">☁ Simpan &amp; arsipkan</button>` : ''}</td></tr>`).join('') +
+      `</tbody></table></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn utama" type="button" id="btnZip">Unduh semua (${grup.length} dokumen, .zip)</button>${adaDrive() ? `<button class="btn" type="button" id="btnDriveSemua" style="color:#0b6b3a;border-color:#9fd3b5">☁ Simpan semua ke Drive &amp; arsipkan (${grup.length})</button>` : ''}</div>`;
     if (tanpa) html += `<p style="font-size:13px;color:#8a5300;margin:12px 0 0">⚠ ${tanpa} kegiatan belum memilih bidang sehingga tidak masuk dokumen. Lengkapi lewat ikon pensil di <a href="#dashboard">Dashboard</a>.</p>`;
     $('uDaftar').innerHTML = html;
     renderDrive();
@@ -543,24 +644,34 @@
       dokumen.map(d => `<tr><td style="white-space:nowrap">${S.esc(d.periode || '')}</td><td>${S.esc(d.bidang || '')}</td><td style="word-break:break-all"><a href="${S.esc(d.url)}" target="_blank" rel="noopener">${S.esc(d.nama)}</a></td>
         <td style="white-space:nowrap;color:var(--teks2);font-size:12.5px">${d.dibuat ? S.esc(new Date(d.dibuat).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) : ''}</td>
         <td style="white-space:nowrap;text-align:right"><a class="btn kecil" href="${S.esc(d.url)}" target="_blank" rel="noopener">Buka</a> <button class="btn kecil" type="button" data-salin="${S.esc(d.id)}">Salin link</button> <button class="ikon hapus" type="button" data-hapusdok="${S.esc(d.id)}" title="Hapus dari Drive" aria-label="Hapus dari Drive"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('') + '</tbody></table></div>'
-      : '<div class="kosong">Belum ada dokumen yang disimpan ke Google Drive. Klik “☁ Simpan ke Drive” pada daftar di atas.</div>';
+      : '<div class="kosong">Belum ada dokumen yang disimpan ke Google Drive. Klik “☁ Simpan &amp; arsipkan” pada daftar di atas.</div>';
+    box.insertAdjacentHTML('beforeend', '<p style="font-size:12.5px;color:var(--teks2);margin:10px 0 0">Kegiatan dan foto yang sudah disimpan ke Drive dihapus dari aplikasi untuk menghemat ruang; dokumen di Drive adalah arsipnya. Kegiatan baru pada bidang &amp; periode yang sama disimpan sebagai dokumen tambahan.</p>');
   }
   async function salin(teks) { try { await navigator.clipboard.writeText(teks); S.toast('Link disalin'); } catch (e) { const t = document.createElement('textarea'); t.value = teks; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); S.toast('Link disalin'); } catch (x) { S.toast('Gagal menyalin — salin manual dari kolom Dokumen'); } t.remove(); } }
+  /* Simpan ke Drive, lalu hapus kegiatan & foto dokumen itu dari database aplikasi (Drive menjadi arsipnya) */
   async function simpanKeDrive(g, p) {
     const r = await buatBukti(g, p);
-    const hasil = await S.drive(driveCfg.url, 'simpan', { nama: r.nama, periode: p.label, data: await S.blobKeBase64(r.blob) });
-    const id = 'd_' + amanNama(g.bidang + '_' + p.label).toLowerCase();
-    const lama = dokumen.find(d => d.id === id);
-    const doc = { id, bidang: g.bidang, periode: p.label, nama: hasil.nama || r.nama, driveId: hasil.id, url: hasil.url, ukuran: hasil.ukuran, dibuat: new Date().toISOString() };
-    await S.put('dokumen', doc); dokumen = [doc].concat(dokumen.filter(d => d.id !== id));
-    return { doc, diganti: !!lama };
+    // bila bidang & periode ini sudah pernah diarsipkan, simpan sebagai dokumen tambahan agar arsip lama tidak tertimpa
+    const sudah = dokumen.filter(d => d.bidang === g.bidang && d.periode === p.label).length;
+    const nama = sudah ? r.nama.replace(/\.docx$/, ' (' + (sudah + 1) + ').docx') : r.nama;
+    const hasil = await S.drive(driveCfg.url, 'simpan', { nama, periode: p.label, data: await S.blobKeBase64(r.blob) });
+    if (!hasil.id || !hasil.url || !(hasil.ukuran > 0)) throw new Error('Google Drive tidak mengonfirmasi file tersimpan; data tidak dihapus');
+    const doc = { id: 'd_' + S.uid(), bidang: g.bidang, periode: p.label, nama: hasil.nama || nama, driveId: hasil.id, url: hasil.url, ukuran: hasil.ukuran, dibuat: new Date().toISOString() };
+    await S.put('dokumen', doc); dokumen = [doc].concat(dokumen);
+    // arsip aman di Drive → hapus kegiatan & foto yang masuk dokumen ini
+    const ar = await S.arsipkanKegiatan(g.ks);
+    if (ar.gagalFoto) S.toast(ar.gagalFoto + ' foto belum terhapus dari penyimpanan; tidak memengaruhi arsip', 4000);
+    const ids = new Set(g.ks.map(k => k.id)); kegiatan = kegiatan.filter(k => !ids.has(k.id));
+    g.ks.forEach(k => { const r = ringkas.find(x => x.tanggal === k.tanggal); if (r) { r.jumlah++; r.foto += (k.fotoIds || []).length; } else ringkas.push({ tanggal: k.tanggal, jumlah: 1, foto: (k.fotoIds || []).length }); });
+    g.ks.forEach(k => (k.fotoIds || []).forEach(f => fotoCache.delete(f)));
+    return { doc, terhapus: g.ks.length };
   }
   $('driveKartu').addEventListener('click', async e => {
     const sl = e.target.closest('[data-salin]'); if (sl) { const d = dokumen.find(x => x.id === sl.dataset.salin); if (d) salin(d.url); return; }
     if (e.target.closest('#btnSalinSemua')) { salin(dokumen.map(d => d.nama.replace(/\.docx$/, '') + ': ' + d.url).join('\n')); return; }
     const h = e.target.closest('[data-hapusdok]'); if (!h) return;
     const d = dokumen.find(x => x.id === h.dataset.hapusdok);
-    if (!await konfirmasi('Hapus dokumen dari Google Drive?', d.nama + ' akan dipindahkan ke sampah Drive dan link-nya tidak bisa dibuka lagi.')) return;
+    if (!await konfirmasi('Hapus arsip dari Google Drive?', d.nama + ' akan dipindahkan ke sampah Drive dan link-nya tidak bisa dibuka lagi. Kegiatan di dalam dokumen ini sudah tidak ada di aplikasi, jadi datanya akan hilang sama sekali (masih bisa dipulihkan dari Sampah Google Drive dalam 30 hari).')) return;
     try { if (d.driveId) await S.drive(driveCfg.url, 'hapus', { id: d.driveId }); } catch (x) { if (!/not found|tidak ditemukan|No item/i.test(x.message)) { S.toast(x.message, 5000); return; } }
     await S.del('dokumen', d.id); dokumen = dokumen.filter(x => x.id !== d.id); renderDrive(); S.toast('Dokumen dihapus dari Drive');
   });
@@ -595,11 +706,17 @@
       try {
         const p = periode(); const grup = kelompok(kegiatan.filter(k => k.tanggal >= p.dari && k.tanggal <= p.sampai));
         const pilih = bd ? [grup[+bd.dataset.drive]] : grup; let n = 0;
-        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; await simpanKeDrive(g, p); renderDrive(); }
-        S.toast(pilih.length === 1 ? 'Tersimpan di Google Drive — link ada di bagian bawah' : pilih.length + ' dokumen tersimpan di Google Drive', 4000);
+        const nk = pilih.reduce((a, g) => a + g.ks.length, 0), nf = pilih.reduce((a, g) => a + g.ks.reduce((x, k) => x + (k.fotoIds || []).length, 0), 0);
+        btn.disabled = false;
+        if (!await konfirmasi(pilih.length === 1 ? 'Simpan ke Drive & arsipkan?' : 'Simpan ' + pilih.length + ' dokumen ke Drive & arsipkan?',
+          `Setelah dokumen tersimpan di Google Drive, ${nk} kegiatan dan ${nf} foto (${pilih.map(g => g.bidang).join(', ')} · ${p.label}) akan DIHAPUS dari aplikasi untuk menghemat ruang database. Dokumen di Drive menjadi arsipnya dan link-nya tetap ada di daftar bawah. Tindakan ini tidak bisa dibatalkan.`)) return;
+        btn.disabled = true; let terhapus = 0;
+        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; const h = await simpanKeDrive(g, p); terhapus += h.terhapus; renderDrive(); }
+        S.toast((pilih.length === 1 ? 'Tersimpan di Google Drive' : pilih.length + ' dokumen tersimpan di Google Drive') + ' · ' + terhapus + ' kegiatan diarsipkan & dihapus dari aplikasi', 5000);
+        renderUpload();
         $('driveKartu').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (x) { console.error(x); S.toast('Gagal menyimpan ke Drive: ' + (x.message || x), 6000); }
-      finally { btn.disabled = false; btn.textContent = lama; }
+      } catch (x) { console.error(x); S.toast('Gagal menyimpan ke Drive: ' + (x.message || x), 6000); renderUpload(); }
+      finally { if (document.body.contains(btn)) { btn.disabled = false; btn.textContent = lama; } }
       return;
     }
     const b1 = e.target.closest('[data-unduh]'), bz = e.target.closest('#btnZip'); if (!b1 && !bz) return;

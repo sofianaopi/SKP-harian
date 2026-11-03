@@ -30,8 +30,8 @@
   /* ---------- Pemetaan baris database <-> objek aplikasi ---------- */
   const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', bidang: r.bidang || null, jenisId: r.jenis_id || null, rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0 });
   const dariK = k => ({ id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() });
-  const keR = r => ({ id: r.id, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0 });
-  const dariR = r => ({ id: r.id, user_id: uid, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0 });
+  const keR = r => ({ id: r.id, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0 });
+  const dariR = r => ({ id: r.id, user_id: uid, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0 });
   const keD = r => ({ id: r.id, bidang: r.bidang, periode: r.periode, nama: r.nama_file, driveId: r.drive_id, url: r.url, ukuran: Number(r.ukuran) || 0, dibuat: r.dibuat });
   const keJ = r => ({ id: r.id, bidang: r.bidang, nama: r.nama, urutan: r.urutan || 0, dibuatOleh: r.dibuat_oleh });
   const PROFIL = { nama: 'nama', nip: 'nip_baru', jabatan: 'jabatan', unit: 'unit', kota: 'kota', atasanNama: 'atasan_nama', atasanNip: 'atasan_nip', atasanJabatan: 'atasan_jabatan' };
@@ -52,6 +52,7 @@
       const c = client();
       if (s === 'kegiatan') return cek(await c.from('kegiatan').select('*').eq('user_id', uid).order('tanggal').limit(10000)).map(keK);
       if (s === 'rhk') return cek(await c.from('rk').select('*').eq('user_id', uid).order('urutan')).map(keR);
+      if (s === 'ringkas') return cek(await c.from('kegiatan_ringkas').select('tanggal,jumlah,foto').eq('user_id', uid)).map(r => ({ tanggal: r.tanggal, jumlah: Number(r.jumlah) || 0, foto: Number(r.foto) || 0 }));
       if (s === 'dokumen') return cek(await c.from('dokumen').select('*').eq('user_id', uid).order('dibuat', { ascending: false })).map(keD);
       if (s === 'jenis') return cek(await c.from('jenis_kegiatan').select('*').order('bidang').order('urutan').order('nama')).map(keJ);
       if (s === 'foto') { const ks = await db.list('kegiatan'); const out = []; for (const k of ks) for (const id of k.fotoIds) { const f = await db.get('foto', id); if (f) out.push(f); } return out; }
@@ -81,12 +82,28 @@
       notify(); return o;
     },
     async putBanyak(s, arr, progres) {   // simpan banyak kegiatan sekaligus (impor Excel)
-      if (s !== 'kegiatan') throw new Error('putBanyak hanya untuk kegiatan');
-      const c = client();
+      if (s !== 'kegiatan' && s !== 'rhk') throw new Error('putBanyak hanya untuk kegiatan/RK');
+      const c = client(); const tabel = s === 'rhk' ? 'rk' : 'kegiatan', peta = s === 'rhk' ? dariR : dariK;
       for (let i = 0; i < arr.length; i += 200) {
-        cek(await c.from('kegiatan').upsert(arr.slice(i, i + 200).map(dariK)), 'Gagal menyimpan kegiatan');
+        cek(await c.from(tabel).upsert(arr.slice(i, i + 200).map(peta)), 'Gagal menyimpan ' + (s === 'rhk' ? 'RK' : 'kegiatan'));
         if (progres) progres(Math.min(arr.length, i + 200), arr.length);
       }
+      notify();
+    },
+    async arsipkanKegiatan(ks) {   // catat ringkasan + hapus kegiatan (satu transaksi di database), lalu hapus fotonya
+      const c = client();
+      const ids = ks.map(k => k.id);
+      for (let i = 0; i < ids.length; i += 500) cek(await c.rpc('arsipkan_kegiatan', { p_ids: ids.slice(i, i + 500) }), 'Gagal mengarsipkan kegiatan');
+      const paths = ks.flatMap(k => (k.fotoIds || []).map(fotoPath)); let gagalFoto = 0;
+      for (let i = 0; i < paths.length; i += 100) { const r = await c.storage.from(BUCKET).remove(paths.slice(i, i + 100)); if (r.error) gagalFoto += paths.slice(i, i + 100).length; }
+      notify(); return { gagalFoto };
+    },
+    async hapusBanyakKegiatan(ks) {   // hapus banyak kegiatan + fotonya sekaligus
+      const c = client();
+      const paths = ks.flatMap(k => (k.fotoIds || []).map(fotoPath));
+      for (let i = 0; i < paths.length; i += 100) { const r = await c.storage.from(BUCKET).remove(paths.slice(i, i + 100)); if (r.error) throw new Error('Gagal menghapus foto: ' + r.error.message); }
+      const ids = ks.map(k => k.id);
+      for (let i = 0; i < ids.length; i += 200) cek(await c.from('kegiatan').delete().in('id', ids.slice(i, i + 200)), 'Gagal menghapus kegiatan');
       notify();
     },
     async del(s, id) {
@@ -266,7 +283,7 @@
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
-    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), putBanyak: (s, a, p) => db.putBanyak(s, a, p), del: (s, id) => db.del(s, id),
+    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), putBanyak: (s, a, p) => db.putBanyak(s, a, p), hapusBanyakKegiatan: ks => db.hapusBanyakKegiatan(ks), arsipkanKegiatan: ks => db.arsipkanKegiatan(ks), del: (s, id) => db.del(s, id),
     onChange: f => listeners.add(f),
     async profil() { return db.get('meta', 'profil'); },
     async hapusKegiatan(k) { for (const f of (k.fotoIds || [])) await db.del('foto', f); await db.del('kegiatan', k.id); },

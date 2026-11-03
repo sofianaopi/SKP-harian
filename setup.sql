@@ -46,6 +46,7 @@ create table if not exists public.rk (            -- Rencana Kinerja milik tiap 
   urutan       int not null default 0
 );
 create index if not exists rk_user on public.rk(user_id);
+alter table public.rk add column if not exists bidang text;   -- bidang yang mengerjakan RK ini
 
 create table if not exists public.kegiatan (     -- catatan kegiatan harian
   id      text primary key,
@@ -74,6 +75,14 @@ create table if not exists public.dokumen (       -- dokumen Bukti Dukung yang d
   dibuat    timestamptz not null default now()
 );
 create index if not exists dokumen_user on public.dokumen(user_id, dibuat desc);
+
+create table if not exists public.kegiatan_ringkas (   -- ringkasan kegiatan yang sudah diarsipkan ke Google Drive
+  user_id uuid not null references auth.users(id) on delete cascade,
+  tanggal date not null,
+  jumlah  int  not null default 0,   -- jumlah kegiatan pada tanggal itu yang sudah diarsipkan
+  foto    int  not null default 0,   -- jumlah foto bukti yang ikut diarsipkan
+  primary key (user_id, tanggal)
+);
 
 create table if not exists public.pengaturan (   -- pengaturan kantor (mis. kop surat)
   key   text primary key,
@@ -153,20 +162,44 @@ create or replace function public.admin_rekap(p_dari date, p_sampai date, p_hari
 returns table (id uuid, nama text, nip text, nip_baru text, jabatan text, unit text, aktif boolean,
                jumlah_kegiatan bigint, hari_terisi bigint, jumlah_foto bigint, terakhir date, isi_hari_ini boolean)
 language sql stable security definer set search_path = public as $$
+  with semua as (   -- kegiatan yang masih ada + ringkasan kegiatan yang sudah diarsipkan ke Drive
+    select user_id, tanggal, 1::bigint as jml, jsonb_array_length(foto)::bigint as ft from public.kegiatan
+    union all
+    select user_id, tanggal, jumlah::bigint, foto::bigint from public.kegiatan_ringkas where jumlah > 0
+  )
   select p.id, p.nama, p.nip, p.nip_baru, p.jabatan, p.unit, p.aktif,
-         count(k.id) filter (where k.tanggal between p_dari and p_sampai),
-         count(distinct k.tanggal) filter (where k.tanggal between p_dari and p_sampai),
-         coalesce(sum(jsonb_array_length(k.foto)) filter (where k.tanggal between p_dari and p_sampai), 0)::bigint,
-         max(k.tanggal),
-         coalesce(bool_or(k.tanggal = p_hari_ini), false)
+         coalesce(sum(s.jml) filter (where s.tanggal between p_dari and p_sampai), 0)::bigint,
+         count(distinct s.tanggal) filter (where s.tanggal between p_dari and p_sampai),
+         coalesce(sum(s.ft) filter (where s.tanggal between p_dari and p_sampai), 0)::bigint,
+         max(s.tanggal),
+         coalesce(bool_or(s.tanggal = p_hari_ini), false)
     from public.pegawai p
-    left join public.kegiatan k on k.user_id = p.id
+    left join semua s on s.user_id = p.id
    where p.peran = 'pegawai' and public.is_admin()
    group by p.id
    order by p.nama;
 $$;
 revoke execute on function public.admin_rekap(date, date, date) from public, anon;
 grant execute on function public.admin_rekap(date, date, date) to authenticated;
+
+-- Arsipkan kegiatan (setelah tersimpan di Google Drive): catat ringkasan per tanggal lalu hapus barisnya, dalam satu transaksi
+create or replace function public.arsipkan_kegiatan(p_ids text[]) returns int
+language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  if not public.is_pegawai() then raise exception 'Tidak diizinkan'; end if;
+  insert into public.kegiatan_ringkas (user_id, tanggal, jumlah, foto)
+    select user_id, tanggal, count(*), coalesce(sum(jsonb_array_length(foto)), 0)
+      from public.kegiatan where id = any(p_ids) and user_id = auth.uid()
+     group by user_id, tanggal
+  on conflict (user_id, tanggal) do update
+    set jumlah = public.kegiatan_ringkas.jumlah + excluded.jumlah, foto = public.kegiatan_ringkas.foto + excluded.foto;
+  delete from public.kegiatan where id = any(p_ids) and user_id = auth.uid();
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke execute on function public.arsipkan_kegiatan(text[]) from public, anon;
+grant execute on function public.arsipkan_kegiatan(text[]) to authenticated;
 
 revoke execute on function public.admin_set_password(uuid, text) from public, anon;
 revoke execute on function public.admin_hapus_pegawai(uuid) from public, anon;
@@ -183,6 +216,7 @@ alter table public.kegiatan   enable row level security;
 alter table public.pengaturan enable row level security;
 alter table public.jenis_kegiatan enable row level security;
 alter table public.dokumen    enable row level security;
+alter table public.kegiatan_ringkas enable row level security;
 
 -- pegawai: tiap orang melihat & mengubah profilnya sendiri; admin mengelola semua
 drop policy if exists pegawai_baca  on public.pegawai;
@@ -216,6 +250,10 @@ create policy jenis_hapus  on public.jenis_kegiatan for delete to authenticated 
 drop policy if exists dokumen_milik_sendiri on public.dokumen;
 create policy dokumen_milik_sendiri on public.dokumen for all to authenticated
   using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());
+
+-- ringkasan arsip: pegawai hanya membaca miliknya (diisi lewat fungsi arsipkan_kegiatan)
+drop policy if exists ringkas_baca on public.kegiatan_ringkas;
+create policy ringkas_baca on public.kegiatan_ringkas for select to authenticated using (user_id = auth.uid());
 
 -- pengaturan kantor: semua pegawai membaca, hanya admin yang mengubah
 drop policy if exists pengaturan_baca on public.pengaturan;
