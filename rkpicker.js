@@ -45,7 +45,7 @@
   function tombolBidang() {
     const daftarRk = opsi.rhkList || [];
     const n = b => daftarRk.filter(r => !b || r.bidang === b).length;
-    document.getElementById('rkpBd').innerHTML = S.BIDANG.filter(b => n(b)).concat(['']).map(b => `<button type="button" data-bd="${b}" class="${bidang === b ? 'on' : ''}">${b || 'Semua bidang'} (${n(b)})</button>`).join('') +
+    document.getElementById('rkpBd').innerHTML = S.bidangDari(daftarRk.map(r => r.bidang)).filter(b => n(b)).concat(['']).map(b => `<button type="button" data-bd="${S.esc(b)}" class="${bidang === b ? 'on' : ''}">${b ? S.esc(b) : 'Semua bidang'} (${n(b)})</button>`).join('') +
       (daftarRk.some(r => !r.bidang) ? `<button type="button" data-bd="-" class="${bidang === '-' ? 'on' : ''}">Tanpa bidang (${daftarRk.filter(r => !r.bidang).length})</button>` : '');
   }
   function daftar() {
@@ -54,7 +54,7 @@
     document.getElementById('rkpSub').textContent = (opsi.bidang ? 'Bidang kegiatan: ' + opsi.bidang + ' · ' : '') + rk.length + ' RK ditampilkan';
     const el = document.getElementById('rkpDaftar');
     if (!semua.length) { el.innerHTML = '<div class="rkp-kosong">Belum ada RK. Tambahkan dulu di menu <a href="index.html#rk">RK &amp; IKI</a>.</div>'; return; }
-    el.innerHTML = rk.length ? rk.map(x => `<button type="button" class="rkp-item${x.r.id === opsi.terpilih ? ' on' : ''}" data-rk="${x.r.id}"><span class="rkp-no">${x.no}</span><span><div class="rkp-rk">${tandai(x.r.nama || '(tanpa judul)', q)}${!bidang && x.r.bidang ? `<span class="rkp-tag">${S.esc(x.r.bidang)}</span>` : ''}</div>${x.r.indikator ? `<div class="rkp-iki">IKI: ${tandai(x.r.indikator, q)}</div>` : ''}</span></button>`).join('')
+    el.innerHTML = rk.length ? rk.map(x => `<button type="button" class="rkp-item${x.r.id === opsi.terpilih ? ' on' : ''}" data-rk="${x.r.id}"><span class="rkp-no">${x.no}</span><span><div class="rkp-rk">${tandai(x.r.nama || '(tanpa judul)', q)}${!bidang && x.r.bidang ? `<span class="rkp-tag">${S.esc(x.r.bidang)}</span>` : ''}${x.r.bersama ? '<span class="rkp-tag" style="background:#e8f0fa;color:#1F4E79">🔒 admin</span>' : ''}</div>${x.r.indikator ? `<div class="rkp-iki">IKI: ${tandai(x.r.indikator, q)}</div>` : ''}</span></button>`).join('')
       : `<div class="rkp-kosong">${q ? 'Tidak ada RK yang cocok dengan “' + S.esc(q) + '”.' : 'Belum ada RK untuk bidang ini.'}<br><button type="button" data-bd="" class="rkp-semua" style="margin-top:8px;font:inherit;border:1px solid #d5dce3;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer">Tampilkan semua bidang</button></div>`;
     const sb = el.querySelector('.rkp-semua'); if (sb) sb.onclick = () => { bidang = ''; tombolBidang(); daftar(); };
   }

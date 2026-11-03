@@ -107,6 +107,7 @@
   .bawah-nav { display: none; }
   .rk-tabel td { vertical-align: top; } .rk-tabel .rk-teks { font-weight: 600; line-height: 1.4; } .rk-tabel .iki { color: var(--teks2); line-height: 1.4; }
   .rk-tabel mark { background: #fff1a8; padding: 0; }
+  .rk-admin { display: inline-block; font-size: 11.5px; font-weight: 600; color: #1F4E79; background: #e8f0fa; border-radius: 6px; padding: 3px 7px; } .rk-dari { font-size: 11px; color: #2E75B6; margin-top: 2px; }
   .rk-pilih { display: block; width: 100%; min-width: 200px; max-width: 320px; text-align: left; font: inherit; font-size: 12.5px; line-height: 1.35; padding: 6px 8px; border: 1px solid #cfd7e0; border-radius: 8px; background: #fff; cursor: pointer; color: var(--teks); }
   .rk-pilih.kosong-rk { border-color: #e8b35a; background: #fff9ec; color: #8a5300; }
   .ri-ring { background: #f3f8fd; border: 1px dashed #b8d0e8; border-radius: 10px; padding: 10px 12px; margin: 12px 0 8px; font-size: 13.5px; }
@@ -208,7 +209,7 @@
 
     <!-- RK & IKI -->
     <section id="v-rk" hidden>
-      <div class="kepala"><div style="flex:1"><h1>RK &amp; IKI</h1><p>Daftar Rencana Kinerja (RK) dan Indikator Kinerja Individu (IKI) Anda per bidang. RK yang bidangnya sama dengan kegiatan akan ditawarkan saat memasangkan kegiatan.</p></div></div>
+      <div class="kepala"><div style="flex:1"><h1>RK &amp; IKI</h1><p>RK &amp; IKI dari admin (🔒) tampil otomatis untuk semua pegawai. Anda dapat menambahkan RK sendiri bila belum ada di daftar. RK yang bidangnya sama dengan kegiatan akan ditawarkan saat memasangkan kegiatan.</p></div></div>
       <div class="kartu" style="padding:0">
         <div style="padding:16px 18px 0">
           <div class="alat"><input type="search" id="rkCari" placeholder="Cari kata dalam RK atau IKI…" aria-label="Cari RK"><select id="rkFBidang" aria-label="Saring bidang"></select>
@@ -376,7 +377,7 @@
     $('sJenis').textContent = bds.size; $('sJenisK').textContent = tanpa ? '⚠ ' + tanpa + ' kegiatan belum pilih bidang' : 'menjadi ' + bds.size + ' dokumen Bukti Dukung';
     const nf = ks.reduce((a, k) => a + (k.fotoIds || []).length, 0) + fArsip; $('sFoto').textContent = nf; $('sFotoK').textContent = ks.filter(k => (k.fotoIds || []).length).length + ' kegiatan memiliki foto';
     renderChart(ks, y, m, nHari, arsip);
-    const perB = S.BIDANG.map(b => ({ b, ks: ks.filter(k => k.bidang === b) })).filter(x => x.ks.length); const maxB = Math.max(1, ...perB.map(x => x.ks.length));
+    const perB = S.bidangDari(ks.map(k => k.bidang)).map(b => ({ b, ks: ks.filter(k => k.bidang === b) })).filter(x => x.ks.length); const maxB = Math.max(1, ...perB.map(x => x.ks.length));
     $('perBidang').innerHTML = perB.length ? perB.map(x => `<div class="rhk-item"><div class="atas"><b>${S.esc(x.b)}</b><span>${x.ks.length} kegiatan · ${new Set(x.ks.map(k => k.tanggal)).size} hari</span></div><div class="progress"><i style="width:${x.ks.length / maxB * 100}%"></i></div></div>`).join('')
       : '<div class="kosong">Belum ada kegiatan pada bulan ini.<br>Catat lewat menu <a href="input.html">Catat Kegiatan</a>.</div>';
   }
@@ -408,22 +409,23 @@
   const tandai = (t, q) => { const e = S.esc(t || ''); if (!q) return e; const i = e.toLowerCase().indexOf(S.esc(q)); return i < 0 ? e : e.slice(0, i) + '<mark>' + e.slice(i, i + S.esc(q).length) + '</mark>' + e.slice(i + S.esc(q).length); };
   function renderRkMenu() {
     const f = $('rkFBidang'), v = f.value;
-    f.innerHTML = '<option value="">Semua bidang</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join('') + '<option value="-">Tanpa bidang</option>'; f.value = v;
+    f.innerHTML = '<option value="">Semua bidang</option>' + S.bidangDari(rhkList.map(r => r.bidang)).map(b => `<option>${S.esc(b)}</option>`).join('') + '<option value="-">Tanpa bidang</option>'; f.value = v;
     const q = $('rkCari').value.trim().toLowerCase();
     const jml = id => kegiatan.filter(k => k.rhkId === id).length;
     const rows = rhkList.map((r, i) => ({ r, no: i + 1 })).filter(x => (!f.value || (f.value === '-' ? !x.r.bidang : x.r.bidang === f.value)) && (!q || ((x.r.nama || '') + ' ' + (x.r.indikator || '')).toLowerCase().includes(q)));
-    const perB = S.BIDANG.map(b => [b, rhkList.filter(r => r.bidang === b).length]).filter(x => x[1]);
-    $('rkRingkas').textContent = rhkList.length ? rhkList.length + ' RK · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') + (rhkList.some(r => !r.bidang) ? ' · tanpa bidang ' + rhkList.filter(r => !r.bidang).length : '') : '';
-    $('rkTbl').innerHTML = rows.length ? rows.map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td><td>${x.r.bidang ? '<b>' + S.esc(x.r.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}</td>
+    const perB = S.bidangDari(rhkList.map(r => r.bidang)).map(b => [b, rhkList.filter(r => r.bidang === b).length]).filter(x => x[1]);
+    const nAdm = rhkList.filter(r => r.bersama).length;
+    $('rkRingkas').textContent = rhkList.length ? rhkList.length + ' RK' + (nAdm ? ' (' + nAdm + ' dari admin, ' + (rhkList.length - nAdm) + ' tambahan Anda)' : '') + ' · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') + (rhkList.some(r => !r.bidang) ? ' · tanpa bidang ' + rhkList.filter(r => !r.bidang).length : '') : '';
+    $('rkTbl').innerHTML = rows.length ? rows.map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td><td>${x.r.bidang ? '<b>' + S.esc(x.r.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}${x.r.bersama ? '<div class="rk-dari">dari admin</div>' : ''}</td>
         <td class="rk-teks">${tandai(x.r.nama, q)}</td><td class="iki">${tandai(x.r.indikator, q) || '—'}</td><td class="num">${jml(x.r.id)}</td>
-        <td style="white-space:nowrap"><button class="ikon" data-ubahrk title="Ubah" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapusrk title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('')
+        <td style="white-space:nowrap">${x.r.bersama ? '<span class="rk-admin" title="RK dari admin — hanya admin yang dapat mengubah">🔒 Admin</span>' : `<button class="ikon" data-ubahrk title="Ubah" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapusrk title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>`}</td></tr>`).join('')
       : `<tr><td colspan="6"><div class="kosong">${rhkList.length ? 'Tidak ada RK yang cocok.' : 'Belum ada RK. Klik “+ Tambah RK”, atau “📥 Impor Excel” untuk memasukkan banyak RK sekaligus.'}</div></td></tr>`;
   }
   $('rkCari').oninput = renderRkMenu; $('rkFBidang').onchange = renderRkMenu;
   let rkEdit = null;
   function bukaRk(r) {
     rkEdit = r; $('rkEJ').textContent = r ? 'Ubah RK' : 'Tambah RK';
-    $('rkEBidang').innerHTML = '<option value="">— pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join('');
+    $('rkEBidang').innerHTML = '<option value="">— pilih bidang —</option>' + S.bidangDari(rhkList.map(r => r.bidang)).map(b => `<option>${S.esc(b)}</option>`).join('');
     $('rkEBidang').value = r ? (r.bidang || '') : ($('rkFBidang').value && $('rkFBidang').value !== '-' ? $('rkFBidang').value : '');
     $('rkENama').value = r ? r.nama : ''; $('rkEIki').value = r ? (r.indikator || '') : ''; $('rkEHapus').hidden = !r;
     $('mRkEdit').classList.add('on'); setTimeout(() => $(r ? 'rkENama' : 'rkEBidang').focus(), 50);
@@ -435,7 +437,7 @@
     if (!bidang) { S.toast('Pilih bidang RK ini'); return; }
     const ganda = rhkList.find(x => x !== rkEdit && x.bidang === bidang && x.nama.trim().toLowerCase() === nama.toLowerCase());
     if (ganda) { S.toast('RK yang sama sudah ada di bidang ' + bidang); return; }
-    const r = rkEdit ? Object.assign({}, rkEdit) : { id: 'r' + S.uid(), satuan: '', target: 0, targetBulan: {}, urutan: rhkList.length };
+    const r = rkEdit ? Object.assign({}, rkEdit) : { id: 'r' + S.uid(), satuan: '', target: 0, targetBulan: {}, urutan: rhkList.filter(x => !x.bersama).length };
     Object.assign(r, { bidang, nama, indikator: $('rkEIki').value.trim() });
     $('rkESimpan').disabled = true;
     try { await S.put('rhk', r); if (rkEdit) rhkList[rhkList.indexOf(rkEdit)] = r; else rhkList.push(r); $('mRkEdit').classList.remove('on'); renderRkMenu(); S.toast(rkEdit ? 'RK diperbarui' : 'RK ditambahkan'); }
@@ -448,6 +450,7 @@
   }
   $('rkEHapus').onclick = async () => { if (await hapusRk(rkEdit)) $('mRkEdit').classList.remove('on'); };
   $('rkTbl').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (!tr) return; const r = rhkById(tr.dataset.id);
+    if (r && r.bersama) { S.toast('RK ini dari admin. Hanya admin yang dapat mengubah atau menghapusnya.'); return; }
     if (e.target.closest('[data-ubahrk]')) bukaRk(r); else if (e.target.closest('[data-hapusrk]')) hapusRk(r); });
   $('rkEkspor').onclick = async () => {
     if (!rhkList.length) { S.toast('Belum ada RK'); return; }
@@ -497,7 +500,7 @@
   let dipilih = new Set();
   function renderTabel() {
     const f = $('fBidang'), fr = $('fRk'); const val = f.value, vr = fr.value;
-    f.innerHTML = '<option value="">Semua bidang</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join('') + '<option value="-">⚠ Belum pilih bidang</option>'; f.value = val;
+    f.innerHTML = '<option value="">Semua bidang</option>' + S.bidangDari(kegiatan.map(k => k.bidang)).map(b => `<option>${S.esc(b)}</option>`).join('') + '<option value="-">⚠ Belum pilih bidang</option>'; f.value = val;
     fr.innerHTML = '<option value="">Semua RK</option><option value="-">⚠ Belum dipasangkan RK</option>' + rhkList.map((r, i) => `<option value="${r.id}">${i + 1}. ${S.esc(r.nama.slice(0, 60))}</option>`).join(''); fr.value = [...fr.options].some(o => o.value === vr) ? vr : '';
     const q = $('cari').value.trim().toLowerCase();
     const ks = kegBulan().reverse().filter(k => (!q || (k.teks || '').toLowerCase().includes(q)) && (!f.value || (f.value === '-' ? !k.bidang : k.bidang === f.value)) && (!fr.value || (fr.value === '-' ? !rhkById(k.rhkId) : k.rhkId === fr.value)));
@@ -510,7 +513,7 @@
         <td><input type="checkbox" data-pilih ${dipilih.has(k.id) ? 'checked' : ''} aria-label="Pilih kegiatan"></td>
         <td style="white-space:nowrap">${S.esc(S.tglSedang(k.tanggal))}${k.jam ? '<br><span style="color:var(--teks2);font-size:12px">' + S.esc(k.jam) + '</span>' : ''}</td>
         <td style="min-width:260px"><textarea data-f="teks" rows="2" aria-label="Uraian kegiatan">${S.esc(k.teks)}</textarea></td>
-        <td><select data-f="bidang" aria-label="Bidang"${k.bidang ? '' : ' class="kosong-rk"'}><option value="">— pilih —</option>${S.BIDANG.map(b => `<option${b === k.bidang ? ' selected' : ''}>${b}</option>`).join('')}</select></td>
+        <td><select data-f="bidang" aria-label="Bidang"${k.bidang ? '' : ' class="kosong-rk"'}><option value="">— pilih —</option>${S.bidangDari(k.bidang).map(b => `<option${b === k.bidang ? ' selected' : ''}>${S.esc(b)}</option>`).join('')}</select></td>
         <td><button type="button" class="rk-pilih${rhkById(k.rhkId) ? '' : ' kosong-rk'}" data-pilihrk title="${rhkById(k.rhkId) ? S.esc(rhkById(k.rhkId).nama) : ''}">${rhkById(k.rhkId) ? '🎯 ' + (rhkList.indexOf(rhkById(k.rhkId)) + 1) + '. ' + S.esc(rhkById(k.rhkId).nama.length > 90 ? rhkById(k.rhkId).nama.slice(0, 88) + '…' : rhkById(k.rhkId).nama) : '+ Pilih RK'}</button></td>
         <td style="white-space:nowrap">${(k.fotoIds || []).slice(0, 3).map(id => `<img class="thumb" data-foto="${id}" alt="Foto bukti">`).join('')}${(k.fotoIds || []).length > 3 ? ' +' + ((k.fotoIds.length) - 3) : ''}</td>
         <td style="white-space:nowrap"><button class="ikon" data-edit="${k.id}" title="Ubah tanggal & foto" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapus="${k.id}" title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('');
@@ -565,7 +568,7 @@
     edit._baru = !k; fotoBaru = []; fotoHapus = [];
     $('mKegJ').textContent = k ? 'Ubah kegiatan' : 'Tambah kegiatan';
     $('kTeks').value = edit.teks; $('kTgl').value = edit.tanggal; $('kJam').value = edit.jam || '';
-    $('kBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('kBidang').value = edit.bidang || '';
+    $('kBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.bidangDari(edit.bidang).map(b => `<option>${S.esc(b)}</option>`).join(''); $('kBidang').value = edit.bidang || '';
     $('kRk').value = edit.rhkId || ''; tampilKRk();
     $('kHapus').hidden = !k;
     renderFotoEdit(); $('mKeg').classList.add('on'); setTimeout(() => $('kTeks').focus(), 50);
@@ -613,13 +616,13 @@
   let judulManual = false;
   function kelompok(ks) {
     const b = $('uBidang').value; const grup = [];
-    S.BIDANG.filter(x => !b || x === b).forEach(bd => { const kk = ks.filter(k => k.bidang === bd); if (kk.length) grup.push({ bidang: bd, ks: urut(kk) }); });
+    S.bidangDari(ks.map(k => k.bidang)).filter(x => !b || x === b).forEach(bd => { const kk = ks.filter(k => k.bidang === bd); if (kk.length) grup.push({ bidang: bd, ks: urut(kk) }); });
     return grup;
   }
   function renderUpload() {
     if (!$('uTahun').value) { $('uTahun').value = ym.slice(0, 4); $('uTw').value = String(Math.ceil(Number(ym.slice(5)) / 3)); }
     if (!$('uBulan').value) $('uBulan').value = ym;
-    const bv = $('uBidang').value; $('uBidang').innerHTML = '<option value="">Semua bidang</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('uBidang').value = bv;
+    const bv = $('uBidang').value; $('uBidang').innerHTML = '<option value="">Semua bidang</option>' + S.bidangDari(kegiatan.map(k => k.bidang)).map(b => `<option>${S.esc(b)}</option>`).join(''); $('uBidang').value = bv;
     const p = periode(); if (!judulManual) $('uJudul').value = 'Bukti Dukung SKP ' + p.label;
     const ks = kegiatan.filter(k => k.tanggal >= p.dari && k.tanggal <= p.sampai);
     const grup = kelompok(ks); const tanpa = $('uBidang').value ? 0 : ks.filter(k => !k.bidang).length;
@@ -747,7 +750,7 @@
   });
 
   /* ---------- Profil ---------- */
-  $('dlUnit').innerHTML = S.BIDANG.map(b => `<option value="${b}">`).join('');
+  const isiDlUnit = () => { $('dlUnit').innerHTML = S.BIDANG.map(b => `<option value="${S.esc(b)}">`).join(''); }; isiDlUnit();
   function renderProfil() { $('pNama').value = profil.nama || ''; $('pUser').value = profil.username || ''; $('pNip').value = profil.nip || ''; $('pJabatan').value = profil.jabatan || ''; $('pUnit').value = profil.unit || ''; }
   $('formProfil').onsubmit = async e => {
     e.preventDefault(); if (!$('pNama').value.trim()) return;
@@ -774,7 +777,7 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (masuk && current() === 'dashboard') renderDashboard(); }, 200); });
   S.registerSW();
-  S.mulai().then(async ({ pegawai }) => {
+  S.mulai().then(async ({ pegawai }) => { isiDlUnit();
     if (pegawai.peran === 'admin') { location.replace('admin.html'); return; }
     masuk = true;
     try { await muat(); } catch (e) { S.toast(e.message, 6000); }

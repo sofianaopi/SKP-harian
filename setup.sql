@@ -47,6 +47,8 @@ create table if not exists public.rk (            -- Rencana Kinerja milik tiap 
 );
 create index if not exists rk_user on public.rk(user_id);
 alter table public.rk add column if not exists bidang text;   -- bidang yang mengerjakan RK ini
+alter table public.rk add column if not exists bersama boolean not null default false;   -- RK dari admin: tampil untuk semua pegawai
+create index if not exists rk_bersama on public.rk(bersama) where bersama;
 
 create table if not exists public.kegiatan (     -- catatan kegiatan harian
   id      text primary key,
@@ -209,6 +211,21 @@ grant execute on function public.admin_hapus_pegawai(uuid) to authenticated;
 grant execute on function public.daftar_admin_pertama(text, text) to authenticated;
 grant execute on function public.ada_admin() to anon, authenticated;
 
+-- Ganti nama bidang pekerjaan di semua data (kegiatan, RK, arsip dokumen) — hanya admin
+create or replace function public.admin_ganti_bidang(p_lama text, p_baru text) returns json
+language plpgsql security definer set search_path = public as $$
+declare n_keg int; n_rk int; n_dok int;
+begin
+  if not public.is_admin() then raise exception 'Hanya admin yang boleh mengganti nama bidang'; end if;
+  if coalesce(trim(p_baru), '') = '' then raise exception 'Nama bidang baru kosong'; end if;
+  update public.kegiatan set bidang = trim(p_baru) where bidang = p_lama; get diagnostics n_keg = row_count;
+  update public.rk       set bidang = trim(p_baru) where bidang = p_lama; get diagnostics n_rk = row_count;
+  update public.dokumen  set bidang = trim(p_baru) where bidang = p_lama; get diagnostics n_dok = row_count;
+  return json_build_object('kegiatan', n_keg, 'rk', n_rk, 'dokumen', n_dok);
+end $$;
+revoke execute on function public.admin_ganti_bidang(text, text) from public, anon;
+grant execute on function public.admin_ganti_bidang(text, text) to authenticated;
+
 -- ---------- ATURAN AKSES (Row Level Security) ----------
 alter table public.pegawai    enable row level security;
 alter table public.rk         enable row level security;
@@ -228,10 +245,22 @@ create policy pegawai_tambah on public.pegawai for insert to authenticated with 
 create policy pegawai_ubah   on public.pegawai for update to authenticated using (id = auth.uid() or public.is_admin()) with check (id = auth.uid() or public.is_admin());
 create policy pegawai_hapus  on public.pegawai for delete to authenticated using (public.is_admin() and id <> auth.uid());
 
--- rk & kegiatan: HANYA pemiliknya (admin pun tidak bisa melihat pekerjaan pegawai lain)
+-- rk: RK pribadi hanya pemiliknya; RK "bersama" dibuat admin dan dibaca semua pegawai
 drop policy if exists rk_milik_sendiri on public.rk;
-create policy rk_milik_sendiri on public.rk for all to authenticated
-  using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());
+drop policy if exists rk_baca on public.rk;
+drop policy if exists rk_tambah on public.rk;
+drop policy if exists rk_ubah on public.rk;
+drop policy if exists rk_hapus on public.rk;
+create policy rk_baca   on public.rk for select to authenticated
+  using (public.is_pegawai() and (user_id = auth.uid() or bersama));
+create policy rk_tambah on public.rk for insert to authenticated
+  with check (user_id = auth.uid() and public.is_pegawai() and (not bersama or public.is_admin()));
+create policy rk_ubah   on public.rk for update to authenticated
+  using ((user_id = auth.uid() and public.is_pegawai() and not bersama) or (bersama and public.is_admin()))
+  with check (user_id = auth.uid() and public.is_pegawai() and (not bersama or public.is_admin()));
+create policy rk_hapus  on public.rk for delete to authenticated
+  using ((user_id = auth.uid() and public.is_pegawai() and not bersama) or (bersama and public.is_admin()));
+-- kegiatan: HANYA pemiliknya (admin pun tidak bisa melihat pekerjaan pegawai lain)
 drop policy if exists kegiatan_milik_sendiri on public.kegiatan;
 create policy kegiatan_milik_sendiri on public.kegiatan for all to authenticated
   using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());

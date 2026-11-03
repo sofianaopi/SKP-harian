@@ -52,6 +52,15 @@
   .ikon:hover { background: var(--bg); color: var(--teks); } .ikon.hapus:hover { color: var(--merah); }
   .ikon svg { width: 18px; height: 18px; fill: currentColor; display: block; }
   .bidang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .rk-tbl td { vertical-align: top; line-height: 1.4; } .rk-tbl .rk-nm { font-weight: 600; } .rk-tbl .iki { color: var(--teks2); } .rk-tbl mark { background: #fff1a8; padding: 0; }
+  .rk-tbl .aks { white-space: nowrap; text-align: right; } .rk-tbl .aks .btn { padding: 5px 10px; font-size: 12.5px; }
+  #mRkA textarea { width: 100%; box-sizing: border-box; min-height: 74px; padding: 10px 11px; border: 1px solid #cfd7e0; border-radius: 9px; font: inherit; resize: vertical; }
+  .bd-tambah { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; } .bd-tambah input { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #cfd7e0; border-radius: 9px; font: inherit; }
+  .bd-daftar { border: 1px solid var(--garis); border-radius: 12px; overflow: hidden; }
+  .bd-baris { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--garis); } .bd-baris:first-child { border-top: 0; }
+  .bd-baris .no { width: 26px; height: 26px; border-radius: 50%; background: #eaf1fa; color: var(--navy); display: grid; place-items: center; font-size: 12.5px; font-weight: 700; flex: 0 0 auto; }
+  .bd-baris .nm { flex: 1; font-weight: 600; min-width: 0; overflow-wrap: anywhere; } .bd-baris .nm input { width: 100%; padding: 7px 9px; border: 1px solid #2E75B6; border-radius: 8px; font: inherit; font-weight: 600; }
+  .bd-baris .aks { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; } .bd-baris .btn { padding: 6px 10px; font-size: 12.5px; }
   .bkartu { background: #fff; border: 1px solid var(--garis); border-radius: 14px; padding: 14px; }
   .bkartu h3 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
   .bkartu h3 span { font-size: 12px; color: var(--teks2); font-weight: 400; }
@@ -96,7 +105,7 @@
   <h1>Admin SKP Harian<small id="hdrSub">SKP Harian</small></h1>
   <button id="btnKeluar" type="button">Keluar</button>
 </header>
-<nav class="tab" aria-label="Menu admin"><a href="#dashboard" data-r="dashboard">Dashboard</a><a href="#pengguna" data-r="pengguna">Pengguna</a></nav>
+<nav class="tab" aria-label="Menu admin"><a href="#dashboard" data-r="dashboard">Dashboard</a><a href="#pengguna" data-r="pengguna">Pengguna</a><a href="#bidang" data-r="bidang">Bidang</a><a href="#rk" data-r="rk">RK &amp; IKI</a></nav>
 <main>
   <section id="v-dashboard" hidden>
     <div class="kepala"><div style="flex:1"><h2>Monitoring pengisian SKP Harian</h2><p>Jumlah kegiatan yang dicatat setiap pegawai. Isi pekerjaan tetap hanya bisa dilihat oleh pegawai yang bersangkutan.</p></div><div class="bulan" id="bulan"></div></div>
@@ -137,6 +146,26 @@
     <div class="tabel-wrap"><table><thead><tr><th>Username / NIP lama</th><th>Nama</th><th>NIP baru</th><th>Jabatan / Unit kerja</th><th>Peran</th><th>Status</th><th></th></tr></thead><tbody id="tbl"></tbody></table></div>
   </div>
   </section>
+  <section id="v-rk" hidden>
+    <div class="kepala"><div style="flex:1"><h2>RK &amp; IKI</h2><p>Rencana Kinerja (RK) dan Indikator Kinerja Individu (IKI) yang ditambahkan di sini tampil untuk <b>semua pegawai</b> sesuai bidangnya, dan hanya bisa diubah oleh admin. Pegawai tetap bisa menambahkan RK sendiri bila belum ada di daftar.</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="rkaImpor">📥 Impor Excel</button><button class="btn" type="button" id="rkaEkspor">📤 Ekspor</button><button class="btn utama" type="button" id="rkaTambah">+ Tambah RK</button></div></div>
+    <div class="kartu">
+      <div class="alat"><input type="search" id="rkaCari" placeholder="Cari kata dalam RK atau IKI…" aria-label="Cari RK"><select id="rkaFBidang" aria-label="Saring bidang"></select></div>
+      <div id="rkaRingkas" style="font-size:13px;color:var(--teks2);padding:10px 14px 0"></div>
+      <div class="tabel-wrap"><table class="rk-tbl"><thead><tr><th style="width:40px">No</th><th style="width:120px">Bidang</th><th>Rencana Kinerja (RK)</th><th>Indikator Kinerja Individu (IKI)</th><th style="width:130px"></th></tr></thead><tbody id="rkaTbl"></tbody></table></div>
+    </div>
+  </section>
+  <section id="v-bidang" hidden>
+    <div class="kepala"><div style="flex:1"><h2>Bidang pekerjaan</h2><p>Daftar bidang yang dipilih pegawai saat mencatat kegiatan dan menyusun RK &amp; IKI. Satu dokumen Bukti Dukung dibuat untuk setiap bidang. Perubahan berlaku untuk semua pegawai.</p></div></div>
+    <div class="kartu" style="padding:16px 18px;max-width:760px">
+      <form id="fBidang" class="bd-tambah"><input id="bdNama" maxlength="40" placeholder="Nama bidang baru, mis. Humas" aria-label="Nama bidang baru" required><button class="btn utama" type="submit">+ Tambah bidang</button></form>
+      <div id="bdDaftar" class="bd-daftar"></div>
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center">
+        <span style="font-size:12.5px;color:var(--teks2)">Urutan di sini menjadi urutan pilihan bidang pegawai.</span>
+        <button class="btn" type="button" id="bdBawaan">Kembalikan daftar bawaan</button>
+      </div>
+    </div>
+  </section>
 </main>
 
 <div class="modal" id="mPeg"><form class="isi form" id="fPeg" role="dialog" aria-labelledby="mJ" autocomplete="off">
@@ -168,6 +197,22 @@
   <div class="ip-langkah"><div class="ip-no">2</div><div style="flex:1"><b>Pilih file yang sudah diisi</b><div style="margin-top:8px"><button class="btn" type="button" id="ipPilih">📂 Pilih file Excel</button> <span id="ipNama" class="ket"></span></div>
     <input type="file" id="ipFile" accept=".xlsx,.xls,.csv" hidden><div id="ipHasil"></div></div></div>
   <div class="aksi"><button class="btn" type="button" id="ipAkun" hidden>⬇ Unduh daftar akun & password</button><button class="btn" type="button" id="ipTutup">Tutup</button><button class="btn utama" type="button" id="ipSimpan" disabled>Simpan</button></div>
+</div></div>
+
+<div class="modal" id="mRkA"><form class="isi form" id="fRkA" role="dialog" aria-labelledby="rkaJ" style="max-width:640px">
+  <h3 id="rkaJ">Tambah RK</h3><div class="ket">Tampil untuk semua pegawai pada bidang yang dipilih.</div>
+  <label for="rkaBidang">Bidang *</label><select id="rkaBidang" required></select>
+  <label for="rkaNama">Rencana Kinerja (RK) *</label><textarea id="rkaNama" required maxlength="1000"></textarea>
+  <label for="rkaIki">Indikator Kinerja Individu (IKI)</label><textarea id="rkaIki" maxlength="1000"></textarea>
+  <div class="aksi"><button class="btn" type="button" id="rkaBatal">Batal</button><button class="btn utama" type="submit" id="rkaSimpan">Simpan</button></div>
+</form></div>
+
+<div class="modal" id="mRkAImpor"><div class="isi" role="dialog" aria-labelledby="riaJ" style="max-width:860px">
+  <h3 id="riaJ">Impor RK &amp; IKI dari Excel</h3><div class="ket">RK hasil impor tampil untuk semua pegawai sesuai bidangnya.</div>
+  <div class="ip-langkah"><div class="ip-no">1</div><div style="flex:1"><b>Unduh template</b><div class="ket">Kolom: Bidang, RK, IKI. Bidang harus sesuai daftar di menu Bidang.</div><div style="margin-top:8px"><a class="btn" href="template/Template_RK_IKI_SKP_Harian.xlsx" download="Template_RK_IKI_SKP_Harian.xlsx">⬇ Template RK &amp; IKI (.xlsx)</a></div></div></div>
+  <div class="ip-langkah"><div class="ip-no">2</div><div style="flex:1"><b>Pilih file yang sudah diisi</b><div style="margin-top:8px"><button class="btn" type="button" id="riaPilih">📂 Pilih file Excel</button> <span id="riaNama" class="ket"></span></div>
+    <input type="file" id="riaFile" accept=".xlsx,.xls,.csv" hidden><div id="riaHasil"></div></div></div>
+  <div class="aksi"><button class="btn" type="button" id="riaTutup">Tutup</button><button class="btn utama" type="button" id="riaSimpan" disabled>Simpan</button></div>
 </div></div>
 
 <div class="modal" id="mKonf"><div class="isi" role="alertdialog" style="max-width:440px">
@@ -208,7 +253,7 @@
   $('btnTambah').onclick = () => buka(null);
 
   const F = { iNip: 'nip', iNama: 'nama', iNipBaru: 'nip_baru', iJab: 'jabatan', iUnit: 'unit' };
-  $('dlUnit').innerHTML = S.BIDANG.map(b => `<option value="${b}">`).join('');
+  const isiDlUnit = () => { $('dlUnit').innerHTML = S.BIDANG.map(b => `<option value="${S.esc(b)}">`).join(''); }; isiDlUnit();
   function aturJenisAkun() {
     const adm = $('iPeran').value === 'admin';
     $('boxPegawai').hidden = adm;
@@ -433,8 +478,155 @@
   $('btnDriveMati').onclick = async () => { try { await S.del('meta', 'drive'); await muatDrive(); S.toast('Penyimpanan Google Drive dinonaktifkan'); } catch (x) { S.toast(x.message); } };
 
   /* ---------- Menu ---------- */
-  const ROUTES = ['dashboard', 'pengguna'];
-  function route() { let r = location.hash.slice(1); if (!ROUTES.includes(r)) r = 'dashboard'; ROUTES.forEach(x => $('v-' + x).hidden = x !== r); document.querySelectorAll('nav.tab a').forEach(a => a.classList.toggle('aktif', a.dataset.r === r)); if (r === 'dashboard') muatRekap(); }
+  /* ---------- Bidang pekerjaan ---------- */
+  let bdUbah = -1;
+  const simpanBidang = async daftar => { await S.put('meta', { id: 'bidang', daftar }); S.BIDANG.splice(0, S.BIDANG.length, ...daftar); isiDlUnit(); };
+  function renderBidang() {
+    const L = S.BIDANG;
+    $('bdDaftar').innerHTML = L.length ? L.map((b, i) => `<div class="bd-baris"><span class="no">${i + 1}</span>
+      <div class="nm">${i === bdUbah ? `<input id="bdEdit" value="${S.esc(b)}" maxlength="40" aria-label="Nama bidang">` : S.esc(b)}</div>
+      <div class="aks">${i === bdUbah ? `<button class="btn utama" data-bd-simpan="${i}" type="button">Simpan</button><button class="btn" data-bd-batal type="button">Batal</button>`
+        : `<button class="btn" data-bd-naik="${i}" type="button" title="Naikkan" aria-label="Naikkan" ${i ? '' : 'disabled'}>↑</button><button class="btn" data-bd-turun="${i}" type="button" title="Turunkan" aria-label="Turunkan" ${i < L.length - 1 ? '' : 'disabled'}>↓</button><button class="btn" data-bd-ubah="${i}" type="button">Ubah nama</button><button class="btn bahaya" data-bd-hapus="${i}" type="button">Hapus</button>`}</div></div>`).join('')
+      : '<div style="padding:16px;color:var(--teks2)">Belum ada bidang.</div>';
+    const ed = $('bdEdit'); if (ed) { ed.focus(); ed.select(); ed.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('bdDaftar').querySelector('[data-bd-simpan]').click(); } if (e.key === 'Escape') { bdUbah = -1; renderBidang(); } }; }
+  }
+  const namaBidangValid = (nm, kecuali) => {
+    if (!nm) return 'Nama bidang masih kosong';
+    if (S.BIDANG.some((b, i) => i !== kecuali && b.toLowerCase() === nm.toLowerCase())) return 'Bidang "' + nm + '" sudah ada';
+    return '';
+  };
+  $('fBidang').onsubmit = async e => {
+    e.preventDefault(); const nm = $('bdNama').value.trim().replace(/\s+/g, ' '); const sal = namaBidangValid(nm, -1); if (sal) { S.toast(sal); return; }
+    try { await simpanBidang(S.BIDANG.concat([nm])); $('bdNama').value = ''; renderBidang(); S.toast('Bidang ' + nm + ' ditambahkan'); } catch (x) { S.toast(x.message, 5000); }
+  };
+  $('bdDaftar').addEventListener('click', async e => {
+    const t = e.target.closest('button'); if (!t || t.disabled) return; const L = S.BIDANG.slice();
+    try {
+      if (t.dataset.bdNaik != null || t.dataset.bdTurun != null) {
+        const i = +(t.dataset.bdNaik ?? t.dataset.bdTurun), j = t.dataset.bdNaik != null ? i - 1 : i + 1;
+        [L[i], L[j]] = [L[j], L[i]]; await simpanBidang(L); renderBidang();
+      } else if (t.dataset.bdUbah != null) { bdUbah = +t.dataset.bdUbah; renderBidang(); }
+      else if (t.hasAttribute('data-bd-batal')) { bdUbah = -1; renderBidang(); }
+      else if (t.dataset.bdSimpan != null) {
+        const i = +t.dataset.bdSimpan, lama = L[i], baru = $('bdEdit').value.trim().replace(/\s+/g, ' ');
+        if (baru === lama) { bdUbah = -1; renderBidang(); return; }
+        const sal = namaBidangValid(baru, i); if (sal) { S.toast(sal); return; }
+        const hasil = await S.proses('Mengganti nama bidang…', async () => {
+          const r = await S.client().rpc('admin_ganti_bidang', { p_lama: lama, p_baru: baru });
+          L[i] = baru; await simpanBidang(L); return r;
+        });
+        bdUbah = -1; renderBidang();
+        if (hasil.error) S.toast('Nama di daftar sudah diganti, tetapi kegiatan & RK lama masih bernama "' + lama + '". Jalankan setup.sql terbaru di Supabase lalu ganti nama sekali lagi.', 9000);
+        else S.toast(`"${lama}" → "${baru}": ${hasil.data.kegiatan} kegiatan, ${hasil.data.rk} RK, ${hasil.data.dokumen} arsip ikut diperbarui`, 6000);
+      } else if (t.dataset.bdHapus != null) {
+        const i = +t.dataset.bdHapus; if (L.length <= 1) { S.toast('Minimal harus ada satu bidang'); return; }
+        if (!await konfirmasiYa('Hapus bidang ' + L[i] + '?', 'Bidang ini tidak lagi muncul sebagai pilihan. Kegiatan dan RK lama yang sudah memakai bidang ini tidak terhapus dan tetap bisa dibuat dokumennya.', 'Ya, hapus bidang')) return;
+        const nm = L.splice(i, 1)[0]; await simpanBidang(L); renderBidang(); S.toast('Bidang ' + nm + ' dihapus dari daftar');
+      }
+    } catch (x) { S.toast(x.message || String(x), 5000); }
+  });
+  $('bdBawaan').onclick = async () => {
+    if (!await konfirmasiYa('Kembalikan daftar bawaan?', 'Daftar bidang menjadi: ' + S.BIDANG_BAWAAN.join(', ') + '. Kegiatan dan RK yang sudah ada tidak berubah.', 'Ya, kembalikan')) return;
+    try { await S.del('meta', 'bidang'); S.BIDANG.splice(0, S.BIDANG.length, ...S.BIDANG_BAWAAN); isiDlUnit(); bdUbah = -1; renderBidang(); S.toast('Daftar bidang bawaan dipakai kembali'); } catch (x) { S.toast(x.message, 5000); }
+  };
+  function konfirmasiYa(judul, teks, ya) {
+    return new Promise(res => {
+      $('kYa').textContent = ya; $('kJ').textContent = judul; $('kT').textContent = teks; $('mKonf').classList.add('on');
+      $('kBatal').onclick = () => { $('mKonf').classList.remove('on'); res(false); };
+      $('kYa').onclick = () => { $('mKonf').classList.remove('on'); res(true); };
+    });
+  }
+
+  /* ---------- RK & IKI bersama (dari admin, tampil untuk semua pegawai) ---------- */
+  let rkA = [], rkAMuat = false, rkAEdit = null;
+  const tandaiA = (t, q) => { const e = S.esc(t || ''); if (!q) return e; const i = e.toLowerCase().indexOf(S.esc(q)); return i < 0 ? e : e.slice(0, i) + '<mark>' + e.slice(i, i + S.esc(q).length) + '</mark>' + e.slice(i + S.esc(q).length); };
+  async function muatRkA() {
+    try { rkA = await S.list('rhkBersama'); rkAMuat = true; } catch (x) { rkA = []; $('rkaTbl').innerHTML = `<tr><td colspan="5" style="color:#b42318;padding:16px">${S.esc(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase (SQL Editor), lalu muat ulang.' : x.message)}</td></tr>`; return; }
+    renderRkA();
+  }
+  function renderRkA() {
+    const f = $('rkaFBidang'), v = f.value;
+    f.innerHTML = '<option value="">Semua bidang</option>' + S.bidangDari(rkA.map(r => r.bidang)).map(b => `<option>${S.esc(b)}</option>`).join(''); f.value = v;
+    const q = $('rkaCari').value.trim().toLowerCase();
+    const rows = rkA.map((r, i) => ({ r, no: i + 1 })).filter(x => (!f.value || x.r.bidang === f.value) && (!q || ((x.r.nama || '') + ' ' + (x.r.indikator || '')).toLowerCase().includes(q)));
+    const perB = S.bidangDari(rkA.map(r => r.bidang)).map(b => [b, rkA.filter(r => r.bidang === b).length]).filter(x => x[1]);
+    $('rkaRingkas').textContent = rkA.length ? rkA.length + ' RK · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') : '';
+    $('rkaTbl').innerHTML = rows.length ? rows.map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td><td><b>${S.esc(x.r.bidang || '—')}</b></td><td class="rk-nm">${tandaiA(x.r.nama, q)}</td><td class="iki">${tandaiA(x.r.indikator, q) || '—'}</td>
+      <td class="aks"><button class="btn" type="button" data-rka-ubah>Ubah</button> <button class="btn bahaya" type="button" data-rka-hapus>Hapus</button></td></tr>`).join('')
+      : `<tr><td colspan="5" style="padding:18px;color:var(--teks2);text-align:center">${rkA.length ? 'Tidak ada RK yang cocok.' : 'Belum ada RK. Klik “+ Tambah RK”, atau “📥 Impor Excel” untuk memasukkan banyak RK sekaligus.'}</td></tr>`;
+  }
+  $('rkaCari').oninput = renderRkA; $('rkaFBidang').onchange = renderRkA;
+  function bukaRkA(r) {
+    rkAEdit = r; $('rkaJ').textContent = r ? 'Ubah RK' : 'Tambah RK';
+    $('rkaBidang').innerHTML = '<option value="">— pilih bidang —</option>' + S.bidangDari(r && r.bidang).map(b => `<option>${S.esc(b)}</option>`).join('');
+    $('rkaBidang').value = r ? (r.bidang || '') : ($('rkaFBidang').value || '');
+    $('rkaNama').value = r ? r.nama : ''; $('rkaIki').value = r ? (r.indikator || '') : '';
+    $('mRkA').classList.add('on'); setTimeout(() => $(r ? 'rkaNama' : 'rkaBidang').focus(), 50);
+  }
+  $('rkaTambah').onclick = () => bukaRkA(null);
+  $('rkaBatal').onclick = () => $('mRkA').classList.remove('on');
+  $('fRkA').onsubmit = async e => {
+    e.preventDefault(); if ($('rkaSimpan').disabled) return;
+    const bidang = $('rkaBidang').value, nama = $('rkaNama').value.trim().replace(/\s+/g, ' '), iki = $('rkaIki').value.trim().replace(/\s+/g, ' ');
+    if (!bidang || !nama) { S.toast('Bidang dan RK wajib diisi'); return; }
+    if (rkA.some(x => x !== rkAEdit && x.bidang === bidang && x.nama.trim().toLowerCase() === nama.toLowerCase())) { S.toast('RK yang sama sudah ada di bidang ' + bidang); return; }
+    const r = rkAEdit ? Object.assign({}, rkAEdit) : { id: 'ra' + S.uid(), satuan: '', target: 0, targetBulan: {}, urutan: rkA.length };
+    Object.assign(r, { bidang, nama, indikator: iki, bersama: true });
+    $('rkaSimpan').disabled = true;
+    try { await S.put('rhk', r); if (rkAEdit) rkA[rkA.indexOf(rkAEdit)] = r; else rkA.push(r); $('mRkA').classList.remove('on'); renderRkA(); S.toast(rkAEdit ? 'RK diperbarui untuk semua pegawai' : 'RK ditambahkan untuk semua pegawai'); }
+    catch (x) { S.toast(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : x.message, 6000); }
+    finally { $('rkaSimpan').disabled = false; }
+  };
+  $('rkaTbl').addEventListener('click', async e => {
+    const tr = e.target.closest('tr[data-id]'); if (!tr) return; const r = rkA.find(x => x.id === tr.dataset.id); if (!r) return;
+    if (e.target.closest('[data-rka-ubah]')) bukaRkA(r);
+    else if (e.target.closest('[data-rka-hapus]')) {
+      if (!await konfirmasiYa('Hapus RK ini?', (r.nama || '').slice(0, 160) + ' — RK hilang dari daftar semua pegawai. Kegiatan pegawai yang sudah dipasangkan ke RK ini tidak terhapus, tetapi menjadi "belum ber-RK".', 'Ya, hapus RK')) return;
+      try { await S.del('rhk', r.id); rkA = rkA.filter(x => x !== r); renderRkA(); S.toast('RK dihapus'); } catch (x) { S.toast(x.message, 5000); }
+    }
+  });
+  $('rkaEkspor').onclick = async () => {
+    if (!rkA.length) { S.toast('Belum ada RK'); return; }
+    try { await unduhXlsx('RK_IKI_Bersama_SKP_Harian.xlsx', [['Bidang', 'RK', 'IKI']].concat(rkA.map(r => [r.bidang || '', r.nama || '', r.indikator || ''])), [14, 70, 70]); } catch (x) { S.toast(x.message, 5000); }
+  };
+  let riaBaris = [];
+  $('rkaImpor').onclick = () => { SKPExcel.lib().catch(() => { }); riaBaris = []; $('riaHasil').innerHTML = ''; $('riaNama').textContent = ''; $('riaSimpan').disabled = true; $('riaSimpan').textContent = 'Simpan'; $('mRkAImpor').classList.add('on'); };
+  $('riaTutup').onclick = () => $('mRkAImpor').classList.remove('on');
+  $('riaPilih').onclick = () => $('riaFile').click();
+  $('riaFile').onchange = async () => {
+    const f = $('riaFile').files[0]; $('riaFile').value = ''; if (!f) return; $('riaNama').textContent = f.name;
+    try {
+      const X = await SKPExcel.lib(); const wb = X.read(new Uint8Array(await f.arrayBuffer()), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames.find(n => /rk|iki|rencana/i.test(n)) || wb.SheetNames[0]];
+      const rows = X.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+      const h = rows.findIndex(r => r.some(c => /^\s*(rk|rencana)/i.test(String(c))));
+      let col = { bd: 0, rk: 1, iki: 2 };
+      if (h >= 0) { const hd = rows[h].map(c => String(c).trim().toLowerCase()); const c = re => hd.findIndex(x => re.test(x)); col = { bd: c(/bidang/), rk: c(/^(rk|rencana)/), iki: c(/^(iki|indikator)/) }; }
+      const ada = new Set(rkA.map(r => (r.bidang || '') + '|' + r.nama.trim().toLowerCase())); const diFile = new Set(); riaBaris = [];
+      rows.forEach((r, i) => {
+        if (i <= h) return; const g = k => col[k] >= 0 ? String(r[col[k]] || '').trim() : '';
+        const o = { baris: i + 1, bidMentah: g('bd'), bidang: SKPExcel._bacaBidang(g('bd')), nama: g('rk').replace(/\s+/g, ' '), iki: g('iki').replace(/\s+/g, ' ') };
+        if (!o.nama && !o.iki && !o.bidMentah) return;
+        const m = []; if (!o.bidang) m.push(o.bidMentah ? 'bidang tidak dikenali (' + o.bidMentah + ')' : 'bidang kosong'); if (!o.nama) m.push('RK kosong');
+        const kunci = (o.bidang || '') + '|' + o.nama.toLowerCase();
+        if (m.length) { o.status = 'salah'; o.ket = m.join('; '); } else if (ada.has(kunci)) { o.status = 'ada'; o.ket = 'sudah ada, dilewati'; } else if (diFile.has(kunci)) { o.status = 'ada'; o.ket = 'baris ganda di file'; } else { o.status = 'ok'; diFile.add(kunci); }
+        riaBaris.push(o);
+      });
+      const n = st => riaBaris.filter(o => o.status === st).length; const L = { ok: '✓ Siap', salah: '✕ Perlu diperbaiki', ada: '– Dilewati' };
+      $('riaHasil').innerHTML = `<div class="ip-ring"><b>${n('ok')} RK siap disimpan</b>${n('salah') ? ` · <span style="color:#b42318">${n('salah')} baris perlu diperbaiki</span>` : ''}${n('ada') ? ` · ${n('ada')} dilewati` : ''}${!riaBaris.length ? '<br>Tidak ada data RK di file ini.' : ''}</div>` +
+        (riaBaris.length ? `<div class="ip-tbl"><table><thead><tr><th>Baris</th><th>Bidang</th><th>RK</th><th>IKI</th><th>Status</th></tr></thead><tbody>${riaBaris.map(o => `<tr><td>${o.baris}</td><td>${S.esc(o.bidang || o.bidMentah)}</td><td>${S.esc(o.nama)}</td><td>${S.esc(o.iki)}</td><td class="st ${o.status}">${L[o.status]}${o.ket ? '<div style="font-weight:400;font-size:12px">' + S.esc(o.ket) + '</div>' : ''}</td></tr>`).join('')}</tbody></table></div>` : '');
+      $('riaSimpan').disabled = !n('ok'); $('riaSimpan').textContent = n('ok') ? 'Simpan ' + n('ok') + ' RK' : 'Simpan';
+    } catch (x) { console.error(x); $('riaHasil').innerHTML = `<div class="ip-ring" style="background:#fdf1f1">File tidak bisa dibaca: ${S.esc(x.message || x)}</div>`; }
+  };
+  $('riaSimpan').onclick = async () => {
+    const siap = riaBaris.filter(o => o.status === 'ok'); if (!siap.length) return; const b = $('riaSimpan'); b.disabled = true; b.textContent = 'Menyimpan…';
+    const baru = siap.map((o, i) => ({ id: 'ra' + S.uid() + i.toString(36), bidang: o.bidang, nama: o.nama, indikator: o.iki, satuan: '', target: 0, targetBulan: {}, urutan: rkA.length + i, bersama: true }));
+    try { await S.putBanyak('rhk', baru); rkA = rkA.concat(baru); $('mRkAImpor').classList.remove('on'); renderRkA(); S.toast(baru.length + ' RK diimpor untuk semua pegawai', 4000); }
+    catch (x) { S.toast(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : x.message, 6000); b.disabled = false; b.textContent = 'Coba lagi'; }
+  };
+
+  const ROUTES = ['dashboard', 'pengguna', 'bidang', 'rk'];
+  function route() { let r = location.hash.slice(1); if (!ROUTES.includes(r)) r = 'dashboard'; ROUTES.forEach(x => $('v-' + x).hidden = x !== r); document.querySelectorAll('nav.tab a').forEach(a => a.classList.toggle('aktif', a.dataset.r === r)); if (r === 'dashboard') muatRekap(); if (r === 'bidang') { bdUbah = -1; renderBidang(); } if (r === 'rk') muatRkA(); }
 
   function hapus(p) {
     $('kYa').textContent = 'Ya, hapus permanen';
@@ -451,7 +643,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.on').forEach(m => m.classList.remove('on')); });
   $('btnKeluar').onclick = () => S.keluar();
 
-  S.mulai({ admin: true }).then(async ({ uid, pegawai }) => {
+  S.mulai({ admin: true }).then(async ({ uid, pegawai }) => { isiDlUnit();
     sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SKP Harian');
     try { await muat(); } catch (x) { S.toast(x.message, 6000); }
     muatKop(); muatDrive(); route(); window.addEventListener('hashchange', route);

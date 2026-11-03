@@ -30,8 +30,8 @@
   /* ---------- Pemetaan baris database <-> objek aplikasi ---------- */
   const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', bidang: r.bidang || null, jenisId: r.jenis_id || null, rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0 });
   const dariK = k => ({ id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() });
-  const keR = r => ({ id: r.id, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0 });
-  const dariR = r => ({ id: r.id, user_id: uid, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0 });
+  const keR = r => ({ id: r.id, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
+  const dariR = r => ({ id: r.id, user_id: uid, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
   const keD = r => ({ id: r.id, bidang: r.bidang, periode: r.periode, nama: r.nama_file, driveId: r.drive_id, url: r.url, ukuran: Number(r.ukuran) || 0, dibuat: r.dibuat });
   const keJ = r => ({ id: r.id, bidang: r.bidang, nama: r.nama, urutan: r.urutan || 0, dibuatOleh: r.dibuat_oleh });
   const PROFIL = { nama: 'nama', nip: 'nip_baru', jabatan: 'jabatan', unit: 'unit', kota: 'kota', atasanNama: 'atasan_nama', atasanNip: 'atasan_nip', atasanJabatan: 'atasan_jabatan' };
@@ -51,7 +51,8 @@
     async list(s) {
       const c = client();
       if (s === 'kegiatan') return cek(await c.from('kegiatan').select('*').eq('user_id', uid).order('tanggal').limit(10000)).map(keK);
-      if (s === 'rhk') return cek(await c.from('rk').select('*').eq('user_id', uid).order('urutan')).map(keR);
+      if (s === 'rhk') return cek(await c.from('rk').select('*').or('user_id.eq.' + uid + ',bersama.eq.true').order('bersama', { ascending: false }).order('urutan')).map(keR);
+      if (s === 'rhkBersama') return cek(await c.from('rk').select('*').eq('bersama', true).order('urutan')).map(keR);
       if (s === 'ringkas') return cek(await c.from('kegiatan_ringkas').select('tanggal,jumlah,foto').eq('user_id', uid)).map(r => ({ tanggal: r.tanggal, jumlah: Number(r.jumlah) || 0, foto: Number(r.foto) || 0 }));
       if (s === 'dokumen') return cek(await c.from('dokumen').select('*').eq('user_id', uid).order('dibuat', { ascending: false })).map(keD);
       if (s === 'jenis') return cek(await c.from('jenis_kegiatan').select('*').order('bidang').order('urutan').order('nama')).map(keJ);
@@ -235,6 +236,19 @@
     });
   }
 
+  /* Daftar bidang pekerjaan: diatur admin (menu Bidang), disimpan di pengaturan 'bidang' */
+  const BIDANG_BAWAAN = BIDANG.slice();
+  async function muatBidang() {
+    try {
+      const r = await client().from('pengaturan').select('value').eq('key', 'bidang').maybeSingle();
+      const d = r.data && r.data.value && Array.isArray(r.data.value.daftar) ? r.data.value.daftar.map(x => String(x).trim()).filter(Boolean) : null;
+      BIDANG.splice(0, BIDANG.length, ...(d && d.length ? d : BIDANG_BAWAAN));
+    } catch (e) { }
+    return BIDANG;
+  }
+  /* Bidang dari daftar + bidang lama yang masih dipakai data (mis. bidang yang sudah dihapus dari daftar) */
+  function bidangDari(...nama) { const out = BIDANG.slice(); nama.flat().forEach(b => { if (b && !out.includes(b)) out.push(b); }); return out; }
+
   async function mulai(opt = {}) {
     if (!siap()) {
       layar(`<div class="ket" style="background:#fff7e6">${window.supabase ? '<b>Koneksi database belum diatur.</b><br>Buka berkas <code>config.js</code> lalu isi <code>SUPABASE_URL</code> dan <code>SUPABASE_ANON_KEY</code> sesuai PANDUAN.' : '<b>Tidak dapat memuat pustaka database.</b><br>Periksa koneksi internet lalu muat ulang halaman.'}</div>`);
@@ -266,6 +280,7 @@
       layar(`<div class="ket">Halaman ini khusus <b>admin</b>. Anda masuk sebagai ${esc(saya.nama)}.</div><button type="button" class="tbl" onclick="location.href='index.html'">Ke Dashboard saya</button>`);
       return new Promise(() => { });
     }
+    await muatBidang();
     const el = document.getElementById('skp-login'); if (el) el.hidden = true;
     c.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') location.reload(); });
     return { uid, pegawai: saya };
@@ -355,7 +370,7 @@
   }
 
   const api = {
-    BULAN, HARI, BIDANG, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses,
+    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses,
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),

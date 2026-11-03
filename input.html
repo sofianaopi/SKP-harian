@@ -166,7 +166,7 @@
     [kegiatan, profil, rhkList] = await Promise.all([S.list('kegiatan'), S.profil(), S.list('rhk').catch(() => [])]);
     rhkList.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
     rhkList.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
-    if (!pilihBidang) pilihBidang = S.BIDANG.find(b => (profil.unit || '').toLowerCase().includes(b.toLowerCase())) || null;
+    if (!pilihBidang || !S.BIDANG.includes(pilihBidang)) pilihBidang = S.BIDANG.find(b => (profil.unit || '').toLowerCase().includes(b.toLowerCase())) || null;
     renderChips(); renderChat(); renderSub();
   }
 
@@ -291,7 +291,7 @@
     const k = kegiatan.find(x => x.id === id); if (!k) return; editing = JSON.parse(JSON.stringify(k));
     $('eTeks').value = k.teks || ''; $('eTgl').value = k.tanggal; $('eJam').value = k.jam || ''; $('eJml').value = k.jumlah || 1;
     $('eRhk').value = k.rhkId || ''; tampilERk(); $('eRkBox').hidden = !rhkList.length;
-    $('eBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('eBidang').value = k.bidang || '';
+    $('eBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.bidangDari(k.bidang).map(b => `<option>${S.esc(b)}</option>`).join(''); $('eBidang').value = k.bidang || '';
     const ef = $('eFoto'); ef.innerHTML = (k.fotoIds || []).length ? '' : '<small style="color:#667781">Tidak ada foto</small>';
     (k.fotoIds || []).forEach(fid => { const w = document.createElement('div'); w.style.position = 'relative'; w.innerHTML = `<img alt=""><button aria-label="Hapus foto" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#3b4a54;color:#fff;cursor:pointer">×</button>`;
       ambilFoto(fid).then(f => f && (w.querySelector('img').src = f.data));
