@@ -191,4 +191,7 @@ create policy bukti_milik_sendiri on storage.objects for all to authenticated
   using (bucket_id = 'bukti' and (storage.foldername(name))[1] = auth.uid()::text and public.is_pegawai())
   with check (bucket_id = 'bukti' and (storage.foldername(name))[1] = auth.uid()::text and public.is_pegawai());
 
+-- Muat ulang daftar tabel di server API agar tabel/kolom baru langsung dikenali
+notify pgrst, 'reload schema';
+
 -- Selesai. Lanjutkan langkah berikutnya di PANDUAN.txt.
