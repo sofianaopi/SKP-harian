@@ -100,6 +100,10 @@ Mencatat & mengunduh Bukti Dukung
     Setiap dokumen: Nama, NIP baru, RK & IKI dikosongkan (diisi petugas), [CAPAIAN]
     berisi uraian kegiatan, lalu foto bukti.
 
+SIMPAN KE GOOGLE DRIVE (opsional)
+  Dokumen Bukti Dukung bisa disimpan ke satu folder Google Drive kantor dan setiap
+  pegawai mendapat link-nya. Cara mengaktifkan: lihat PANDUAN-GOOGLE-DRIVE.txt.
+
 MEMPERBARUI VERSI (bila sebelumnya sudah memasang versi lama)
   1. Supabase -> SQL Editor -> jalankan setup.sql yang baru (data lama tetap aman).
   2. GitHub -> unggah semua berkas baru (termasuk template-bukti-dukung.docx),

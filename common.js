@@ -32,6 +32,7 @@
   const dariK = k => ({ id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() });
   const keR = r => ({ id: r.id, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0 });
   const dariR = r => ({ id: r.id, user_id: uid, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0 });
+  const keD = r => ({ id: r.id, bidang: r.bidang, periode: r.periode, nama: r.nama_file, driveId: r.drive_id, url: r.url, ukuran: Number(r.ukuran) || 0, dibuat: r.dibuat });
   const keJ = r => ({ id: r.id, bidang: r.bidang, nama: r.nama, urutan: r.urutan || 0, dibuatOleh: r.dibuat_oleh });
   const PROFIL = { nama: 'nama', nip: 'nip_baru', jabatan: 'jabatan', unit: 'unit', kota: 'kota', atasanNama: 'atasan_nama', atasanNip: 'atasan_nip', atasanJabatan: 'atasan_jabatan' };
   const keP = r => { const o = { id: 'profil', peran: r.peran, aktif: r.aktif, username: r.nip }; Object.entries(PROFIL).forEach(([a, b]) => o[a] = r[b] || ''); return o; };
@@ -51,6 +52,7 @@
       const c = client();
       if (s === 'kegiatan') return cek(await c.from('kegiatan').select('*').eq('user_id', uid).order('tanggal').limit(10000)).map(keK);
       if (s === 'rhk') return cek(await c.from('rk').select('*').eq('user_id', uid).order('urutan')).map(keR);
+      if (s === 'dokumen') return cek(await c.from('dokumen').select('*').eq('user_id', uid).order('dibuat', { ascending: false })).map(keD);
       if (s === 'jenis') return cek(await c.from('jenis_kegiatan').select('*').order('bidang').order('urutan').order('nama')).map(keJ);
       if (s === 'foto') { const ks = await db.list('kegiatan'); const out = []; for (const k of ks) for (const id of k.fotoIds) { const f = await db.get('foto', id); if (f) out.push(f); } return out; }
       return [];
@@ -72,6 +74,7 @@
       if (s === 'foto') { cek(await c.storage.from(BUCKET).upload(fotoPath(o.id), dataUrlKeBlob(o.data), { upsert: true, contentType: 'image/jpeg' }), 'Gagal mengunggah foto'); return o; }
       if (s === 'kegiatan') cek(await c.from('kegiatan').upsert(dariK(o)), 'Gagal menyimpan kegiatan');
       else if (s === 'rhk') cek(await c.from('rk').upsert(dariR(o)), 'Gagal menyimpan RK');
+      else if (s === 'dokumen') cek(await c.from('dokumen').upsert({ id: o.id, user_id: uid, bidang: o.bidang || null, periode: o.periode || null, nama_file: o.nama, drive_id: o.driveId || null, url: o.url, ukuran: o.ukuran || null, dibuat: new Date().toISOString() }), 'Gagal menyimpan link dokumen');
       else if (s === 'jenis') { const r = { id: o.id, bidang: o.bidang, nama: (o.nama || '').trim(), urutan: o.urutan || 0 }; if (!o.dibuatOleh) r.dibuat_oleh = uid; const res = await c.from('jenis_kegiatan').upsert(r); if (res.error && /duplicate|unik/i.test(res.error.message)) throw new Error('Jenis kegiatan "' + r.nama + '" sudah ada di bidang ' + r.bidang); cek(res, 'Gagal menyimpan jenis kegiatan'); }
       else if (s === 'meta' && o.id === 'profil') { const u = {}; Object.entries(PROFIL).forEach(([a, b]) => { if (a !== 'nip') u[b] = (o[a] || '').trim() || null; }); u.nama = u.nama || saya.nama; cek(await c.from('pegawai').update(u).eq('id', uid), 'Gagal menyimpan profil'); Object.assign(saya, u); }
       else if (s === 'meta') { const v = Object.assign({}, o); delete v.id; cek(await c.from('pengaturan').upsert({ key: o.id, value: v }), 'Gagal menyimpan pengaturan'); }
@@ -91,6 +94,7 @@
       if (s === 'foto') { await c.storage.from(BUCKET).remove([fotoPath(id)]); return; }
       if (s === 'kegiatan') cek(await c.from('kegiatan').delete().eq('id', id));
       else if (s === 'rhk') cek(await c.from('rk').delete().eq('id', id));
+      else if (s === 'dokumen') cek(await c.from('dokumen').delete().eq('id', id));
       else if (s === 'jenis') cek(await c.from('jenis_kegiatan').delete().eq('id', id), 'Gagal menghapus jenis kegiatan');
       else if (s === 'meta' && id !== 'profil') cek(await c.from('pengaturan').delete().eq('key', id));
       notify();
@@ -204,6 +208,17 @@
     c.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') location.reload(); });
     return { uid, pegawai: saya };
   }
+  async function token() { const { data } = await client().auth.getSession(); if (!data.session) throw new Error('Sesi berakhir, silakan masuk lagi.'); return data.session.access_token; }
+  /* Kirim perintah ke Google Apps Script (penyimpan dokumen ke Google Drive) */
+  async function drive(url, aksi, isi) {
+    if (!url) throw new Error('Penyimpanan Google Drive belum diaktifkan admin');
+    let r;
+    try { r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ aksi, token: await token() }, isi || {})) }); }
+    catch (e) { throw new Error('Tidak dapat menghubungi Google Drive. Periksa koneksi internet atau alamat Apps Script.'); }
+    let j; try { j = await r.json(); } catch (e) { throw new Error('Jawaban Apps Script tidak dikenali. Pastikan di-deploy sebagai Web app dengan akses "Anyone".'); }
+    if (!j.ok) throw new Error(j.error || 'Google Drive menolak permintaan');
+    return j;
+  }
   async function keluar() { try { await client().auth.signOut(); } catch (e) { } location.reload(); }
   async function gantiPassword(pw) { if (!pw || pw.length < 6) throw new Error('Password minimal 6 karakter'); cek(await client().auth.updateUser({ password: pw })); }
 
@@ -248,7 +263,7 @@
 
   const api = {
     BULAN, HARI, BIDANG, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast,
-    mulai, keluar, gantiPassword, client, emailDariNip, cek, config: CFG,
+    mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
     list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), putBanyak: (s, a, p) => db.putBanyak(s, a, p), del: (s, id) => db.del(s, id),

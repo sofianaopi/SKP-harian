@@ -118,6 +118,14 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn utama" id="btnKop" type="button">Unggah kop (.docx)</button><button class="btn bahaya" id="btnKopHapus" type="button" hidden>Kembali ke kop bawaan</button></div>
       <input type="file" id="fileKop" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
     </div>
+    <div class="kartu" style="padding:16px 18px;max-width:760px;margin-top:16px">
+      <h3 style="margin:0 0 6px;font-size:16px">☁ Penyimpanan Google Drive</h3>
+      <p style="margin:0 0 12px;font-size:13.5px;color:var(--teks2)">Bila diaktifkan, pegawai bisa menyimpan dokumen Bukti Dukung ke satu folder Google Drive kantor dan mendapatkan link setiap dokumen. Pasang dulu Google Apps Script sesuai <b>PANDUAN-GOOGLE-DRIVE.txt</b>, lalu tempel alamat Web app-nya di sini.</p>
+      <label for="driveUrl" style="font-size:12.5px;color:var(--teks2);font-weight:500">Alamat Web app Apps Script</label>
+      <input id="driveUrl" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;padding:10px 11px;border:1px solid #cfd7e0;border-radius:9px;margin:5px 0 10px;font:inherit">
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn utama" type="button" id="btnDriveSimpan">Simpan</button><button class="btn" type="button" id="btnDriveUji">Uji koneksi</button><button class="btn bahaya" type="button" id="btnDriveMati" hidden>Nonaktifkan</button></div>
+      <div id="driveInfo" style="font-size:13.5px;margin-top:10px"></div>
+    </div>
   </section>
   <section id="v-pengguna" hidden>
   <div class="kepala"><div style="flex:1"><h2>Daftar pengguna</h2><p>Pegawai masuk dengan NIP lama dan password masing-masing, dan hanya dapat melihat pekerjaannya sendiri. NIP baru ditampilkan di dokumen Bukti Dukung.</p></div>
@@ -402,6 +410,24 @@
   };
   $('btnKopHapus').onclick = async () => { try { await S.del('meta', 'kop'); kop = null; renderKop(); S.toast('Kembali memakai kop bawaan'); } catch (x) { S.toast(x.message); } };
 
+  /* ---------- Google Drive ---------- */
+  let driveCfg = null;
+  async function muatDrive() { try { driveCfg = await S.get('meta', 'drive'); } catch (x) { driveCfg = null; } $('driveUrl').value = driveCfg && driveCfg.url || ''; $('btnDriveMati').hidden = !driveCfg;
+    $('driveInfo').innerHTML = driveCfg ? '✅ Aktif — pegawai melihat tombol “☁ Simpan ke Drive” di menu Upload.' : '<span style="color:var(--teks2)">Belum aktif.</span>'; }
+  const urlValid = u => /^https:\/\/script\.google(usercontent)?\.com\/.+/.test(u);
+  async function ujiDrive(url) {
+    $('driveInfo').textContent = 'Menghubungi Apps Script…';
+    const j = await S.drive(url, 'ping');
+    $('driveInfo').innerHTML = `✅ Terhubung ke folder <b>${S.esc(j.folder)}</b>${j.folderUrl ? ` — <a href="${S.esc(j.folderUrl)}" target="_blank" rel="noopener">buka folder di Drive</a>` : ''}`;
+  }
+  $('btnDriveUji').onclick = async () => { const u = $('driveUrl').value.trim(); if (!urlValid(u)) { S.toast('Alamat harus berawalan https://script.google.com/…'); return; } try { await ujiDrive(u); } catch (x) { $('driveInfo').innerHTML = '<span style="color:#b42318">✕ ' + S.esc(x.message) + '</span>'; } };
+  $('btnDriveSimpan').onclick = async () => {
+    const u = $('driveUrl').value.trim(); if (!urlValid(u)) { S.toast('Alamat harus berawalan https://script.google.com/…'); return; }
+    try { await ujiDrive(u); } catch (x) { $('driveInfo').innerHTML = '<span style="color:#b42318">✕ ' + S.esc(x.message) + '</span> — alamat belum disimpan.'; return; }
+    try { await S.put('meta', { id: 'drive', url: u }); driveCfg = { url: u }; $('btnDriveMati').hidden = false; S.toast('Penyimpanan Google Drive diaktifkan'); } catch (x) { S.toast(x.message); }
+  };
+  $('btnDriveMati').onclick = async () => { try { await S.del('meta', 'drive'); await muatDrive(); S.toast('Penyimpanan Google Drive dinonaktifkan'); } catch (x) { S.toast(x.message); } };
+
   /* ---------- Menu ---------- */
   const ROUTES = ['dashboard', 'pengguna'];
   function route() { let r = location.hash.slice(1); if (!ROUTES.includes(r)) r = 'dashboard'; ROUTES.forEach(x => $('v-' + x).hidden = x !== r); document.querySelectorAll('nav.tab a').forEach(a => a.classList.toggle('aktif', a.dataset.r === r)); if (r === 'dashboard') muatRekap(); }
@@ -424,7 +450,7 @@
   S.mulai({ admin: true }).then(async ({ uid, pegawai }) => {
     sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SKP Harian');
     try { await muat(); } catch (x) { S.toast(x.message, 6000); }
-    muatKop(); route(); window.addEventListener('hashchange', route);
+    muatKop(); muatDrive(); route(); window.addEventListener('hashchange', route);
   });
 })();
 </script>

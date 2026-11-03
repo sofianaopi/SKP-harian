@@ -1,0 +1,71 @@
+SKP HARIAN — MENGAKTIFKAN PENYIMPANAN KE GOOGLE DRIVE (dikerjakan admin, sekali saja)
+=====================================================================================
+
+Hasilnya: pegawai menekan "☁ Simpan ke Drive" di menu Upload, dokumen Bukti Dukung (.docx)
+tersimpan di satu folder Google Drive kantor dengan susunan:
+
+   SKP Harian - Bukti Dukung/
+      19890117 201101 2 010 - Sofiana, S.Si/
+         Triwulan 4 2026/
+            Bukti_Dukung_Nerwilis_Triwulan_4_2026.docx
+            Bukti_Dukung_Sosial_Triwulan_4_2026.docx
+
+dan setiap pegawai mendapat link dokumennya sendiri (tombol Buka / Salin link).
+Dokumen yang dibuat ulang untuk bidang & periode yang sama akan menggantikan yang lama.
+
+Yang dibutuhkan: satu akun Google (sebaiknya akun kantor/khusus SKP). Dokumen memakai
+ruang penyimpanan akun ini (gratis 15 GB).
+
+LANGKAH 1 — Buat folder di Google Drive
+  1. Buka drive.google.com dengan akun tersebut -> Baru -> Folder -> beri nama
+     "SKP Harian - Bukti Dukung".
+  2. Buka folder itu. Salin ID-nya dari alamat browser, yaitu bagian setelah /folders/
+     contoh: https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUv
+             ID = 1AbCdEfGhIjKlMnOpQrStUv
+
+LANGKAH 2 — Pasang skrip
+  1. Buka script.google.com -> "Proyek baru" (New project). Beri nama "SKP Harian Drive".
+  2. Hapus isi Code.gs, lalu tempel SELURUH isi berkas google-apps-script/Code.gs.
+  3. Isi tiga baris di bagian atas:
+        SUPABASE_URL      = sama dengan di config.js, contoh 'https://pfxl....supabase.co'
+        SUPABASE_ANON_KEY = kunci anon/publishable yang sama dengan di config.js
+                            (JANGAN kunci service_role/secret)
+        FOLDER_INDUK_ID   = ID folder dari Langkah 1
+     Simpan (ikon disket / Ctrl+S).
+  4. Pilih fungsi "uji" di bilah atas -> klik Run (Jalankan).
+     Muncul "Authorization required" -> Review permissions -> pilih akun ->
+     bila muncul "Google hasn't verified this app": Advanced -> Go to SKP Harian Drive
+     (unsafe) -> Allow. Ini wajar untuk skrip buatan sendiri.
+     Di Execution log harus muncul "Folder induk: SKP Harian - Bukti Dukung".
+
+LANGKAH 3 — Terbitkan sebagai Web app
+  1. Klik Deploy (Terapkan) -> New deployment (Deployment baru).
+  2. Ikon roda gigi "Select type" -> Web app.
+  3. Execute as: Me (akun Anda)   |   Who has access: Anyone (Siapa saja)
+  4. Deploy -> salin "Web app URL" (berakhiran /exec).
+  "Anyone" diperlukan agar aplikasi bisa menghubungi skrip; keamanan tetap terjaga
+  karena skrip hanya menerima pegawai yang sedang login di SKP Harian.
+
+LANGKAH 4 — Aktifkan di aplikasi
+  Halaman Admin -> Dashboard -> kartu "Penyimpanan Google Drive" -> tempel Web app URL ->
+  Simpan. Bila tertulis "Terhubung ke folder ...", selesai.
+  Pegawai kini melihat tombol "☁ Simpan ke Drive" dan daftar link di menu Upload.
+
+PENGATURAN BERBAGI LINK (baris AKSES di Code.gs)
+  'ANYONE_WITH_LINK'  siapa pun yang memiliki link bisa membuka (bawaan)
+  'DOMAIN_WITH_LINK'  hanya akun di domain kantor (untuk akun Google Workspace kantor)
+  'PRIVATE'           tidak dibagikan; hanya pemilik akun Drive yang bisa membuka
+  Akun Google Workspace kantor kadang melarang berbagi ke luar domain atau melarang
+  Web app "Anyone". Bila begitu, pakai 'DOMAIN_WITH_LINK' atau gunakan akun Gmail khusus.
+
+BILA KODE SKRIP DIUBAH
+  Deploy -> Manage deployments -> ikon pensil -> Version: New version -> Deploy.
+  Alamat Web app tetap sama, tidak perlu diganti di aplikasi.
+
+MASALAH UMUM
+  "Sesi login tidak valid"   -> pegawai keluar lalu masuk lagi; atau SUPABASE_URL/KEY di
+                                Code.gs berbeda dengan config.js.
+  "Jawaban Apps Script tidak dikenali" -> Web app belum di-deploy dengan akses "Anyone",
+                                atau alamat yang ditempel bukan yang berakhiran /exec.
+  Kunci anon diganti (rotate) -> perbarui juga SUPABASE_ANON_KEY di Code.gs, lalu
+                                deploy versi baru.

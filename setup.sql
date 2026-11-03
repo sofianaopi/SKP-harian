@@ -62,6 +62,19 @@ create index if not exists kegiatan_user_tgl on public.kegiatan(user_id, tanggal
 alter table public.kegiatan add column if not exists bidang text;
 alter table public.kegiatan add column if not exists jenis_id text references public.jenis_kegiatan(id) on delete set null;
 
+create table if not exists public.dokumen (       -- dokumen Bukti Dukung yang disimpan ke Google Drive
+  id        text primary key,
+  user_id   uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  bidang    text,
+  periode   text,
+  nama_file text not null,
+  drive_id  text,
+  url       text not null,
+  ukuran    bigint,
+  dibuat    timestamptz not null default now()
+);
+create index if not exists dokumen_user on public.dokumen(user_id, dibuat desc);
+
 create table if not exists public.pengaturan (   -- pengaturan kantor (mis. kop surat)
   key   text primary key,
   value jsonb
@@ -169,6 +182,7 @@ alter table public.rk         enable row level security;
 alter table public.kegiatan   enable row level security;
 alter table public.pengaturan enable row level security;
 alter table public.jenis_kegiatan enable row level security;
+alter table public.dokumen    enable row level security;
 
 -- pegawai: tiap orang melihat & mengubah profilnya sendiri; admin mengelola semua
 drop policy if exists pegawai_baca  on public.pegawai;
@@ -197,6 +211,11 @@ create policy jenis_baca   on public.jenis_kegiatan for select to authenticated 
 create policy jenis_tambah on public.jenis_kegiatan for insert to authenticated with check (public.is_pegawai() and (dibuat_oleh = auth.uid() or public.is_admin()));
 create policy jenis_ubah   on public.jenis_kegiatan for update to authenticated using (public.is_admin() or dibuat_oleh = auth.uid()) with check (public.is_admin() or dibuat_oleh = auth.uid());
 create policy jenis_hapus  on public.jenis_kegiatan for delete to authenticated using (public.is_admin() or dibuat_oleh = auth.uid());
+
+-- dokumen (link Google Drive): hanya pemiliknya
+drop policy if exists dokumen_milik_sendiri on public.dokumen;
+create policy dokumen_milik_sendiri on public.dokumen for all to authenticated
+  using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());
 
 -- pengaturan kantor: semua pegawai membaca, hanya admin yang mengubah
 drop policy if exists pengaturan_baca on public.pengaturan;
