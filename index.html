@@ -107,6 +107,7 @@
   .bawah-nav { display: none; }
   .rk-tabel td { vertical-align: top; } .rk-tabel .rk-teks { font-weight: 600; line-height: 1.4; } .rk-tabel .iki { color: var(--teks2); line-height: 1.4; }
   .rk-tabel mark { background: #fff1a8; padding: 0; }
+  .rk-tabel td[rowspan] { background: #fbfcfe; } .rk-n { font-size: 11px; font-weight: 600; color: #2E75B6; margin-top: 3px; }
   .rk-admin { display: inline-block; font-size: 11.5px; font-weight: 600; color: #1F4E79; background: #e8f0fa; border-radius: 6px; padding: 3px 7px; } .rk-dari { font-size: 11px; color: #2E75B6; margin-top: 2px; }
   .rk-pilih { display: block; width: 100%; min-width: 200px; max-width: 320px; text-align: left; font: inherit; font-size: 12.5px; line-height: 1.35; padding: 6px 8px; border: 1px solid #cfd7e0; border-radius: 8px; background: #fff; cursor: pointer; color: var(--teks); }
   .rk-pilih.kosong-rk { border-color: #e8b35a; background: #fff9ec; color: #8a5300; }
@@ -406,6 +407,9 @@
   /* ---------- Rekap Kegiatan: RK & IKI + daftar kegiatan ---------- */
   function renderRekap() { renderTabel(); }
   /* ---------- Menu RK & IKI ---------- */
+  const kunciRk = s => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  /* baris RK yang sama (IKI berbeda) dijajarkan; sel Bidang & RK digabung (rowspan) */
+  const kelompokRk = rows => { const m = new Map(); rows.forEach(x => { const k = (x.r.bidang || '') + '|' + kunciRk(x.r.nama); if (!m.has(k)) m.set(k, []); m.get(k).push(x); }); return [...m.values()].flatMap(g => g.map((x, j) => Object.assign({}, x, { span: j ? 0 : g.length }))); };
   const tandai = (t, q) => { const e = S.esc(t || ''); if (!q) return e; const i = e.toLowerCase().indexOf(S.esc(q)); return i < 0 ? e : e.slice(0, i) + '<mark>' + e.slice(i, i + S.esc(q).length) + '</mark>' + e.slice(i + S.esc(q).length); };
   function renderRkMenu() {
     const f = $('rkFBidang'), v = f.value;
@@ -415,9 +419,10 @@
     const rows = rhkList.map((r, i) => ({ r, no: i + 1 })).filter(x => (!f.value || (f.value === '-' ? !x.r.bidang : x.r.bidang === f.value)) && (!q || ((x.r.nama || '') + ' ' + (x.r.indikator || '')).toLowerCase().includes(q)));
     const perB = S.bidangDari(rhkList.map(r => r.bidang)).map(b => [b, rhkList.filter(r => r.bidang === b).length]).filter(x => x[1]);
     const nAdm = rhkList.filter(r => r.bersama).length;
-    $('rkRingkas').textContent = rhkList.length ? rhkList.length + ' RK' + (nAdm ? ' (' + nAdm + ' dari admin, ' + (rhkList.length - nAdm) + ' tambahan Anda)' : '') + ' · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') + (rhkList.some(r => !r.bidang) ? ' · tanpa bidang ' + rhkList.filter(r => !r.bidang).length : '') : '';
-    $('rkTbl').innerHTML = rows.length ? rows.map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td><td>${x.r.bidang ? '<b>' + S.esc(x.r.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}${x.r.bersama ? '<div class="rk-dari">dari admin</div>' : ''}</td>
-        <td class="rk-teks">${tandai(x.r.nama, q)}</td><td class="iki">${tandai(x.r.indikator, q) || '—'}</td><td class="num">${jml(x.r.id)}</td>
+    const nRk = new Set(rhkList.map(r => (r.bidang || '') + '|' + kunciRk(r.nama))).size;
+    $('rkRingkas').textContent = rhkList.length ? nRk + ' RK, ' + rhkList.length + ' IKI' + (nAdm ? ' (' + nAdm + ' dari admin, ' + (rhkList.length - nAdm) + ' tambahan Anda)' : '') + ' · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') + (rhkList.some(r => !r.bidang) ? ' · tanpa bidang ' + rhkList.filter(r => !r.bidang).length : '') : '';
+    $('rkTbl').innerHTML = rows.length ? kelompokRk(rows).map(x => `<tr data-id="${x.r.id}"${x.span === 0 ? ' class="rk-lanjut"' : ''}><td>${x.no}</td>${x.span === 0 ? '' : `<td rowspan="${x.span}">${x.r.bidang ? '<b>' + S.esc(x.r.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}${x.r.bersama ? '<div class="rk-dari">dari admin</div>' : ''}</td>
+        <td class="rk-teks" rowspan="${x.span}">${tandai(x.r.nama, q)}${x.span > 1 ? `<div class="rk-n">${x.span} IKI</div>` : ''}</td>`}<td class="iki">${tandai(x.r.indikator, q) || '—'}</td><td class="num">${jml(x.r.id)}</td>
         <td style="white-space:nowrap">${x.r.bersama ? '<span class="rk-admin" title="RK dari admin — hanya admin yang dapat mengubah">🔒 Admin</span>' : `<button class="ikon" data-ubahrk title="Ubah" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapusrk title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>`}</td></tr>`).join('')
       : `<tr><td colspan="6"><div class="kosong">${rhkList.length ? 'Tidak ada RK yang cocok.' : 'Belum ada RK. Klik “+ Tambah RK”, atau “📥 Impor Excel” untuk memasukkan banyak RK sekaligus.'}</div></td></tr>`;
   }
@@ -435,12 +440,12 @@
   $('formRk').onsubmit = async e => {
     e.preventDefault(); const nama = $('rkENama').value.trim(), bidang = $('rkEBidang').value || null; if (!nama) return;
     if (!bidang) { S.toast('Pilih bidang RK ini'); return; }
-    const ganda = rhkList.find(x => x !== rkEdit && x.bidang === bidang && x.nama.trim().toLowerCase() === nama.toLowerCase());
-    if (ganda) { S.toast('RK yang sama sudah ada di bidang ' + bidang); return; }
+    const ganda = rhkList.find(x => x !== rkEdit && x.bidang === bidang && kunciRk(x.nama) === kunciRk(nama) && kunciRk(x.indikator) === kunciRk($('rkEIki').value));
+    if (ganda) { S.toast('RK dengan IKI yang sama sudah ada di bidang ' + bidang + (ganda.bersama ? ' (dari admin)' : '')); return; }
     const r = rkEdit ? Object.assign({}, rkEdit) : { id: 'r' + S.uid(), satuan: '', target: 0, targetBulan: {}, urutan: rhkList.filter(x => !x.bersama).length };
     Object.assign(r, { bidang, nama, indikator: $('rkEIki').value.trim() });
     $('rkESimpan').disabled = true;
-    try { await S.put('rhk', r); if (rkEdit) rhkList[rhkList.indexOf(rkEdit)] = r; else rhkList.push(r); $('mRkEdit').classList.remove('on'); renderRkMenu(); S.toast(rkEdit ? 'RK diperbarui' : 'RK ditambahkan'); }
+    try { await S.put('rhk', r); if (rkEdit) rhkList[rhkList.indexOf(rkEdit)] = r; else rhkList.push(r); rhkList = S.urutRk(rhkList); $('mRkEdit').classList.remove('on'); renderRkMenu(); S.toast(rkEdit ? 'RK diperbarui' : 'RK ditambahkan'); }
     catch (x) { S.toast(x.message); } finally { $('rkESimpan').disabled = false; }
   };
   async function hapusRk(r) {
@@ -473,14 +478,14 @@
       const h = rows.findIndex(r => r.some(c => /^\s*(rk|rencana)/i.test(String(c))));
       let col = { bd: 0, rk: 1, iki: 2 };
       if (h >= 0) { const hd = rows[h].map(c => String(c).trim().toLowerCase()); const c = re => hd.findIndex(x => re.test(x)); col = { bd: c(/bidang/), rk: c(/^(rk|rencana)/), iki: c(/^(iki|indikator)/) }; }
-      const ada = new Set(rhkList.map(r => (r.bidang || '') + '|' + r.nama.trim().toLowerCase())); const diFile = new Set(); riBaris = [];
+      const ada = new Set(rhkList.map(r => (r.bidang || '') + '|' + kunciRk(r.nama) + '|' + kunciRk(r.indikator))); const diFile = new Set(); riBaris = [];
       rows.forEach((r, i) => {
         if (i <= h) return; const g = k => col[k] >= 0 ? String(r[col[k]] || '').trim() : '';
         const o = { baris: i + 1, bidMentah: g('bd'), bidang: SKPExcel._bacaBidang(g('bd')), nama: g('rk').replace(/\s+/g, ' '), iki: g('iki').replace(/\s+/g, ' ') };
         if (!o.nama && !o.iki && !o.bidMentah) return;
         const m = []; if (!o.bidang) m.push(o.bidMentah ? 'bidang tidak dikenali (' + o.bidMentah + ')' : 'bidang kosong'); if (!o.nama) m.push('RK kosong');
-        const kunci = (o.bidang || '') + '|' + o.nama.toLowerCase();
-        if (m.length) { o.status = 'salah'; o.ket = m.join('; '); } else if (ada.has(kunci)) { o.status = 'ada'; o.ket = 'sudah ada, dilewati'; } else if (diFile.has(kunci)) { o.status = 'ada'; o.ket = 'baris ganda di file'; } else { o.status = 'ok'; diFile.add(kunci); }
+        const kunci = (o.bidang || '') + '|' + kunciRk(o.nama) + '|' + kunciRk(o.iki);
+        if (m.length) { o.status = 'salah'; o.ket = m.join('; '); } else if (ada.has(kunci)) { o.status = 'ada'; o.ket = 'RK & IKI ini sudah ada, dilewati'; } else if (diFile.has(kunci)) { o.status = 'ada'; o.ket = 'baris ganda di file'; } else { o.status = 'ok'; diFile.add(kunci); }
         riBaris.push(o);
       });
       const n = st => riBaris.filter(o => o.status === st).length; const LBL = { ok: '✓ Siap', salah: '✕ Perlu diperbaiki', ada: '– Dilewati' };
@@ -492,7 +497,7 @@
   $('riSimpan').onclick = async () => {
     const siap = riBaris.filter(o => o.status === 'ok'); if (!siap.length) return; const b = $('riSimpan'); b.disabled = true; b.textContent = 'Menyimpan…';
     const baru = siap.map((o, i) => ({ id: 'r' + S.uid() + i.toString(36), bidang: o.bidang, nama: o.nama, indikator: o.iki, satuan: '', target: 0, targetBulan: {}, urutan: rhkList.length + i }));
-    try { await S.putBanyak('rhk', baru); rhkList = rhkList.concat(baru); $('mRkImpor').classList.remove('on'); renderRkMenu(); S.toast(baru.length + ' RK berhasil diimpor', 4000); }
+    try { await S.putBanyak('rhk', baru); rhkList = S.urutRk(rhkList.concat(baru)); $('mRkImpor').classList.remove('on'); renderRkMenu(); S.toast(baru.length + ' RK berhasil diimpor', 4000); }
     catch (x) { S.toast(x.message, 6000); b.disabled = false; b.textContent = 'Coba lagi'; }
   };
 
@@ -694,9 +699,18 @@
   const amanNama = t => String(t).replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_').slice(0, 60);
   /* Kelompokkan kegiatan satu bidang menurut RK (urutan RK, lalu yang belum ber-RK) */
   function perRk(ks) {
-    const out = []; rhkList.forEach(r => { const kk = ks.filter(k => k.rhkId === r.id); if (kk.length) out.push({ rk: r, ks: kk }); });
-    const sisa = ks.filter(k => !rhkById(k.rhkId)); if (sisa.length) out.push({ rk: null, ks: sisa }); return out;
+    // RK yang sama (walau IKI-nya berbeda) digabung dalam satu tabel; IKI-nya didaftar bersama
+    const out = [], idx = new Map();
+    rhkList.forEach(r => {
+      const kk = ks.filter(k => k.rhkId === r.id); if (!kk.length) return;
+      const kunci = kunciRk(r.nama); let g = idx.get(kunci);
+      if (!g) { g = { rk: r, rks: [], ks: [] }; idx.set(kunci, g); out.push(g); }
+      g.rks.push(r); g.ks.push(...kk);
+    });
+    out.forEach(g => { const urut = new Map(ks.map((k, i) => [k, i])); g.ks.sort((a, b) => urut.get(a) - urut.get(b)); });
+    const sisa = ks.filter(k => !rhkById(k.rhkId)); if (sisa.length) out.push({ rk: null, rks: [], ks: sisa }); return out;
   }
+  const ikiGabung = rks => { const L = []; rks.forEach(r => { const t = (r.indikator || '').trim(); if (t && !L.some(x => kunciRk(x) === kunciRk(t))) L.push(t); }); return L.length > 1 ? L.map((t, i) => (i + 1) + '. ' + t).join('\n') : (L[0] || ''); };
   async function buatBukti(g, p) {
     const bagian = [];
     for (const kel of perRk(g.ks)) {
@@ -709,7 +723,7 @@
         if (!it) { it = { teks: tanpaTeks ? 'Dokumentasi kegiatan' : t, fotos: [] }; items.push(it); }
         it.fotos.push(...fotos);
       }
-      bagian.push({ rk: kel.rk ? kel.rk.nama : '', iki: kel.rk ? (kel.rk.indikator || '') : '', items });
+      bagian.push({ rk: kel.rk ? kel.rk.nama : '', iki: kel.rk ? ikiGabung(kel.rks) : '', items });
     }
     const blob = await DOCX.buktiDukung({ template: await ambilTemplate(), kop, judul: $('uJudul').value.trim() || ('Bukti Dukung SKP ' + p.label), nama: profil.nama || '', nip: profil.nip || '', bagian });
     return { blob, nama: 'Bukti_Dukung_' + amanNama(g.bidang) + '_' + amanNama(p.label) + '.docx' };

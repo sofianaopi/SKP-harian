@@ -200,7 +200,7 @@
 </div></div>
 
 <div class="modal" id="mRkA"><form class="isi form" id="fRkA" role="dialog" aria-labelledby="rkaJ" style="max-width:640px">
-  <h3 id="rkaJ">Tambah RK</h3><div class="ket">Tampil untuk semua pegawai pada bidang yang dipilih.</div>
+  <h3 id="rkaJ">Tambah RK</h3><div class="ket">Tampil untuk semua pegawai pada bidang yang dipilih. Bila satu RK memiliki beberapa IKI, tambahkan RK yang sama sekali lagi dengan IKI berbeda — di daftar dan di dokumen keduanya digabung dalam satu RK.</div>
   <label for="rkaBidang">Bidang *</label><select id="rkaBidang" required></select>
   <label for="rkaNama">Rencana Kinerja (RK) *</label><textarea id="rkaNama" required maxlength="1000"></textarea>
   <label for="rkaIki">Indikator Kinerja Individu (IKI)</label><textarea id="rkaIki" maxlength="1000"></textarea>
@@ -539,6 +539,8 @@
 
   /* ---------- RK & IKI bersama (dari admin, tampil untuk semua pegawai) ---------- */
   let rkA = [], rkAMuat = false, rkAEdit = null;
+  const kunciRk = s => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  const kelompokRkA = rows => { const m = new Map(); rows.forEach(x => { const k = (x.r.bidang || '') + '|' + kunciRk(x.r.nama); if (!m.has(k)) m.set(k, []); m.get(k).push(x); }); return [...m.values()].flatMap(g => g.map((x, j) => Object.assign({}, x, { span: j ? 0 : g.length }))); };
   const tandaiA = (t, q) => { const e = S.esc(t || ''); if (!q) return e; const i = e.toLowerCase().indexOf(S.esc(q)); return i < 0 ? e : e.slice(0, i) + '<mark>' + e.slice(i, i + S.esc(q).length) + '</mark>' + e.slice(i + S.esc(q).length); };
   async function muatRkA() {
     try { rkA = await S.list('rhkBersama'); rkAMuat = true; } catch (x) { rkA = []; $('rkaTbl').innerHTML = `<tr><td colspan="5" style="color:#b42318;padding:16px">${S.esc(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase (SQL Editor), lalu muat ulang.' : x.message)}</td></tr>`; return; }
@@ -550,8 +552,8 @@
     const q = $('rkaCari').value.trim().toLowerCase();
     const rows = rkA.map((r, i) => ({ r, no: i + 1 })).filter(x => (!f.value || x.r.bidang === f.value) && (!q || ((x.r.nama || '') + ' ' + (x.r.indikator || '')).toLowerCase().includes(q)));
     const perB = S.bidangDari(rkA.map(r => r.bidang)).map(b => [b, rkA.filter(r => r.bidang === b).length]).filter(x => x[1]);
-    $('rkaRingkas').textContent = rkA.length ? rkA.length + ' RK · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') : '';
-    $('rkaTbl').innerHTML = rows.length ? rows.map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td><td><b>${S.esc(x.r.bidang || '—')}</b></td><td class="rk-nm">${tandaiA(x.r.nama, q)}</td><td class="iki">${tandaiA(x.r.indikator, q) || '—'}</td>
+    $('rkaRingkas').textContent = rkA.length ? new Set(rkA.map(r => (r.bidang || '') + '|' + kunciRk(r.nama))).size + ' RK, ' + rkA.length + ' IKI · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') : '';
+    $('rkaTbl').innerHTML = rows.length ? kelompokRkA(rows).map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td>${x.span === 0 ? '' : `<td rowspan="${x.span}"><b>${S.esc(x.r.bidang || '—')}</b></td><td class="rk-nm" rowspan="${x.span}">${tandaiA(x.r.nama, q)}${x.span > 1 ? `<div style="font-size:11px;font-weight:600;color:#2E75B6;margin-top:3px">${x.span} IKI</div>` : ''}</td>`}<td class="iki">${tandaiA(x.r.indikator, q) || '—'}</td>
       <td class="aks"><button class="btn" type="button" data-rka-ubah>Ubah</button> <button class="btn bahaya" type="button" data-rka-hapus>Hapus</button></td></tr>`).join('')
       : `<tr><td colspan="5" style="padding:18px;color:var(--teks2);text-align:center">${rkA.length ? 'Tidak ada RK yang cocok.' : 'Belum ada RK. Klik “+ Tambah RK”, atau “📥 Impor Excel” untuk memasukkan banyak RK sekaligus.'}</td></tr>`;
   }
@@ -569,11 +571,11 @@
     e.preventDefault(); if ($('rkaSimpan').disabled) return;
     const bidang = $('rkaBidang').value, nama = $('rkaNama').value.trim().replace(/\s+/g, ' '), iki = $('rkaIki').value.trim().replace(/\s+/g, ' ');
     if (!bidang || !nama) { S.toast('Bidang dan RK wajib diisi'); return; }
-    if (rkA.some(x => x !== rkAEdit && x.bidang === bidang && x.nama.trim().toLowerCase() === nama.toLowerCase())) { S.toast('RK yang sama sudah ada di bidang ' + bidang); return; }
+    if (rkA.some(x => x !== rkAEdit && x.bidang === bidang && kunciRk(x.nama) === kunciRk(nama) && kunciRk(x.indikator) === kunciRk(iki))) { S.toast('RK dengan IKI yang sama sudah ada di bidang ' + bidang); return; }
     const r = rkAEdit ? Object.assign({}, rkAEdit) : { id: 'ra' + S.uid(), satuan: '', target: 0, targetBulan: {}, urutan: rkA.length };
     Object.assign(r, { bidang, nama, indikator: iki, bersama: true });
     $('rkaSimpan').disabled = true;
-    try { await S.put('rhk', r); if (rkAEdit) rkA[rkA.indexOf(rkAEdit)] = r; else rkA.push(r); $('mRkA').classList.remove('on'); renderRkA(); S.toast(rkAEdit ? 'RK diperbarui untuk semua pegawai' : 'RK ditambahkan untuk semua pegawai'); }
+    try { await S.put('rhk', r); if (rkAEdit) rkA[rkA.indexOf(rkAEdit)] = r; else rkA.push(r); rkA = S.urutRk(rkA); $('mRkA').classList.remove('on'); renderRkA(); S.toast(rkAEdit ? 'RK diperbarui untuk semua pegawai' : 'RK ditambahkan untuk semua pegawai'); }
     catch (x) { S.toast(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : x.message, 6000); }
     finally { $('rkaSimpan').disabled = false; }
   };
@@ -602,14 +604,14 @@
       const h = rows.findIndex(r => r.some(c => /^\s*(rk|rencana)/i.test(String(c))));
       let col = { bd: 0, rk: 1, iki: 2 };
       if (h >= 0) { const hd = rows[h].map(c => String(c).trim().toLowerCase()); const c = re => hd.findIndex(x => re.test(x)); col = { bd: c(/bidang/), rk: c(/^(rk|rencana)/), iki: c(/^(iki|indikator)/) }; }
-      const ada = new Set(rkA.map(r => (r.bidang || '') + '|' + r.nama.trim().toLowerCase())); const diFile = new Set(); riaBaris = [];
+      const ada = new Set(rkA.map(r => (r.bidang || '') + '|' + kunciRk(r.nama) + '|' + kunciRk(r.indikator))); const diFile = new Set(); riaBaris = [];
       rows.forEach((r, i) => {
         if (i <= h) return; const g = k => col[k] >= 0 ? String(r[col[k]] || '').trim() : '';
         const o = { baris: i + 1, bidMentah: g('bd'), bidang: SKPExcel._bacaBidang(g('bd')), nama: g('rk').replace(/\s+/g, ' '), iki: g('iki').replace(/\s+/g, ' ') };
         if (!o.nama && !o.iki && !o.bidMentah) return;
         const m = []; if (!o.bidang) m.push(o.bidMentah ? 'bidang tidak dikenali (' + o.bidMentah + ')' : 'bidang kosong'); if (!o.nama) m.push('RK kosong');
-        const kunci = (o.bidang || '') + '|' + o.nama.toLowerCase();
-        if (m.length) { o.status = 'salah'; o.ket = m.join('; '); } else if (ada.has(kunci)) { o.status = 'ada'; o.ket = 'sudah ada, dilewati'; } else if (diFile.has(kunci)) { o.status = 'ada'; o.ket = 'baris ganda di file'; } else { o.status = 'ok'; diFile.add(kunci); }
+        const kunci = (o.bidang || '') + '|' + kunciRk(o.nama) + '|' + kunciRk(o.iki);
+        if (m.length) { o.status = 'salah'; o.ket = m.join('; '); } else if (ada.has(kunci)) { o.status = 'ada'; o.ket = 'RK & IKI ini sudah ada, dilewati'; } else if (diFile.has(kunci)) { o.status = 'ada'; o.ket = 'baris ganda di file'; } else { o.status = 'ok'; diFile.add(kunci); }
         riaBaris.push(o);
       });
       const n = st => riaBaris.filter(o => o.status === st).length; const L = { ok: '✓ Siap', salah: '✕ Perlu diperbaiki', ada: '– Dilewati' };
@@ -621,7 +623,7 @@
   $('riaSimpan').onclick = async () => {
     const siap = riaBaris.filter(o => o.status === 'ok'); if (!siap.length) return; const b = $('riaSimpan'); b.disabled = true; b.textContent = 'Menyimpan…';
     const baru = siap.map((o, i) => ({ id: 'ra' + S.uid() + i.toString(36), bidang: o.bidang, nama: o.nama, indikator: o.iki, satuan: '', target: 0, targetBulan: {}, urutan: rkA.length + i, bersama: true }));
-    try { await S.putBanyak('rhk', baru); rkA = rkA.concat(baru); $('mRkAImpor').classList.remove('on'); renderRkA(); S.toast(baru.length + ' RK diimpor untuk semua pegawai', 4000); }
+    try { await S.putBanyak('rhk', baru); rkA = S.urutRk(rkA.concat(baru)); $('mRkAImpor').classList.remove('on'); renderRkA(); S.toast(baru.length + ' RK diimpor untuk semua pegawai', 4000); }
     catch (x) { S.toast(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : x.message, 6000); b.disabled = false; b.textContent = 'Coba lagi'; }
   };
 

@@ -47,12 +47,14 @@
   if (bc) bc.onmessage = () => listeners.forEach(f => f());
   const notify = () => { try { bc && bc.postMessage('changed'); } catch (e) { } };
 
+  /* RK yang sama (IKI berbeda) diletakkan berurutan; urutan kelompok mengikuti kemunculan pertama */
+  function urutRk(L) { const k = r => (r.bidang || '') + '|' + String(r.nama || '').trim().replace(/\s+/g, ' ').toLowerCase(); const m = new Map(); L.forEach(r => { if (!m.has(k(r))) m.set(k(r), []); m.get(k(r)).push(r); }); return [...m.values()].flat(); }
   const db = {
     async list(s) {
       const c = client();
       if (s === 'kegiatan') return cek(await c.from('kegiatan').select('*').eq('user_id', uid).order('tanggal').limit(10000)).map(keK);
-      if (s === 'rhk') return cek(await c.from('rk').select('*').or('user_id.eq.' + uid + ',bersama.eq.true').order('bersama', { ascending: false }).order('urutan')).map(keR);
-      if (s === 'rhkBersama') return cek(await c.from('rk').select('*').eq('bersama', true).order('urutan')).map(keR);
+      if (s === 'rhk') return urutRk(cek(await c.from('rk').select('*').or('user_id.eq.' + uid + ',bersama.eq.true').order('bersama', { ascending: false }).order('urutan')).map(keR));
+      if (s === 'rhkBersama') return urutRk(cek(await c.from('rk').select('*').eq('bersama', true).order('urutan')).map(keR));
       if (s === 'ringkas') return cek(await c.from('kegiatan_ringkas').select('tanggal,jumlah,foto').eq('user_id', uid)).map(r => ({ tanggal: r.tanggal, jumlah: Number(r.jumlah) || 0, foto: Number(r.foto) || 0 }));
       if (s === 'dokumen') return cek(await c.from('dokumen').select('*').eq('user_id', uid).order('dibuat', { ascending: false })).map(keD);
       if (s === 'jenis') return cek(await c.from('jenis_kegiatan').select('*').order('bidang').order('urutan').order('nama')).map(keJ);
@@ -370,7 +372,7 @@
   }
 
   const api = {
-    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses,
+    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses,
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),

@@ -290,6 +290,8 @@
     return `<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${wEmu}" cy="${hEmu}"/><wp:docPr id="${900 + n}" name="Foto ${n}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${900 + n}" name="foto${n}.jpeg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${wEmu}" cy="${hEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
   }
   const paraDengan = (xml, tanda) => { const re = new RegExp('<w:p(?: [^>]*)?>(?:(?!<w:p[ >])[\\s\\S])*?' + tanda + '[\\s\\S]*?</w:p>'); const m = xml.match(re); return m ? m[0] : null; };
+  /* teks dengan baris baru → pindah baris di Word */
+  const xBaris = t => String(t).split('\n').map(x).join('</w:t><w:br/><w:t xml:space="preserve">');
   /* Potongan <w:tr>…</w:tr> yang memuat teks tertentu */
   function barisDengan(d, teks) {
     const i = d.indexOf(teks); if (i < 0) return null;
@@ -318,7 +320,7 @@
         const garis = paraDengan(d, '(?:mc:AlternateContent|wpg:wgp)');
         if (garis) d = d.replace(garis, '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="12" w:space="1" w:color="000000"/></w:pBdr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:ind w:left="-27"/></w:pPr></w:p>');
       }
-      d = d.replace('{{JUDUL}}', x(o.judul)).replace('{{NAMA}}', x(o.nama)).replace('{{NIP}}', x(o.nip)).replace('{{RK}}', x(bg.rk || '')).replace('{{IKI}}', x(bg.iki || ''));
+      d = d.replace('{{JUDUL}}', x(o.judul)).replace('{{NAMA}}', x(o.nama)).replace('{{NIP}}', x(o.nip)).replace('{{RK}}', xBaris(bg.rk || '')).replace('{{IKI}}', xBaris(bg.iki || ''));
       // Baris uraian + baris foto diulang untuk setiap kegiatan: uraian 1, foto 1, uraian 2, foto 2, ...
       const items = bg.items || (bg.uraian || []).map((t, i) => ({ teks: t, fotos: i === 0 ? (bg.fotos || []) : [] }));
       const rowU = barisDengan(d, '{{URAIAN}}'), rowF = barisDengan(d, '{{FOTO}}');
