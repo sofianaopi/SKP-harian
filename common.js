@@ -278,15 +278,46 @@
     t.textContent = msg; t.className = 'show'; clearTimeout(t._h); t._h = setTimeout(() => t.className = '', ms);
   }
 
+  /* Layar "sedang diproses": menutup seluruh halaman (mencegah klik berulang) sampai proses selesai */
+  const sibukList = [];
+  function sibukRender() {
+    let o = document.getElementById('skp-sibuk');
+    const aktif = sibukList.filter(x => x.tampil);
+    if (!aktif.length) { if (o) o.classList.remove('on'); document.documentElement.classList.remove('skp-sibuk'); return; }
+    if (!o) {
+      o = document.createElement('div'); o.id = 'skp-sibuk'; o.setAttribute('role', 'alert'); o.setAttribute('aria-live', 'assertive');
+      o.innerHTML = '<div class="kotak"><div class="putar"></div><div class="pesan"></div><div class="sub">Mohon tunggu, jangan tutup halaman ini…</div></div>';
+      document.body.appendChild(o);
+      ['click', 'mousedown', 'touchstart', 'keydown'].forEach(ev => o.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }, true));
+    }
+    o.querySelector('.pesan').textContent = aktif[0].pesan;
+    o.classList.add('on'); document.documentElement.classList.add('skp-sibuk');
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+  function sibuk(pesan = 'Memproses…', tunda = 0) {
+    const t = { pesan, tampil: !tunda }; sibukList.push(t);
+    if (tunda) t.h = setTimeout(() => { t.tampil = true; sibukRender(); }, tunda); else sibukRender();
+    return {
+      pesan(p) { t.pesan = p; sibukRender(); },
+      selesai() { clearTimeout(t.h); const i = sibukList.indexOf(t); if (i >= 0) sibukList.splice(i, 1); sibukRender(); }
+    };
+  }
+  async function proses(pesan, fn, tunda = 0) { const s = sibuk(pesan, tunda); try { return await fn(s); } finally { s.selesai(); } }
+  if (!document.getElementById('skp-sibuk-css')) {
+    const st = document.createElement('style'); st.id = 'skp-sibuk-css';
+    st.textContent = '#skp-sibuk{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,.45);backdrop-filter:blur(1.5px);cursor:progress}#skp-sibuk.on{display:flex}#skp-sibuk .kotak{background:#fff;border-radius:14px;padding:22px 26px;min-width:220px;max-width:86vw;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);font-family:inherit}#skp-sibuk .putar{width:42px;height:42px;margin:0 auto 12px;border:4px solid #dbe4f0;border-top-color:#0b5ea8;border-radius:50%;animation:skpPutar .8s linear infinite}#skp-sibuk .pesan{font-weight:600;font-size:15px;color:#1e293b}#skp-sibuk .sub{font-size:12px;color:#64748b;margin-top:4px}@keyframes skpPutar{to{transform:rotate(360deg)}}';
+    (document.head || document.documentElement).appendChild(st);
+  }
+
   const api = {
-    BULAN, HARI, BIDANG, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast,
+    BULAN, HARI, BIDANG, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses,
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
-    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), putBanyak: (s, a, p) => db.putBanyak(s, a, p), hapusBanyakKegiatan: ks => db.hapusBanyakKegiatan(ks), arsipkanKegiatan: ks => db.arsipkanKegiatan(ks), del: (s, id) => db.del(s, id),
+    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),
     onChange: f => listeners.add(f),
     async profil() { return db.get('meta', 'profil'); },
-    async hapusKegiatan(k) { for (const f of (k.fotoIds || [])) await db.del('foto', f); await db.del('kegiatan', k.id); },
+    async hapusKegiatan(k) { return proses('Menghapus kegiatan…', async () => { for (const f of (k.fotoIds || [])) await db.del('foto', f); await db.del('kegiatan', k.id); }, 150); },
     registerSW() { try { if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => { }); } catch (e) { } }
   };
   window.SKP = api;

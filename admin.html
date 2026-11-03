@@ -317,16 +317,19 @@
   $('ipSimpan').onclick = async () => {
     const siap = impor.filter(o => o.status === 'ok'); if (!siap.length) return;
     const b = $('ipSimpan'); b.disabled = true; $('ipTutup').disabled = true;
+    const sb = S.sibuk('Menambahkan pegawai…');
+    try {
     for (let i = 0; i < siap.length; i++) {
       const o = siap[i]; const pw = o.pw || buatPassword();
-      b.textContent = 'Menyimpan ' + (i + 1) + '/' + siap.length + '…';
+      b.textContent = 'Menyimpan ' + (i + 1) + '/' + siap.length + '…'; sb.pesan(`Menambahkan pegawai ${i + 1} dari ${siap.length}…`);
       try {
         await buatAkun({ nama: o.nama, nip: o.nip, nip_baru: o.nip_baru, jabatan: o.jabatan, unit: o.unit, peran: 'pegawai', aktif: true }, pw,
-          d => { b.textContent = 'Menunggu batas Supabase… ' + d + ' dtk (' + (i + 1) + '/' + siap.length + ')'; });
+          d => { b.textContent = 'Menunggu batas Supabase… ' + d + ' dtk (' + (i + 1) + '/' + siap.length + ')'; sb.pesan(`Menunggu batas Supabase… ${d} detik (${i + 1} dari ${siap.length})`); });
         o.status = 'jadi'; o.ket = ''; akunBaru.push([o.nama, o.nip, o.nip_baru, pw]);
       } catch (x) { o.status = 'gagal'; o.ket = x.message || String(x); }
       tampilImpor(); b.disabled = true;
     }
+    } finally { sb.selesai(); }
     $('ipTutup').disabled = false; b.hidden = true; $('ipAkun').hidden = !akunBaru.length;
     S.toast(akunBaru.length + ' pegawai ditambahkan', 4000); await muat();
   };
@@ -334,7 +337,8 @@
   const bersih = v => String(v || '').toLowerCase().replace(/[^a-z0-9._-]/g, '');
 
   $('fPeg').onsubmit = async e => {
-    e.preventDefault(); const b = $('mSimpan'); b.disabled = true; $('mErr').textContent = '';
+    e.preventDefault(); const b = $('mSimpan'); if (b.disabled) return; b.disabled = true; $('mErr').textContent = '';
+    const sb = S.sibuk(edit ? 'Menyimpan perubahan…' : 'Menambahkan pengguna…');
     try {
       const adm = $('iPeran').value === 'admin';
       const v = {}; Object.entries(F).forEach(([id, f]) => v[f] = $(id).value.trim() || null);
@@ -360,12 +364,12 @@
         if (pw) S.cek(await S.client().rpc('admin_set_password', { p_id: edit.id, p_password: pw }), 'Gagal mengganti password');
         S.toast('Data ' + v.nama + ' diperbarui' + (pw ? ' (password direset)' : ''));
       } else {
-        await buatAkun(v, pw);
+        await buatAkun(v, pw, d => sb.pesan(`Menunggu batas Supabase… ${d} detik`));
         S.toast(v.nama + ' ditambahkan. Masuk dengan ' + (adm ? 'username ' : 'NIP lama ') + v.nip);
       }
       $('mPeg').classList.remove('on'); await muat(); rekap = []; 
     } catch (x) { $('mErr').textContent = x.message || String(x); }
-    finally { b.disabled = false; }
+    finally { sb.selesai(); b.disabled = false; }
   };
 
   /* ---------- Dashboard monitoring ---------- */
@@ -405,7 +409,7 @@
   $('btnKop').onclick = () => $('fileKop').click();
   $('fileKop').onchange = async () => {
     const f = $('fileKop').files[0]; $('fileKop').value = ''; if (!f) return;
-    try { const k = await DOCX.extractKop(await f.arrayBuffer()); k.id = 'kop'; k.nama = f.name; await S.put('meta', k); kop = k; renderKop(); S.toast('Kop surat dipasang untuk semua pegawai'); }
+    try { await S.proses('Memasang kop surat…', async () => { const k = await DOCX.extractKop(await f.arrayBuffer()); k.id = 'kop'; k.nama = f.name; await S.put('meta', k); kop = k; renderKop(); }); S.toast('Kop surat dipasang untuk semua pegawai'); }
     catch (x) { S.toast('Gagal membaca dokumen: ' + (x && x.message || x), 5000); }
   };
   $('btnKopHapus').onclick = async () => { try { await S.del('meta', 'kop'); kop = null; renderKop(); S.toast('Kembali memakai kop bawaan'); } catch (x) { S.toast(x.message); } };
@@ -417,7 +421,7 @@
   const urlValid = u => /^https:\/\/script\.google(usercontent)?\.com\/.+/.test(u);
   async function ujiDrive(url) {
     $('driveInfo').textContent = 'Menghubungi Apps Script…';
-    const j = await S.drive(url, 'ping');
+    const j = await S.proses('Menghubungi Google Drive…', () => S.drive(url, 'ping'));
     $('driveInfo').innerHTML = `✅ Terhubung ke folder <b>${S.esc(j.folder)}</b>${j.folderUrl ? ` — <a href="${S.esc(j.folderUrl)}" target="_blank" rel="noopener">buka folder di Drive</a>` : ''}`;
   }
   $('btnDriveUji').onclick = async () => { const u = $('driveUrl').value.trim(); if (!urlValid(u)) { S.toast('Alamat harus berawalan https://script.google.com/…'); return; } try { await ujiDrive(u); } catch (x) { $('driveInfo').innerHTML = '<span style="color:#b42318">✕ ' + S.esc(x.message) + '</span>'; } };
@@ -439,9 +443,9 @@
     $('mKonf').classList.add('on');
     $('kBatal').onclick = () => $('mKonf').classList.remove('on');
     $('kYa').onclick = async () => {
-      $('kYa').disabled = true;
+      if ($('kYa').disabled) return; $('kYa').disabled = true; const sb = S.sibuk('Menghapus ' + p.nama + '…');
       try { S.cek(await S.client().rpc('admin_hapus_pegawai', { p_id: p.id }), 'Gagal menghapus'); $('mKonf').classList.remove('on'); S.toast(p.nama + ' dihapus'); await muat(); }
-      catch (x) { S.toast(x.message, 5000); } finally { $('kYa').disabled = false; }
+      catch (x) { S.toast(x.message, 5000); } finally { sb.selesai(); $('kYa').disabled = false; }
     };
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.on').forEach(m => m.classList.remove('on')); });

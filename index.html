@@ -523,7 +523,7 @@
   }
   $('cari').oninput = renderTabel; $('fBidang').onchange = renderTabel; $('fRk').onchange = renderTabel;
   const tundaK = {};
-  async function simpanKeg(k, el) { try { await S.put('kegiatan', k); if (el) { el.classList.toggle('kosong-rk', el.tagName === 'SELECT' && !el.value); } } catch (x) { S.toast(x.message, 5000); } }
+  async function simpanKeg(k, el) { try { await S.putDiam('kegiatan', k); if (el) { el.classList.toggle('kosong-rk', el.tagName === 'SELECT' && !el.value); } } catch (x) { S.toast(x.message, 5000); } }
   $('tblKeg').addEventListener('input', e => {
     const tr = e.target.closest('tr[data-id]'); if (!tr || e.target.dataset.f !== 'teks') return; const k = kegiatan.find(x => x.id === tr.dataset.id);
     k.teks = e.target.value; clearTimeout(tundaK[k.id]); tundaK[k.id] = setTimeout(() => { if (k.teks.trim()) simpanKeg(k); }, 700);
@@ -583,7 +583,8 @@
   $('kBatal').onclick = () => $('mKeg').classList.remove('on');
   $('kSimpan').onclick = async () => {
     const teks = $('kTeks').value.trim(); if (!teks) { $('kTeks').focus(); S.toast('Uraian kegiatan masih kosong'); return; }
-    $('kSimpan').disabled = true;
+    if ($('kSimpan').disabled) return; $('kSimpan').disabled = true;
+    const sb = S.sibuk(fotoBaru.length ? 'Mengunggah foto & menyimpan kegiatan…' : 'Menyimpan kegiatan…');
     try {
       for (const f of fotoBaru) { const id = 'f' + S.uid(); await S.put('foto', { id, data: f.data, w: f.w, h: f.h }); edit.fotoIds.push(id); }
       const baru = edit._baru; delete edit._baru;
@@ -592,7 +593,7 @@
       if (baru) kegiatan.push(edit); else kegiatan[kegiatan.findIndex(x => x.id === edit.id)] = edit;
       $('mKeg').classList.remove('on'); S.toast(baru ? 'Kegiatan ditambahkan' : 'Kegiatan diperbarui'); render(current());
     } catch (e) { S.toast(e.message || String(e), 5000); }
-    finally { $('kSimpan').disabled = false; }
+    finally { sb.selesai(); $('kSimpan').disabled = false; }
   };
   $('kHapus').onclick = async () => {
     if (!await konfirmasi('Hapus kegiatan ini?', 'Kegiatan dan foto buktinya akan dihapus permanen.')) return;
@@ -672,8 +673,12 @@
     const h = e.target.closest('[data-hapusdok]'); if (!h) return;
     const d = dokumen.find(x => x.id === h.dataset.hapusdok);
     if (!await konfirmasi('Hapus arsip dari Google Drive?', d.nama + ' akan dipindahkan ke sampah Drive dan link-nya tidak bisa dibuka lagi. Kegiatan di dalam dokumen ini sudah tidak ada di aplikasi, jadi datanya akan hilang sama sekali (masih bisa dipulihkan dari Sampah Google Drive dalam 30 hari).')) return;
-    try { if (d.driveId) await S.drive(driveCfg.url, 'hapus', { id: d.driveId }); } catch (x) { if (!/not found|tidak ditemukan|No item/i.test(x.message)) { S.toast(x.message, 5000); return; } }
-    await S.del('dokumen', d.id); dokumen = dokumen.filter(x => x.id !== d.id); renderDrive(); S.toast('Dokumen dihapus dari Drive');
+    const sb = S.sibuk('Menghapus dokumen dari Google Drive…');
+    try {
+      try { if (d.driveId) await S.drive(driveCfg.url, 'hapus', { id: d.driveId }); } catch (x) { if (!/not found|tidak ditemukan|No item/i.test(x.message)) { S.toast(x.message, 5000); return; } }
+      await S.del('dokumen', d.id);
+    } catch (x) { S.toast('Gagal menghapus: ' + (x.message || x), 5000); return; } finally { sb.selesai(); }
+    dokumen = dokumen.filter(x => x.id !== d.id); renderDrive(); S.toast('Dokumen dihapus dari Drive');
   });
   ['uTw', 'uTahun', 'uBulan', 'uDari', 'uSampai', 'uBidang'].forEach(id => $(id).onchange = renderUpload);
   $('uJudul').oninput = () => { judulManual = !!$('uJudul').value.trim(); };
@@ -709,7 +714,7 @@
   $('uDaftar').addEventListener('click', async e => {
     const bd = e.target.closest('[data-drive]'), bds = e.target.closest('#btnDriveSemua');
     if (bd || bds) {
-      const btn = bd || bds; const lama = btn.textContent; btn.disabled = true;
+      const btn = bd || bds; const lama = btn.textContent; btn.disabled = true; let sb = null;
       try {
         const p = periode(); const grup = kelompok(kegiatan.filter(k => k.tanggal >= p.dari && k.tanggal <= p.sampai));
         const pilih = bd ? [grup[+bd.dataset.drive]] : grup; let n = 0;
@@ -717,27 +722,28 @@
         btn.disabled = false;
         if (!await konfirmasi(pilih.length === 1 ? 'Simpan ke Drive & arsipkan?' : 'Simpan ' + pilih.length + ' dokumen ke Drive & arsipkan?',
           `Setelah dokumen tersimpan di Google Drive, ${nk} kegiatan dan ${nf} foto (${pilih.map(g => g.bidang).join(', ')} · ${p.label}) akan DIHAPUS dari aplikasi untuk menghemat ruang database. Dokumen di Drive menjadi arsipnya dan link-nya tetap ada di daftar bawah. Tindakan ini tidak bisa dibatalkan.`)) return;
-        btn.disabled = true; let terhapus = 0;
-        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; const h = await simpanKeDrive(g, p); terhapus += h.terhapus; renderDrive(); }
+        btn.disabled = true; let terhapus = 0; sb = S.sibuk('Menyimpan ke Google Drive…');
+        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; sb.pesan(pilih.length > 1 ? `Menyimpan dokumen ${n} dari ${pilih.length} ke Google Drive…` : 'Menyimpan dokumen ke Google Drive…'); const h = await simpanKeDrive(g, p); terhapus += h.terhapus; renderDrive(); }
         S.toast((pilih.length === 1 ? 'Tersimpan di Google Drive' : pilih.length + ' dokumen tersimpan di Google Drive') + ' · ' + terhapus + ' kegiatan diarsipkan & dihapus dari aplikasi', 5000);
-        renderUpload();
+        sb.selesai(); renderUpload();
         $('driveKartu').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (x) { console.error(x); S.toast('Gagal menyimpan ke Drive: ' + (x.message || x), 6000); renderUpload(); }
-      finally { if (document.body.contains(btn)) { btn.disabled = false; btn.textContent = lama; } }
+      finally { if (sb) sb.selesai(); if (document.body.contains(btn)) { btn.disabled = false; btn.textContent = lama; } }
       return;
     }
     const b1 = e.target.closest('[data-unduh]'), bz = e.target.closest('#btnZip'); if (!b1 && !bz) return;
     const btn = b1 || bz; const lama = btn.textContent; btn.disabled = true; btn.textContent = 'Menyusun…';
+    const sb = S.sibuk('Menyusun dokumen Word…');
     try {
       const p = periode(); const grup = kelompok(kegiatan.filter(k => k.tanggal >= p.dari && k.tanggal <= p.sampai));
-      if (b1) { const r = await buatBukti(grup[+b1.dataset.unduh], p); await S.download(r.nama, r.blob); S.toast('Dokumen siap: ' + r.nama); }
+      if (b1) { const r = await buatBukti(grup[+b1.dataset.unduh], p); sb.selesai(); await S.download(r.nama, r.blob); S.toast('Dokumen siap: ' + r.nama); }
       else {
-        const files = []; for (let i = 0; i < grup.length; i++) { btn.textContent = 'Menyusun ' + (i + 1) + '/' + grup.length + '…'; const r = await buatBukti(grup[i], p); files.push({ name: r.nama, data: new Uint8Array(await r.blob.arrayBuffer()) }); }
+        const files = []; for (let i = 0; i < grup.length; i++) { btn.textContent = 'Menyusun ' + (i + 1) + '/' + grup.length + '…'; sb.pesan(`Menyusun dokumen ${i + 1} dari ${grup.length}…`); const r = await buatBukti(grup[i], p); files.push({ name: r.nama, data: new Uint8Array(await r.blob.arrayBuffer()) }); }
         const nm = 'Bukti_Dukung_' + amanNama(profil.nama || 'SKP') + '_' + amanNama(p.label) + '.zip';
-        await S.download(nm, DOCX.zipBerkas(files)); S.toast(files.length + ' dokumen dikemas dalam ' + nm);
+        const zb = DOCX.zipBerkas(files); sb.selesai(); await S.download(nm, zb); S.toast(files.length + ' dokumen dikemas dalam ' + nm);
       }
     } catch (x) { console.error(x); S.toast('Gagal membuat dokumen: ' + (x && x.message || x), 5000); }
-    finally { btn.disabled = false; btn.textContent = lama; }
+    finally { sb.selesai(); btn.disabled = false; btn.textContent = lama; }
   });
 
   /* ---------- Profil ---------- */

@@ -54,6 +54,11 @@
   #banner.on { display: flex; } #banner span { flex: 1; } #banner button { border: 0; background: #6b5300; color: #fff; border-radius: 6px; padding: 4px 9px; font-size: 12px; cursor: pointer; }
   #chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 7px; scrollbar-width: none; }
   #chips::-webkit-scrollbar, #bidang::-webkit-scrollbar { display: none; }
+  .rk-bar { display: flex; align-items: center; gap: 8px; width: calc(100% - 4px); margin: 0 2px 7px; padding: 7px 10px; background: #fff; border: 1px solid #d1d7db; border-radius: 10px; font: inherit; font-size: 13px; text-align: left; cursor: pointer; color: var(--teks); box-shadow: 0 1px .5px rgba(11,20,26,.08); }
+  .rk-bar .rk-teks { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rk-bar .rk-ubah { color: var(--hijau); font-weight: 700; font-size: 12.5px; flex-shrink: 0; }
+  .rk-bar.kosong { border-style: dashed; color: #54656f; }
+  .e-rk { display: block; width: 100%; text-align: left; font: inherit; font-size: 14px; padding: 10px; border: 1px solid #d1d7db; border-radius: 8px; background: #fff; cursor: pointer; line-height: 1.35; color: var(--teks); }
   #bidang { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
   .bd { flex-shrink: 0; border: 0; background: rgba(0,128,105,.1); color: var(--hijau-tua); font: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
   .bd.on { background: var(--hijau-tua); color: #fff; }
@@ -115,6 +120,7 @@
 <div id="bawah">
   <div id="banner"><span id="bannerTeks"></span><button id="bannerX">Hari ini</button></div>
   <div id="bidang" role="tablist" aria-label="Bidang"></div>
+  <button type="button" id="rkBar" class="rk-bar" hidden><span class="rk-ik">🎯</span><span id="rkTeks" class="rk-teks"></span><span class="rk-ubah">Ubah</span></button>
   <div id="pratinjau"></div>
   <div class="bar">
     <div class="kolom">
@@ -133,7 +139,7 @@
   <label for="eTeks">Uraian kegiatan</label><textarea id="eTeks"></textarea>
   <div class="baris"><div><label for="eTgl">Tanggal</label><input type="date" id="eTgl"></div><div><label for="eJam">Jam</label><input type="time" id="eJam"></div></div>
   <label for="eBidang">Bidang</label><select id="eBidang"></select>
-  <div id="eRkBox"><label for="eRhk">Rencana Kinerja (RK)</label><select id="eRhk"></select>
+  <div id="eRkBox"><label for="eRkBtn">Rencana Kinerja (RK)</label><button type="button" id="eRkBtn" class="e-rk"></button><input type="hidden" id="eRhk">
   <input type="hidden" id="eJml"></div>
   <label>Foto bukti</label><div class="fotoedit" id="eFoto"></div>
   <div class="aksi"><button class="b-hapus" id="eHapus">Hapus</button><button class="b-batal" id="eBatal">Batal</button><button class="b-utama" id="eSimpan">Simpan</button></div>
@@ -145,14 +151,16 @@
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="excel.js"></script>
+<script src="rkpicker.js"></script>
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
   let rhkList = [], kegiatan = [], profil = {}, pilihBidang = null, tglCatat = null, lampiran = [], editing = null;
   const fotoCache = new Map();
 
-  try { const v = JSON.parse(localStorage.getItem('skp-input-pref') || '{}'); pilihBidang = v.bidang || null; } catch (e) { }
-  const simpanPref = () => { try { localStorage.setItem('skp-input-pref', JSON.stringify({ bidang: pilihBidang })); } catch (e) { } };
+  let rkPerBidang = {};
+  try { const v = JSON.parse(localStorage.getItem('skp-input-pref') || '{}'); pilihBidang = v.bidang || null; rkPerBidang = v.rk || {}; } catch (e) { }
+  const simpanPref = () => { try { localStorage.setItem('skp-input-pref', JSON.stringify({ bidang: pilihBidang, rk: rkPerBidang })); } catch (e) { } };
 
   async function muat() {
     [kegiatan, profil, rhkList] = await Promise.all([S.list('kegiatan'), S.profil(), S.list('rhk').catch(() => [])]);
@@ -172,8 +180,24 @@
     const bd = $('bidang'); bd.innerHTML = '';
     S.BIDANG.forEach(n => { const b = document.createElement('button'); b.className = 'bd' + (pilihBidang === n ? ' on' : ''); b.textContent = n; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', pilihBidang === n);
       b.onclick = () => { pilihBidang = n; simpanPref(); renderChips(); }; bd.appendChild(b); });
+    renderRkBar();
     setTimeout(() => { const ob = bd.querySelector('.on'); ob && ob.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }, 0);
   }
+
+  const rkById = id => rhkList.find(r => r.id === id);
+  const rkAktif = () => { const r = pilihBidang && rkById(rkPerBidang[pilihBidang]); return r && (!r.bidang || r.bidang === pilihBidang) ? r : null; };
+  function renderRkBar() {
+    const bar = $('rkBar'); bar.hidden = !pilihBidang; if (!pilihBidang) return;
+    const r = rkAktif(); const n = rhkList.filter(x => x.bidang === pilihBidang).length;
+    bar.classList.toggle('kosong', !r);
+    $('rkTeks').textContent = r ? (rhkList.indexOf(r) + 1) + '. ' + r.nama : (n ? 'Pilih RK untuk kegiatan ini (' + n + ' RK di bidang ' + pilihBidang + ')' : rhkList.length ? 'Belum ada RK untuk bidang ' + pilihBidang + ' — ketuk untuk memilih dari bidang lain' : 'Belum ada RK — tambahkan di menu RK & IKI');
+    bar.title = r ? r.nama + (r.indikator ? '\nIKI: ' + r.indikator : '') : '';
+  }
+  $('rkBar').onclick = () => {
+    if (!rhkList.length) { location.href = 'index.html#rk'; return; }
+    SKPPilihRK.buka({ rhkList, bidang: pilihBidang, terpilih: rkPerBidang[pilihBidang], judul: 'RK untuk kegiatan bidang ' + pilihBidang,
+      onPilih: r => { if (r) rkPerBidang[pilihBidang] = r.id; else delete rkPerBidang[pilihBidang]; simpanPref(); renderRkBar(); } });
+  };
 
   const centang = '<svg viewBox="0 0 16 11"><path d="M11.07.65 4.98 7.3 2.4 4.73 1.33 5.8l3.68 3.68L12.14 1.7zM14.6.65 8.5 7.3l-.78-.78-1.06 1.07 1.87 1.87L15.67 1.7z"/></svg>';
 
@@ -240,18 +264,19 @@
     if (!teks && !lampiran.length) { ta.focus(); return; }
     if (!pilihBidang) { S.toast('Pilih bidang kegiatan dulu (Sosial, Distribusi, Produksi, Nerwilis, IPDS, atau TU)'); const bd = $('bidang'); bd.style.outline = '2px solid #e8a33d'; bd.style.borderRadius = '8px'; setTimeout(() => bd.style.outline = '', 1800); return; }
     if (sibuk) return; sibuk = true; $('kirim').disabled = true;
+    const sb = S.sibuk(lampiran.length ? 'Mengunggah ' + lampiran.length + ' foto…' : 'Menyimpan kegiatan…', lampiran.length ? 0 : 300);
     try {
       const now = new Date();
       const fotoIds = [];
       for (const f of lampiran) { const id = 'f' + S.uid(); await S.put('foto', { id, data: f.data, w: f.w, h: f.h }); fotoIds.push(id); fotoCache.set(id, Promise.resolve({ id, data: f.data })); }
-      const k = { id: 'k' + S.uid(), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang, jenisId: null, rhkId: null, jumlah: 1, fotoIds, dibuat: Date.now() };
+      const k = { id: 'k' + S.uid(), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang, jenisId: null, rhkId: rkAktif() ? rkAktif().id : null, jumlah: 1, fotoIds, dibuat: Date.now() };
       await S.put('kegiatan', k);
       kegiatan.push(k); ta.value = ''; autosize(); lampiran = []; renderPratinjau();
       $('chat').scrollTop = $('chat').scrollHeight; renderChat(); $('chat').scrollTop = $('chat').scrollHeight; renderSub();
       if (navigator.vibrate) try { navigator.vibrate(15); } catch (e) { }
     } catch (e) {
       S.toast(e && e.code === 'quota_exceeded' ? 'Penyimpanan penuh — hapus beberapa foto lama.' : 'Gagal menyimpan: ' + (e && e.message || e));
-    } finally { sibuk = false; $('kirim').disabled = false; }
+    } finally { sb.selesai(); sibuk = false; $('kirim').disabled = false; }
   }
 
   /* Catat untuk tanggal lain */
@@ -265,8 +290,7 @@
   function bukaEdit(id) {
     const k = kegiatan.find(x => x.id === id); if (!k) return; editing = JSON.parse(JSON.stringify(k));
     $('eTeks').value = k.teks || ''; $('eTgl').value = k.tanggal; $('eJam').value = k.jam || ''; $('eJml').value = k.jumlah || 1;
-    $('eRhk').innerHTML = '<option value="">— Tanpa RK —</option>' + rhkList.map((r, i) => `<option value="${r.id}">${i + 1}. ${S.esc(r.nama)}${r.satuan ? ' (' + S.esc(r.satuan) + ')' : ''}</option>`).join('');
-    $('eRhk').value = k.rhkId || ''; $('eRkBox').hidden = !rhkList.length;
+    $('eRhk').value = k.rhkId || ''; tampilERk(); $('eRkBox').hidden = !rhkList.length;
     $('eBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.BIDANG.map(b => `<option>${b}</option>`).join(''); $('eBidang').value = k.bidang || '';
     const ef = $('eFoto'); ef.innerHTML = (k.fotoIds || []).length ? '' : '<small style="color:#667781">Tidak ada foto</small>';
     (k.fotoIds || []).forEach(fid => { const w = document.createElement('div'); w.style.position = 'relative'; w.innerHTML = `<img alt=""><button aria-label="Hapus foto" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#3b4a54;color:#fff;cursor:pointer">×</button>`;
@@ -275,6 +299,8 @@
       ef.appendChild(w); });
     $('konfirmasi').style.display = 'none'; $('lapisEdit').classList.add('on');
   }
+  function tampilERk() { const r = rkById($('eRhk').value); $('eRkBtn').innerHTML = r ? '🎯 <b>' + (rhkList.indexOf(r) + 1) + '.</b> ' + S.esc(r.nama) + (r.indikator ? '<div style="font-size:12px;color:#667781;margin-top:3px">IKI: ' + S.esc(r.indikator) + '</div>' : '') : '<span style="color:#667781">— Tanpa RK — ketuk untuk memilih</span>'; }
+  $('eRkBtn').onclick = () => SKPPilihRK.buka({ rhkList, bidang: $('eBidang').value, terpilih: $('eRhk').value, onPilih: r => { $('eRhk').value = r ? r.id : ''; tampilERk(); } });
   const tutupEdit = () => { $('lapisEdit').classList.remove('on'); editing = null; };
   $('eBatal').onclick = tutupEdit;
   $('lapisEdit').onclick = e => { if (e.target.id === 'lapisEdit') tutupEdit(); };
@@ -282,8 +308,9 @@
     if (!editing) return;
     const hapus = editing._hapusFoto || []; delete editing._hapusFoto;
     Object.assign(editing, { teks: $('eTeks').value.trim() || '(foto bukti)', tanggal: $('eTgl').value || editing.tanggal, jam: $('eJam').value, bidang: $('eBidang').value || null, rhkId: $('eRhk').value || null, jumlah: Math.max(1, parseInt($('eJml').value) || 1) });
+    const sb = S.sibuk('Menyimpan perubahan…');
     try { await S.put('kegiatan', editing); for (const f of hapus) await S.del('foto', f); const i = kegiatan.findIndex(x => x.id === editing.id); kegiatan[i] = editing; tutupEdit(); renderChat(); renderSub(); S.toast('Kegiatan diperbarui'); }
-    catch (e) { S.toast('Gagal menyimpan'); }
+    catch (e) { S.toast('Gagal menyimpan'); } finally { sb.selesai(); }
   };
   $('eHapus').onclick = () => { $('konfirmasi').style.display = 'flex'; };
   $('kTidak').onclick = () => { $('konfirmasi').style.display = 'none'; };
