@@ -52,6 +52,7 @@
       const c = client();
       if (s === 'kegiatan') return cek(await c.from('kegiatan').select('*').eq('user_id', uid).order('tanggal').limit(10000)).map(keK);
       if (s === 'rhk') return cek(await c.from('rk').select('*').eq('user_id', uid).order('urutan')).map(keR);
+      if (s === 'ringkas') return cek(await c.from('kegiatan_ringkas').select('tanggal,jumlah,foto').eq('user_id', uid)).map(r => ({ tanggal: r.tanggal, jumlah: Number(r.jumlah) || 0, foto: Number(r.foto) || 0 }));
       if (s === 'dokumen') return cek(await c.from('dokumen').select('*').eq('user_id', uid).order('dibuat', { ascending: false })).map(keD);
       if (s === 'jenis') return cek(await c.from('jenis_kegiatan').select('*').order('bidang').order('urutan').order('nama')).map(keJ);
       if (s === 'foto') { const ks = await db.list('kegiatan'); const out = []; for (const k of ks) for (const id of k.fotoIds) { const f = await db.get('foto', id); if (f) out.push(f); } return out; }
@@ -88,6 +89,14 @@
         if (progres) progres(Math.min(arr.length, i + 200), arr.length);
       }
       notify();
+    },
+    async arsipkanKegiatan(ks) {   // catat ringkasan + hapus kegiatan (satu transaksi di database), lalu hapus fotonya
+      const c = client();
+      const ids = ks.map(k => k.id);
+      for (let i = 0; i < ids.length; i += 500) cek(await c.rpc('arsipkan_kegiatan', { p_ids: ids.slice(i, i + 500) }), 'Gagal mengarsipkan kegiatan');
+      const paths = ks.flatMap(k => (k.fotoIds || []).map(fotoPath)); let gagalFoto = 0;
+      for (let i = 0; i < paths.length; i += 100) { const r = await c.storage.from(BUCKET).remove(paths.slice(i, i + 100)); if (r.error) gagalFoto += paths.slice(i, i + 100).length; }
+      notify(); return { gagalFoto };
     },
     async hapusBanyakKegiatan(ks) {   // hapus banyak kegiatan + fotonya sekaligus
       const c = client();
@@ -274,7 +283,7 @@
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
-    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), putBanyak: (s, a, p) => db.putBanyak(s, a, p), hapusBanyakKegiatan: ks => db.hapusBanyakKegiatan(ks), del: (s, id) => db.del(s, id),
+    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => db.put(s, o), putBanyak: (s, a, p) => db.putBanyak(s, a, p), hapusBanyakKegiatan: ks => db.hapusBanyakKegiatan(ks), arsipkanKegiatan: ks => db.arsipkanKegiatan(ks), del: (s, id) => db.del(s, id),
     onChange: f => listeners.add(f),
     async profil() { return db.get('meta', 'profil'); },
     async hapusKegiatan(k) { for (const f of (k.fotoIds || [])) await db.del('foto', f); await db.del('kegiatan', k.id); },

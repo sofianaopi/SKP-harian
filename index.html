@@ -332,7 +332,7 @@
   const S = window.SKP, $ = id => document.getElementById(id);
   const now = new Date();
   let ym = S.ymd(now).slice(0, 7);
-  let kegiatan = [], rhkList = [], profil = {}, kop = null, driveCfg = null, dokumen = [], templateBuf = null, masuk = false;
+  let kegiatan = [], ringkas = [], rhkList = [], profil = {}, kop = null, driveCfg = null, dokumen = [], templateBuf = null, masuk = false;
   const fotoCache = new Map();
   const ambilFoto = id => { if (!fotoCache.has(id)) fotoCache.set(id, S.get('foto', id)); return fotoCache.get(id); };
 
@@ -355,7 +355,7 @@
     });
   }
 
-  async function muat() { [kegiatan, rhkList, profil, kop, driveCfg, dokumen] = await Promise.all([S.list('kegiatan'), S.list('rhk').catch(() => []), S.profil(), S.get('meta', 'kop').catch(() => null), S.get('meta', 'drive').catch(() => null), S.list('dokumen').catch(() => [])]); }
+  async function muat() { [kegiatan, ringkas, rhkList, profil, kop, driveCfg, dokumen] = await Promise.all([S.list('kegiatan'), S.list('ringkas').catch(() => []), S.list('rhk').catch(() => []), S.profil(), S.get('meta', 'kop').catch(() => null), S.get('meta', 'drive').catch(() => null), S.list('dokumen').catch(() => [])]); }
   const rhkById = id => rhkList.find(r => r.id === id);
   const urut = arr => arr.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
   const kegBulan = (m = ym) => urut(kegiatan.filter(k => k.tanggal.slice(0, 7) === m));
@@ -366,20 +366,22 @@
     $('sapa').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (profil.nama ? ', ' + profil.nama.split(/[ ,]/)[0] : '');
     $('sapaSub').textContent = 'Kerja harian ' + S.namaBulan(ym) + (profil.jabatan ? ' · ' + profil.jabatan : '');
     const [y, m] = ym.split('-').map(Number); const nHari = new Date(y, m, 0).getDate();
-    const hariIni = S.ymd(now); const isi = new Set(ks.map(k => k.tanggal));
-    $('sKeg').textContent = ks.length; $('sKegK').textContent = isi.has(hariIni) ? '✓ Hari ini sudah mengisi' : (ym === hariIni.slice(0, 7) ? 'Hari ini belum mengisi' : '');
+    const hariIni = S.ymd(now); const arsip = ringkas.filter(r => r.tanggal.slice(0, 7) === ym && r.jumlah > 0);
+    const nArsip = arsip.reduce((a, r) => a + r.jumlah, 0), fArsip = arsip.reduce((a, r) => a + r.foto, 0);
+    const isi = new Set(ks.map(k => k.tanggal).concat(arsip.map(r => r.tanggal)));
+    $('sKeg').textContent = ks.length + nArsip; $('sKegK').textContent = (isi.has(hariIni) ? '✓ Hari ini sudah mengisi' : (ym === hariIni.slice(0, 7) ? 'Hari ini belum mengisi' : '')) + (nArsip ? (isi.has(hariIni) || ym === hariIni.slice(0, 7) ? ' · ' : '') + nArsip + ' sudah diarsipkan ke Drive' : '');
     const tanpaRk = ks.filter(k => !k.rhkId || !rhkById(k.rhkId)).length;
     $('sRk').textContent = tanpaRk; $('sRkK').innerHTML = !rhkList.length ? '<a href="#rk">Tambahkan RK &amp; IKI</a> lalu pasangkan' : tanpaRk ? '<a href="#rekap">Pasangkan di Rekap Kegiatan</a>' : '✓ Semua kegiatan sudah ber-RK';
     const bds = new Set(ks.filter(k => k.bidang).map(k => k.bidang)); const tanpa = ks.filter(k => !k.bidang).length;
     $('sJenis').textContent = bds.size; $('sJenisK').textContent = tanpa ? '⚠ ' + tanpa + ' kegiatan belum pilih bidang' : 'menjadi ' + bds.size + ' dokumen Bukti Dukung';
-    const nf = ks.reduce((a, k) => a + (k.fotoIds || []).length, 0); $('sFoto').textContent = nf; $('sFotoK').textContent = ks.filter(k => (k.fotoIds || []).length).length + ' kegiatan memiliki foto';
-    renderChart(ks, y, m, nHari);
+    const nf = ks.reduce((a, k) => a + (k.fotoIds || []).length, 0) + fArsip; $('sFoto').textContent = nf; $('sFotoK').textContent = ks.filter(k => (k.fotoIds || []).length).length + ' kegiatan memiliki foto';
+    renderChart(ks, y, m, nHari, arsip);
     const perB = S.BIDANG.map(b => ({ b, ks: ks.filter(k => k.bidang === b) })).filter(x => x.ks.length); const maxB = Math.max(1, ...perB.map(x => x.ks.length));
     $('perBidang').innerHTML = perB.length ? perB.map(x => `<div class="rhk-item"><div class="atas"><b>${S.esc(x.b)}</b><span>${x.ks.length} kegiatan · ${new Set(x.ks.map(k => k.tanggal)).size} hari</span></div><div class="progress"><i style="width:${x.ks.length / maxB * 100}%"></i></div></div>`).join('')
       : '<div class="kosong">Belum ada kegiatan pada bulan ini.<br>Catat lewat menu <a href="input.html">Catat Kegiatan</a>.</div>';
   }
-  function renderChart(ks, y, m, nHari) {
-    const per = new Array(nHari).fill(0); ks.forEach(k => per[Number(k.tanggal.slice(8)) - 1]++);
+  function renderChart(ks, y, m, nHari, arsip) {
+    const per = new Array(nHari).fill(0); ks.forEach(k => per[Number(k.tanggal.slice(8)) - 1]++); (arsip || []).forEach(r => per[Number(r.tanggal.slice(8)) - 1] += r.jumlah);
     const max = Math.max(4, ...per); const step = max <= 5 ? 1 : max <= 10 ? 2 : Math.ceil(max / 5); const top = Math.ceil(max / step) * step;
     const W = Math.max(300, Math.round($('chart').clientWidth || 640)), H = 220, L = 28, R = 6, T = 10, B = 26; const pw = W - L - R, ph = H - T - B; const bw = pw / nHari;
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jumlah kegiatan per hari, ${S.namaBulan(ym)}">`;
@@ -657,8 +659,10 @@
     const doc = { id: 'd_' + S.uid(), bidang: g.bidang, periode: p.label, nama: hasil.nama || nama, driveId: hasil.id, url: hasil.url, ukuran: hasil.ukuran, dibuat: new Date().toISOString() };
     await S.put('dokumen', doc); dokumen = [doc].concat(dokumen);
     // arsip aman di Drive → hapus kegiatan & foto yang masuk dokumen ini
-    await S.hapusBanyakKegiatan(g.ks);
+    const ar = await S.arsipkanKegiatan(g.ks);
+    if (ar.gagalFoto) S.toast(ar.gagalFoto + ' foto belum terhapus dari penyimpanan; tidak memengaruhi arsip', 4000);
     const ids = new Set(g.ks.map(k => k.id)); kegiatan = kegiatan.filter(k => !ids.has(k.id));
+    g.ks.forEach(k => { const r = ringkas.find(x => x.tanggal === k.tanggal); if (r) { r.jumlah++; r.foto += (k.fotoIds || []).length; } else ringkas.push({ tanggal: k.tanggal, jumlah: 1, foto: (k.fotoIds || []).length }); });
     g.ks.forEach(k => (k.fotoIds || []).forEach(f => fotoCache.delete(f)));
     return { doc, terhapus: g.ks.length };
   }
