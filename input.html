@@ -327,7 +327,7 @@
   S.onChange(segarkan);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   S.registerSW();
-  S.mulai().then(() => { masuk = true; return muat(); }).catch(e => S.toast(e.message, 6000));
+  S.mulai().then(({ pegawai }) => { if (pegawai.peran === 'admin') { location.replace('admin.html'); return; } masuk = true; return muat(); }).catch(e => S.toast(e.message, 6000));
 })();
 </script>
 </body>

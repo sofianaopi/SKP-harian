@@ -3,7 +3,10 @@
   'use strict';
   const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const CFG = window.SKP_CONFIG || {};
+  const CFG = Object.assign({}, window.SKP_CONFIG || {});
+  // Rapikan alamat bila tertulis dengan garis miring di akhir atau berakhiran /rest/v1/
+  if (CFG.SUPABASE_URL) CFG.SUPABASE_URL = String(CFG.SUPABASE_URL).trim().replace(/\/+$/, '').replace(/\/rest\/v1$/i, '');
+  if (CFG.SUPABASE_ANON_KEY) CFG.SUPABASE_ANON_KEY = String(CFG.SUPABASE_ANON_KEY).trim();
   const BUCKET = 'bukti';
   const BIDANG = ['Sosial', 'Distribusi', 'Produksi', 'Nerwilis', 'IPDS', 'TU'];
 

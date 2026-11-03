@@ -291,7 +291,7 @@
   }
   const paraDengan = (xml, tanda) => { const re = new RegExp('<w:p(?: [^>]*)?>(?:(?!<w:p[ >])[\\s\\S])*?' + tanda + '[\\s\\S]*?</w:p>'); const m = xml.match(re); return m ? m[0] : null; };
   async function buktiDukung(o) {
-    /* o: {template: ArrayBuffer, judul, nama, nip, rk, iki, uraian: [teks], fotos: [{data,w,h}]} */
+    /* o: {template: ArrayBuffer, kop?: hasil extractKop, judul, nama, nip, rk, iki, uraian: [teks], fotos: [{data,w,h}]} */
     picId = 1;
     const z = await readZip(o.template);
     let doc = td(await z.get('word/document.xml'));
@@ -313,13 +313,32 @@
     fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120"/><w:jc w:val="center"/></w:pPr></w:p>';
     if (pf) doc = doc.replace(pf, fx);
     if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
+    // Kop surat unggahan admin menggantikan kop bawaan cetakan
+    const ganti = {};
+    if (o.kop && o.kop.headerXml) {
+      const m = rels.match(/<Relationship [^>]*relationships\/header"[^>]*>/) || rels.match(/<Relationship [^>]*Type="[^"]*\/header"[^>]*>/);
+      const tgt = m && (m[0].match(/Target="([^"]+)"/) || [])[1];
+      if (tgt) {
+        const hn = 'word/' + tgt.replace(/^\/?word\//, ''), hr = 'word/_rels/' + hn.split('/').pop() + '.rels';
+        ganti[hn] = o.kop.headerXml; ganti[hr] = o.kop.hrels || '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>';
+        (o.kop.media || []).forEach(md => media.push({ name: 'word/media/' + md.name, data: unb64(md.b64) }));
+        new Set((o.kop.media || []).map(md => md.name.split('.').pop().toLowerCase())).forEach(e => { if (!new RegExp('Extension="' + e + '"', 'i').test(ct)) ct = ct.replace('<Default ', `<Default Extension="${e}" ContentType="${MIME[e] || 'application/octet-stream'}"/><Default `); });
+        if (o.kop.styles) {
+          let st = td(await z.get('word/styles.xml'));
+          const tambah = (o.kop.styles.match(/<w:style [\s\S]*?<\/w:style>/g) || []).filter(x => { const id = (x.match(/w:styleId="([^"]+)"/) || [])[1]; return id && !st.includes('w:styleId="' + id + '"'); }).join('');
+          if (tambah) ganti['word/styles.xml'] = st.replace('</w:styles>', tambah + '</w:styles>');
+        }
+      }
+    }
     const files = [];
     for (const n of z.names) {
       if (n === 'word/document.xml') files.push({ name: n, data: doc });
       else if (n === 'word/_rels/document.xml.rels') files.push({ name: n, data: rels });
       else if (n === '[Content_Types].xml') files.push({ name: n, data: ct });
+      else if (ganti[n] != null) { files.push({ name: n, data: ganti[n] }); delete ganti[n]; }
       else if (!n.endsWith('/')) files.push({ name: n, data: await z.get(n) });
     }
+    Object.entries(ganti).forEach(([n, d]) => files.push({ name: n, data: d }));
     return zip(files.concat(media));
   }
 

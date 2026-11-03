@@ -1,5 +1,5 @@
 /* Service worker: membuat aplikasi tetap terbuka walau sinyal hilang */
-const CACHE = 'skp-harian-v4';
+const CACHE = 'skp-harian-v5';
 const FILES = ['./', 'index.html', 'input.html', 'admin.html', 'config.js', 'common.js', 'template-bukti-dukung.docx', 'docx.js', 'manifest-input.json', 'manifest-dashboard.json',
   'icons/input-192.png', 'icons/input-512.png', 'icons/dashboard-192.png', 'icons/dashboard-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
