@@ -123,7 +123,7 @@
   #skp-login{position:fixed;inset:0;z-index:1000;overflow:auto;font-family:"Plus Jakarta Sans","Segoe UI",-apple-system,Roboto,Arial,sans-serif;color:#13294b;
     background:radial-gradient(120% 90% at 100% 0,rgba(255,255,255,.0) 55%,rgba(255,255,255,0) 56%),linear-gradient(135deg,#e9f2ff 0%,#cfe2fb 55%,#9cc3f2 100%)}
   #skp-login .lg-latar{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-  #skp-login .lg-hero{position:absolute;left:0;top:0;bottom:0;width:58%;background:url(img/login-hero.jpg) left center/cover no-repeat;
+  #skp-login .lg-hero{position:absolute;left:0;top:0;bottom:0;width:58%;background:url(img/login-hero.jpg?v=20) left center/cover no-repeat;
     -webkit-mask-image:linear-gradient(90deg,#000 78%,transparent 100%);mask-image:linear-gradient(90deg,#000 78%,transparent 100%)}
   #skp-login .lg-swoosh{position:absolute;right:-12%;top:-28%;width:62%;height:48%;border-radius:50%;border-bottom:26px solid #f39a1e;transform:rotate(-12deg);opacity:.95}
   #skp-login .lg-swoosh2{position:absolute;right:-18%;top:-30%;width:70%;height:52%;border-radius:50%;background:linear-gradient(160deg,#1556c4,#0b3b8f);transform:rotate(-12deg)}
@@ -177,7 +177,7 @@
     if (!el) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); el = document.createElement('div'); el.id = 'skp-login'; document.body.appendChild(el); }
     el.innerHTML = `<div class="lg-latar" aria-hidden="true"><div class="lg-swoosh2"></div><div class="lg-swoosh"></div><div class="lg-bar"><i style="height:70px"></i><i style="height:105px"></i><i style="height:140px"></i><i style="height:175px"></i></div><div class="lg-hero"></div></div>
       <div class="lg-isi"><div class="kartu-login" role="dialog" aria-label="Masuk">
-      <img class="lg-logo" src="img/logo-bps.png" alt="Logo BPS"><h1>SKP Harian</h1><div class="sub">${esc(CFG.SUBJUDUL_LOGIN || 'BPS – Sasaran Kinerja Pegawai')}</div>
+      <img class="lg-logo" src="img/logo-bps.png?v=20" alt="Logo BPS"><h1>SKP Harian</h1><div class="sub">${esc(CFG.SUBJUDUL_LOGIN || 'BPS – Sasaran Kinerja Pegawai')}</div>
       <div class="sambut">Selamat datang di aplikasi SKP<br>${esc(CFG.NAMA_INSTANSI || 'Badan Pusat Statistik')}</div>${html}</div></div>`;
     el.hidden = false; return el;
   }
