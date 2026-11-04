@@ -102,7 +102,7 @@
 <body>
 <header>
   <img src="icons/dashboard-192.png" alt="">
-  <h1>Admin SAKTI<small id="hdrSub">Sahabat Kinerja Terintegrasi</small></h1>
+  <h1>Admin SAKTI<small id="hdrSub">BPS Kota Kendari</small></h1>
   <button id="btnKeluar" type="button">Keluar</button>
 </header>
 <nav class="tab" aria-label="Menu admin"><a href="#dashboard" data-r="dashboard">Dashboard</a><a href="#pengguna" data-r="pengguna">Pengguna</a><a href="#bidang" data-r="bidang">Bidang</a><a href="#rk" data-r="rk">RK &amp; IKI</a></nav>
@@ -655,7 +655,7 @@
   $('btnKeluar').onclick = () => S.keluar();
 
   S.mulai({ admin: true }).then(async ({ uid, pegawai }) => { isiDlUnit();
-    sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SAKTI');
+    sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'BPS Kota Kendari');
     try { await muat(); } catch (x) { S.toast(x.message, 6000); }
     muatKop(); muatDrive(); route(); window.addEventListener('hashchange', route);
   });
