@@ -400,7 +400,10 @@
     const sp0 = '<w:spacing w:after="0" w:line="240" w:lineRule="auto"/>';
     let b = '';
     // Judul
-    b += P(R('LAPORAN PERJALANAN DINAS ' + String(o.jenis || '').toUpperCase(), 20), '<w:spacing w:before="240" w:after="0" w:line="240" w:lineRule="auto"/><w:jc w:val="right"/>');
+    // dua baris kosong agar judul tidak menempel/tertutup kop
+    const kosong = P('<w:r><w:rPr>' + F + '<w:sz w:val="20"/></w:rPr></w:r>', sp0 + '<w:rPr><w:sz w:val="20"/></w:rPr>');
+    b += kosong + kosong;
+    b += P(R('LAPORAN PERJALANAN DINAS ' + String(o.jenis || '').toUpperCase(), 20), sp0 + '<w:jc w:val="right"/>');
     b += P('', sp0);
     // Identitas
     [['Nomor Surat Tugas', o.nomor], ['Tanggal Surat Tugas', o.tglSt], ['Nama Petugas', o.nama], ['Periode Penugasan', o.periode]].forEach(([l, v]) =>
@@ -462,7 +465,10 @@
       if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
       o._media = media;
     }
-    let doc = asli.replace(/<w:p><w:r><w:t>\{\{ISI\}\}<\/w:t><\/w:r><\/w:p>/, b);
+    // paragraf penanda {{ISI}} (Word bisa memecah teksnya menjadi beberapa bagian)
+    let doc = asli, ketemu = false;
+    doc = doc.replace(/<w:p(?: [^>]*[^/])?>(?:(?!<\/w:p>)[\s\S])*?<\/w:p>/g, p => { if (ketemu) return p; const t = (p.match(/<w:t(?: [^>]*)?>[^<]*<\/w:t>/g) || []).map(x => x.replace(/<[^>]+>/g, '')).join(''); if (t.includes('{{ISI}}')) { ketemu = true; return b; } return p; });
+    if (!ketemu) { const i = doc.lastIndexOf('<w:sectPr'); doc = doc.slice(0, i) + b + doc.slice(i); }
     // Kop & footer unggahan admin (khusus laporan perjalanan dinas)
     const ganti = {}, tambahMedia = [];
     const pasangMedia = list => (list || []).forEach(md => { tambahMedia.push({ name: 'word/media/' + md.name, data: unb64(md.b64) }); const e = md.name.split('.').pop().toLowerCase(); if (!new RegExp('Extension="' + e + '"', 'i').test(ct)) ct = ct.replace('<Default ', `<Default Extension="${e}" ContentType="${MIME[e] || 'application/octet-stream'}"/><Default `); });
