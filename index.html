@@ -720,10 +720,17 @@
     if (!await konfirmasi('Hapus arsip dari Google Drive?', d.nama + ' akan dipindahkan ke sampah Drive dan link-nya tidak bisa dibuka lagi. Kegiatan di dalam dokumen ini sudah tidak ada di aplikasi, jadi datanya akan hilang sama sekali (masih bisa dipulihkan dari Sampah Google Drive dalam 30 hari).')) return;
     const sb = S.sibuk('Menghapus dokumen dari Google Drive…');
     try {
-      try { if (d.driveId) await S.drive(driveCfg.url, 'hapus', { id: d.driveId }); } catch (x) { if (!/not found|tidak ditemukan|No item/i.test(x.message)) { S.toast(x.message, 5000); return; } }
+      let gagalDrive = '';
+      try { if (d.driveId) await S.drive(driveCfg.url, 'hapus', { id: d.driveId }); } catch (x) { if (!/not found|tidak ditemukan|No item/i.test(x.message)) gagalDrive = x.message || String(x); }
+      if (gagalDrive) {
+        sb.selesai();
+        // file di Drive tidak bisa dihapus dari aplikasi → tawarkan hapus dari daftar saja
+        if (!await konfirmasi('Tidak bisa dihapus dari Google Drive', 'Pesan Google Drive: ' + gagalDrive + '\n\nHapus dari daftar di aplikasi saja? File di Google Drive tidak ikut terhapus — hapus manual di Drive bila perlu.')) return;
+      }
       await S.del('dokumen', d.id);
+      d._gagalDrive = gagalDrive;
     } catch (x) { S.toast('Gagal menghapus: ' + (x.message || x), 5000); return; } finally { sb.selesai(); }
-    dokumen = dokumen.filter(x => x.id !== d.id); renderDrive(); S.toast('Dokumen dihapus dari Drive');
+    dokumen = dokumen.filter(x => x.id !== d.id); renderDrive(); S.toast(d._gagalDrive ? 'Dihapus dari daftar aplikasi (file di Drive tetap ada)' : 'Dokumen dihapus dari Drive');
   });
   ['uTw', 'uTahun', 'uBulan', 'uDari', 'uSampai', 'uBidang'].forEach(id => $(id).onchange = renderUpload);
   $('uJudul').oninput = () => { judulManual = !!$('uJudul').value.trim(); };
