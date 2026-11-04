@@ -32,6 +32,8 @@
   const dariK = k => ({ id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() });
   const keR = r => ({ id: r.id, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
   const dariR = r => ({ id: r.id, user_id: uid, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
+  const keL = r => ({ id: r.id, jenis: r.jenis || 'Pengawasan Lapangan', nomor: r.nomor_st || '', tglSt: r.tanggal_st || '', periode: r.periode || '', tempat: r.tempat || '', tglLap: r.tanggal_lap || '', jabatan: r.jabatan || '', ketua: r.ketua || '', isi: Array.isArray(r.isi) ? r.isi : [], dibuat: r.dibuat, diubah: r.diubah });
+  const dariL = o => ({ id: o.id, user_id: uid, jenis: o.jenis || 'Pengawasan Lapangan', nomor_st: o.nomor || null, tanggal_st: o.tglSt || null, periode: o.periode || null, tempat: o.tempat || null, tanggal_lap: o.tglLap || null, jabatan: o.jabatan || null, ketua: o.ketua || null, isi: o.isi || [], diubah: new Date().toISOString() });
   const keD = r => ({ id: r.id, bidang: r.bidang, periode: r.periode, nama: r.nama_file, driveId: r.drive_id, url: r.url, ukuran: Number(r.ukuran) || 0, dibuat: r.dibuat });
   const keJ = r => ({ id: r.id, bidang: r.bidang, nama: r.nama, urutan: r.urutan || 0, dibuatOleh: r.dibuat_oleh });
   const PROFIL = { nama: 'nama', nip: 'nip_baru', jabatan: 'jabatan', unit: 'unit', kota: 'kota', atasanNama: 'atasan_nama', atasanNip: 'atasan_nip', atasanJabatan: 'atasan_jabatan' };
@@ -56,6 +58,7 @@
       if (s === 'rhk') return urutRk(cek(await c.from('rk').select('*').or('user_id.eq.' + uid + ',bersama.eq.true').order('bersama', { ascending: false }).order('urutan')).map(keR));
       if (s === 'rhkBersama') return urutRk(cek(await c.from('rk').select('*').eq('bersama', true).order('urutan')).map(keR));
       if (s === 'ringkas') return cek(await c.from('kegiatan_ringkas').select('tanggal,jumlah,foto').eq('user_id', uid)).map(r => ({ tanggal: r.tanggal, jumlah: Number(r.jumlah) || 0, foto: Number(r.foto) || 0 }));
+      if (s === 'dinas') return cek(await c.from('laporan_dinas').select('*').eq('user_id', uid).order('diubah', { ascending: false })).map(keL);
       if (s === 'dokumen') return cek(await c.from('dokumen').select('*').eq('user_id', uid).order('dibuat', { ascending: false })).map(keD);
       if (s === 'jenis') return cek(await c.from('jenis_kegiatan').select('*').order('bidang').order('urutan').order('nama')).map(keJ);
       if (s === 'foto') { const ks = await db.list('kegiatan'); const out = []; for (const k of ks) for (const id of k.fotoIds) { const f = await db.get('foto', id); if (f) out.push(f); } return out; }
@@ -78,6 +81,7 @@
       if (s === 'foto') { cek(await c.storage.from(BUCKET).upload(fotoPath(o.id), dataUrlKeBlob(o.data), { upsert: true, contentType: 'image/jpeg' }), 'Gagal mengunggah foto'); return o; }
       if (s === 'kegiatan') cek(await c.from('kegiatan').upsert(dariK(o)), 'Gagal menyimpan kegiatan');
       else if (s === 'rhk') cek(await c.from('rk').upsert(dariR(o)), 'Gagal menyimpan RK');
+      else if (s === 'dinas') cek(await c.from('laporan_dinas').upsert(dariL(o)), 'Gagal menyimpan laporan');
       else if (s === 'dokumen') cek(await c.from('dokumen').upsert({ id: o.id, user_id: uid, bidang: o.bidang || null, periode: o.periode || null, nama_file: o.nama, drive_id: o.driveId || null, url: o.url, ukuran: o.ukuran || null, dibuat: new Date().toISOString() }), 'Gagal menyimpan link dokumen');
       else if (s === 'jenis') { const r = { id: o.id, bidang: o.bidang, nama: (o.nama || '').trim(), urutan: o.urutan || 0 }; if (!o.dibuatOleh) r.dibuat_oleh = uid; const res = await c.from('jenis_kegiatan').upsert(r); if (res.error && /duplicate|unik/i.test(res.error.message)) throw new Error('Jenis kegiatan "' + r.nama + '" sudah ada di bidang ' + r.bidang); cek(res, 'Gagal menyimpan jenis kegiatan'); }
       else if (s === 'meta' && o.id === 'profil') { const u = {}; Object.entries(PROFIL).forEach(([a, b]) => { if (a !== 'nip') u[b] = (o[a] || '').trim() || null; }); u.nama = u.nama || saya.nama; cek(await c.from('pegawai').update(u).eq('id', uid), 'Gagal menyimpan profil'); Object.assign(saya, u); }
@@ -120,6 +124,7 @@
       if (s === 'kegiatan') cek(await c.from('kegiatan').delete().eq('id', id));
       else if (s === 'rhk') cek(await c.from('rk').delete().eq('id', id));
       else if (s === 'dokumen') cek(await c.from('dokumen').delete().eq('id', id));
+      else if (s === 'dinas') cek(await c.from('laporan_dinas').delete().eq('id', id), 'Gagal menghapus laporan');
       else if (s === 'jenis') cek(await c.from('jenis_kegiatan').delete().eq('id', id), 'Gagal menghapus jenis kegiatan');
       else if (s === 'meta' && id !== 'profil') cek(await c.from('pengaturan').delete().eq('key', id));
       notify();

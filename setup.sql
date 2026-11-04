@@ -78,6 +78,23 @@ create table if not exists public.dokumen (       -- dokumen Bukti Dukung yang d
 );
 create index if not exists dokumen_user on public.dokumen(user_id, dibuat desc);
 
+create table if not exists public.laporan_dinas (  -- Laporan Perjalanan Dinas (fitur tambahan): pengawasan / pendataan lapangan
+  id          text primary key,
+  user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  jenis       text not null default 'Pengawasan Lapangan',
+  nomor_st    text,
+  tanggal_st  date,
+  periode     text,
+  tempat      text,
+  tanggal_lap date,
+  jabatan     text,
+  ketua       text,
+  isi         jsonb not null default '[]'::jsonb,   -- [{kegiatanId, tanggal, uraian, masalah, solusi, fotoIds}]
+  dibuat      timestamptz not null default now(),
+  diubah      timestamptz not null default now()
+);
+create index if not exists laporan_dinas_user on public.laporan_dinas(user_id, diubah desc);
+
 create table if not exists public.kegiatan_ringkas (   -- ringkasan kegiatan yang sudah diarsipkan ke Google Drive
   user_id uuid not null references auth.users(id) on delete cascade,
   tanggal date not null,
@@ -276,6 +293,10 @@ create policy jenis_ubah   on public.jenis_kegiatan for update to authenticated 
 create policy jenis_hapus  on public.jenis_kegiatan for delete to authenticated using (public.is_admin() or dibuat_oleh = auth.uid());
 
 -- dokumen (link Google Drive): hanya pemiliknya
+alter table public.laporan_dinas enable row level security;
+drop policy if exists laporan_dinas_milik_sendiri on public.laporan_dinas;
+create policy laporan_dinas_milik_sendiri on public.laporan_dinas for all to authenticated
+  using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());
 drop policy if exists dokumen_milik_sendiri on public.dokumen;
 create policy dokumen_milik_sendiri on public.dokumen for all to authenticated
   using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());

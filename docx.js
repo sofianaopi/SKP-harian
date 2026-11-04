@@ -377,5 +377,94 @@
     return zip(files.concat(media));
   }
 
-  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, buktiDukung, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
+
+  /* ---------- Laporan Perjalanan Dinas (pengawasan / pendataan lapangan) ----------
+     o: {template, jenis, nomor, tglSt, nama, periode, baris:[{tanggal, uraian, masalah, solusi}],
+         tempatTgl, jabatan, ketua, petugas, fotos:[{data,w,h,ket}]} */
+  async function laporanDinas(o) {
+    picId = 1;
+    const z = await readZip(o.template);
+    const asli = td(await z.get('word/document.xml'));
+    let rels = td(await z.get('word/_rels/document.xml.rels'));
+    let ct = td(await z.get('[Content_Types].xml'));
+    const F = '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:color w:val="000000"/>';
+    const R = (t, sz, extra = '') => `<w:r><w:rPr>${F}${extra}${sz ? `<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>` : ''}</w:rPr><w:t xml:space="preserve">${x(t)}</w:t></w:r>`;
+    const P = (isi, ppr = '') => `<w:p><w:pPr>${ppr}</w:pPr>${isi}</w:p>`;
+    const TAB = sz => `<w:r><w:rPr>${F}${sz ? `<w:sz w:val="${sz}"/>` : ''}</w:rPr><w:tab/></w:r>`;
+    const sp0 = '<w:spacing w:after="0" w:line="240" w:lineRule="auto"/>';
+    let b = '';
+    // Judul
+    b += P(R('LAPORAN PERJALANAN DINAS ' + String(o.jenis || '').toUpperCase(), 20), sp0 + '<w:jc w:val="right"/>');
+    b += P('', sp0);
+    // Identitas
+    [['Nomor Surat Tugas', o.nomor], ['Tanggal Surat Tugas', o.tglSt], ['Nama Petugas', o.nama], ['Periode Penugasan', o.periode]].forEach(([l, v]) =>
+      b += P(R(l, 20) + TAB(20) + R(': ' + (v || ''), 20), '<w:tabs><w:tab w:val="left" w:pos="2410"/></w:tabs><w:spacing w:after="0"/><w:ind w:left="2552" w:hanging="2552"/>'));
+    b += P('', sp0);
+    // Tabel kegiatan
+    const lebar = [523, 1178, 2929, 2360, 2360];
+    const sel = (i, isi, jc = 'both') => `<w:tc><w:tcPr><w:tcW w:w="${lebar[i]}" w:type="dxa"/></w:tcPr>${isi || P('', sp0 + `<w:jc w:val="${jc}"/>`)}</w:tc>`;
+    const teksSel = (t, jc = 'both') => P(R(t, 20), '<w:spacing w:after="0"/>' + `<w:jc w:val="${jc}"/>`);
+    // teks bebas: baris diawali "-", "•", atau "*" menjadi butir; baris lain paragraf biasa
+    const blokTeks = t => {
+      const L = String(t || '').split(/\r?\n/).map(s => s.trimEnd()).filter((s, i, a) => s.trim() || (i && i < a.length - 1));
+      if (!L.length) return '';
+      return L.map(s => { const m = s.match(/^\s*[-•*]\s+(\S.*)$/);
+        return m ? P(R(m[1], 20), '<w:pStyle w:val="ListParagraph"/><w:numPr><w:ilvl w:val="0"/><w:numId w:val="24"/></w:numPr><w:spacing w:after="0"/><w:ind w:left="360" w:hanging="270"/><w:jc w:val="left"/>')
+          : P(R(s, 20), '<w:spacing w:after="0"/><w:jc w:val="both"/>'); }).join('');
+    };
+    const kepala = ['No', 'Tanggal', 'Uraian Kegiatan', 'Permasalahan', 'Solusi'];
+    let tb = `<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="9350" w:type="dxa"/><w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/></w:tblPr><w:tblGrid>${lebar.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`;
+    tb += '<w:tr><w:trPr><w:tblHeader/></w:trPr>' + kepala.map((h, i) => sel(i, teksSel(h, 'center'))).join('') + '</w:tr>';
+    tb += '<w:tr><w:trPr><w:tblHeader/></w:trPr>' + kepala.map((h, i) => sel(i, teksSel('(' + (i + 1) + ')', 'center'))).join('') + '</w:tr>';
+    (o.baris && o.baris.length ? o.baris : [{}]).forEach((r, i) => {
+      tb += '<w:tr><w:trPr><w:trHeight w:val="1200"/></w:trPr>' + sel(0, teksSel(o.baris && o.baris.length ? String(i + 1) : '', 'left')) + sel(1, teksSel(r.tanggal || '', 'left')) +
+        sel(2, blokTeks(r.uraian)) + sel(3, blokTeks(r.masalah)) + sel(4, blokTeks(r.solusi || (o.baris && o.baris.length ? '-' : ''))) + '</w:tr>';
+    });
+    tb += '</w:tbl>';
+    b += tb;
+    // Tanda tangan (kolom kiri: Mengetahui / Ketua Tim; kanan: Petugas)
+    const tabsTtd = '<w:tabs><w:tab w:val="center" w:pos="1843"/><w:tab w:val="center" w:pos="7230"/></w:tabs><w:spacing w:after="0" w:line="240" w:lineRule="auto"/>';
+    b += P('', sp0);
+    b += P(TAB() + TAB() + R(o.tempatTgl || ''), tabsTtd + '<w:keepNext/>');
+    b += P(TAB() + R('Mengetahui'), tabsTtd + '<w:keepNext/>');
+    b += P(TAB() + R(o.jabatan || '') + TAB() + R('Petugas'), tabsTtd + '<w:keepNext/>');
+    for (let i = 0; i < 4; i++) b += P('', tabsTtd + '<w:keepNext/>');
+    b += P(TAB() + R(o.ketua || '') + TAB() + R(o.petugas || ''), tabsTtd);
+    // Lampiran dokumentasi: 2 foto per baris
+    const fotos = o.fotos || [];
+    if (fotos.length) {
+      b += P('<w:r><w:br w:type="page"/></w:r>', sp0);
+      b += P(R('Lampiran Dokumentasi'), '<w:spacing w:after="160"/>');
+      const EMU = 914400, maxW = 2.85 * EMU, maxH = 2.6 * EMU; const media = [];
+      const sel2 = isi => `<w:tc><w:tcPr><w:tcW w:w="4675" w:type="dxa"/></w:tcPr>${isi}</w:tc>`;
+      let ft = `<w:tbl><w:tblPr><w:tblW w:w="9350" w:type="dxa"/><w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4675"/><w:gridCol w:w="4675"/></w:tblGrid>`;
+      for (let i = 0; i < fotos.length; i += 2) {
+        ft += '<w:tr><w:trPr><w:cantSplit/></w:trPr>';
+        for (let j = i; j < i + 2; j++) {
+          const f = fotos[j];
+          if (!f) { ft += sel2(P('', sp0)); continue; }
+          const rId = 'rIdLpd' + (j + 1), nm = 'lpd_foto' + (j + 1) + '.jpeg';
+          media.push({ name: 'word/media/' + nm, data: dataUrlBytes(f.data) });
+          rels = rels.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${nm}"/></Relationships>`);
+          const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
+          ft += sel2(P(imgNs(rId, Math.round(w), Math.round(h)), '<w:spacing w:before="120" w:after="40"/><w:jc w:val="center"/>') +
+            (f.ket ? P(R(f.ket, 16, '<w:i/>'), '<w:spacing w:after="160"/><w:jc w:val="center"/>') : P('', '<w:spacing w:after="120"/>')));
+        }
+        ft += '</w:tr>';
+      }
+      b += ft + '</w:tbl>';
+      if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
+      o._media = media;
+    }
+    const doc = asli.replace(/<w:p><w:r><w:t>\{\{ISI\}\}<\/w:t><\/w:r><\/w:p>/, b);
+    const files = [];
+    for (const n of z.names) {
+      if (n === 'word/document.xml') files.push({ name: n, data: doc });
+      else if (n === 'word/_rels/document.xml.rels') files.push({ name: n, data: rels });
+      else if (n === '[Content_Types].xml') files.push({ name: n, data: ct });
+      else if (!n.endsWith('/')) files.push({ name: n, data: await z.get(n) });
+    }
+    return zip(files.concat(o._media || []));
+  }
+  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, buktiDukung, laporanDinas, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
 })();
