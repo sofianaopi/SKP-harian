@@ -127,6 +127,7 @@
   <div class="ma-akun"><b id="maNama">—</b><small id="maNip"></small></div>
   <a role="menuitem" href="index.html"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Buka Dashboard</a>
   <a role="menuitem" href="index.html#profil"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>Profil &amp; ganti password</a>
+  <a role="menuitem" id="maWa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 32 32" style="fill:#25D366"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.2-.6-6-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.4 10.4 0 0 1-1.6-5.6C5.1 9.9 10 5.2 16 5.2s10.9 4.7 10.9 10.6S22 26.4 16 26.4z"/></svg>Tanya via WhatsApp</a>
   <button type="button" role="menuitem" id="maKeluar" class="keluar"><svg viewBox="0 0 24 24"><path d="M10 17l1.4-1.4L8.8 13H20v-2H8.8l2.6-2.6L10 7l-5 5 5 5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5z"/></svg>Keluar (sign out)</button>
 </div>
 
@@ -348,7 +349,7 @@
   const menuAkun = $('menuAkun');
   const tutupMenu = () => { menuAkun.hidden = true; $('btnMenu').setAttribute('aria-expanded', 'false'); };
   $('btnMenu').onclick = e => { e.stopPropagation(); const buka = menuAkun.hidden; menuAkun.hidden = !buka; $('btnMenu').setAttribute('aria-expanded', String(buka));
-    if (buka) { const s = S.saya || {}; $('maNama').textContent = s.nama || '—'; $('maNip').textContent = s.nip_baru || s.nip || ''; } };
+    if (buka) { $('maWa').href = S.waLink(); const s = S.saya || {}; $('maNama').textContent = s.nama || '—'; $('maNip').textContent = s.nip_baru || s.nip || ''; } };
   document.addEventListener('click', e => { if (!menuAkun.hidden && !menuAkun.contains(e.target)) tutupMenu(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') tutupMenu(); });
   $('maKeluar').onclick = () => { tutupMenu(); if (confirm('Keluar dari akun ini?')) S.keluar(); };

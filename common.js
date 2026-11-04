@@ -391,7 +391,7 @@
   }
 
   const api = {
-    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses,
+    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
@@ -401,5 +401,46 @@
     async hapusKegiatan(k) { return proses('Menghapus kegiatan…', async () => { for (const f of (k.fotoIds || [])) await db.del('foto', f); await db.del('kegiatan', k.id); }, 150); },
     registerSW() { try { if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => { }); } catch (e) { } }
   };
+
+  /* ---------- Tombol bantuan WhatsApp (melayang) ---------- */
+  const WA_NOMOR = String(CFG.WA_BANTUAN || '082121559865').replace(/\D/g, '').replace(/^0/, '62');
+  const WA_PESAN = 'Halo, saya ingin bertanya seputar aplikasi SAKTI (Sahabat Kinerja Terintegrasi).';
+  const waLink = () => 'https://wa.me/' + WA_NOMOR + '?text=' + encodeURIComponent(WA_PESAN + (saya && saya.nama ? '\nNama: ' + saya.nama : ''));
+  const IKON_WA = '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.2-.6-6-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.4 10.4 0 0 1-1.6-5.6C5.1 9.9 10 5.2 16 5.2s10.9 4.7 10.9 10.6S22 26.4 16 26.4zm6-7.9c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.1 1.4 3.3c.2.2 2.3 3.5 5.6 4.9 2.8 1.1 3.3.9 3.9.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.6-.4z"/></svg>';
+  function pasangWA() {
+    if (document.getElementById('skp-wa') || /input\.html/i.test(location.pathname) || !WA_NOMOR) return;
+    const st = document.createElement('style');
+    st.textContent = `#skp-wa{position:fixed;right:18px;bottom:18px;z-index:1001;font-family:inherit}
+    #skp-wa .wa-tbl{width:56px;height:56px;border-radius:50%;border:0;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);transition:transform .15s}
+    #skp-wa .wa-tbl:hover{transform:scale(1.06)}#skp-wa .wa-tbl svg{width:32px;height:32px}
+    #skp-wa .wa-pop{position:absolute;right:0;bottom:68px;width:min(300px,calc(100vw - 36px));background:#fff;color:#1d2733;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.22);overflow:hidden;display:none}
+    #skp-wa.buka .wa-pop{display:block}
+    #skp-wa .wa-kepala{background:#075E54;color:#fff;padding:14px 16px;display:flex;gap:10px;align-items:center}
+    #skp-wa .wa-kepala svg{width:30px;height:30px;flex:0 0 auto}#skp-wa .wa-kepala b{display:block;font-size:15px}#skp-wa .wa-kepala small{font-size:12px;opacity:.85}
+    #skp-wa .wa-x{margin-left:auto;background:none;border:0;color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0 2px}
+    #skp-wa .wa-isi{padding:14px 16px;background:#ECE5DD;font-size:13.5px;line-height:1.45}
+    #skp-wa .wa-gel{background:#fff;border-radius:0 10px 10px 10px;padding:9px 11px;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+    #skp-wa .wa-mulai{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 16px 14px;padding:11px;border-radius:999px;background:#25D366;color:#fff;font-weight:700;text-decoration:none;font-size:14.5px}
+    #skp-wa .wa-mulai svg{width:20px;height:20px}
+    #skp-wa .wa-label{position:absolute;right:66px;bottom:12px;white-space:nowrap;background:#fff;color:#1d2733;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,.15)}
+    #skp-wa.buka .wa-label{display:none}
+    @media (max-width:760px){#skp-wa{bottom:calc(76px + env(safe-area-inset-bottom));right:12px}#skp-wa .wa-tbl{width:50px;height:50px}#skp-wa .wa-label{display:none}}
+    @media print{#skp-wa{display:none}}`;
+    document.head.appendChild(st);
+    const el = document.createElement('div'); el.id = 'skp-wa';
+    el.innerHTML = `<div class="wa-pop" role="dialog" aria-label="Bantuan WhatsApp"><div class="wa-kepala">${IKON_WA}<div><b>Bantuan SAKTI</b><small>Biasanya membalas di jam kerja</small></div><button class="wa-x" type="button" aria-label="Tutup">×</button></div>
+      <div class="wa-isi"><div class="wa-gel">Halo 👋<br>Ada pertanyaan seputar aplikasi <b>SAKTI</b>? Silakan chat kami di WhatsApp.</div></div>
+      <a class="wa-mulai" target="_blank" rel="noopener">${IKON_WA}Chat di WhatsApp</a></div>
+      <span class="wa-label">Ada pertanyaan?</span>
+      <button class="wa-tbl" type="button" aria-label="Tanya lewat WhatsApp" title="Tanya lewat WhatsApp">${IKON_WA}</button>`;
+    document.body.appendChild(el);
+    const buka = b => { el.classList.toggle('buka', b); if (b) el.querySelector('.wa-mulai').href = waLink(); };
+    el.querySelector('.wa-tbl').onclick = () => buka(!el.classList.contains('buka'));
+    el.querySelector('.wa-x').onclick = () => buka(false);
+    el.querySelector('.wa-mulai').onclick = () => setTimeout(() => buka(false), 300);
+    document.addEventListener('click', e => { if (!el.contains(e.target)) buka(false); });
+    setTimeout(() => { const l = el.querySelector('.wa-label'); if (l) l.remove(); }, 8000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasangWA); else pasangWA();
   window.SKP = api;
 })();
