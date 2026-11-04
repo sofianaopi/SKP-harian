@@ -16,7 +16,7 @@
   :root { --hijau:#008069; --hijau-tua:#005c4b; --kirim:#00a884; --gel:#d9fdd3; --bg:#efeae2; --teks:#111b21; --abu:#667781; --biru:#53bdeb; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; }
-  body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--teks); background: var(--bg); display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--teks); background: var(--bg); display: flex; flex-direction: column; height: 100dvh; overflow: hidden; position: fixed; top: 0; left: 0; right: 0; }
   header { background: var(--hijau); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 6px 8px 8px; padding-top: calc(8px + env(safe-area-inset-top)); flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,.15); z-index: 5; }
   .ikon-btn { background: none; border: 0; color: inherit; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; text-decoration: none; }
   .ikon-btn:active { background: rgba(255,255,255,.15); }
@@ -345,6 +345,11 @@
   S.onChange(segarkan);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   S.registerSW();
+  /* Tinggi aplikasi = area layar yang benar-benar terlihat (di sebagian HP Android, 100dvh ikut menghitung
+     area tombol navigasi sistem sehingga kolom ketik tertutup; keyboard juga ikut diperhitungkan) */
+  const pasTinggi = () => { const vv = window.visualViewport; const t = Math.round(vv ? vv.height : window.innerHeight); if (t > 200) document.body.style.height = t + 'px'; };
+  pasTinggi(); if (window.visualViewport) { visualViewport.addEventListener('resize', pasTinggi); } window.addEventListener('resize', pasTinggi); window.addEventListener('orientationchange', () => setTimeout(pasTinggi, 300));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(pasTinggi, 100); });
   /* Menu ⋮: akun, dashboard, profil, keluar */
   const menuAkun = $('menuAkun');
   const tutupMenu = () => { menuAkun.hidden = true; $('btnMenu').setAttribute('aria-expanded', 'false'); };
