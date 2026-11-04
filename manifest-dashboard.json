@@ -3,7 +3,7 @@
  "name": "SAKTI – Sahabat Kinerja Terintegrasi",
  "short_name": "SAKTI",
  "description": "Asisten Cerdas Penyusunan SKP Triwulanan BPS Kota Kendari",
- "start_url": "index.html",
+ "start_url": "input.html",
  "scope": "./",
  "display": "standalone",
  "orientation": "any",

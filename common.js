@@ -28,8 +28,10 @@
   }
 
   /* ---------- Pemetaan baris database <-> objek aplikasi ---------- */
-  const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', bidang: r.bidang || null, jenisId: r.jenis_id || null, rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0 });
-  const dariK = k => ({ id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() });
+  const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', bidang: r.bidang || null, jenisId: r.jenis_id || null, rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0, gabung: r.gabung === undefined ? undefined : (r.gabung || null) });
+  const dariK = k => { const o = { id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() };
+    if (k.gabung !== undefined) o.gabung = k.gabung || null;   // kolom baru: hanya dikirim bila sudah dipakai
+    return o; };
   const keR = r => ({ id: r.id, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
   const dariR = r => ({ id: r.id, user_id: uid, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
   const keL = r => ({ id: r.id, jenis: r.jenis || 'Pengawasan Lapangan', nomor: r.nomor_st || '', tglSt: r.tanggal_st || '', periode: r.periode || '', tempat: r.tempat || '', tglLap: r.tanggal_lap || '', jabatan: r.jabatan || '', ketua: r.ketua || '', isi: Array.isArray(r.isi) ? r.isi : [], dibuat: r.dibuat, diubah: r.diubah });
@@ -404,6 +406,7 @@
 
   /* ---------- Tombol bantuan WhatsApp (melayang) ---------- */
   const WA_NOMOR = String(CFG.WA_BANTUAN || '082121559865').replace(/\D/g, '').replace(/^0/, '62');
+  // "Halo, saya <nama pengguna>, saya ingin bertanya …"  (nama hanya muncul bila sudah login)
   const waPesan = () => 'Halo, saya ' + (saya && saya.nama ? saya.nama + ', saya ' : '') + 'ingin bertanya seputar aplikasi SAKTI (Sahabat Kinerja Terintegrasi).';
   const waLink = () => 'https://wa.me/' + WA_NOMOR + '?text=' + encodeURIComponent(waPesan());
   const IKON_WA = '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.2-.6-6-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.4 10.4 0 0 1-1.6-5.6C5.1 9.9 10 5.2 16 5.2s10.9 4.7 10.9 10.6S22 26.4 16 26.4zm6-7.9c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.1 1.4 3.3c.2.2 2.3 3.5 5.6 4.9 2.8 1.1 3.3.9 3.9.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.6-.4z"/></svg>';

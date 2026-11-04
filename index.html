@@ -2,6 +2,12 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<script>
+/* Aplikasi terpasang di HP: setiap kali dibuka, halaman pertama = Catat Kegiatan */
+try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if (sa && !sessionStorage.getItem('sakti-sesi') && !location.hash) { sessionStorage.setItem('sakti-sesi', '1'); location.replace('input.html'); }
+  sessionStorage.setItem('sakti-sesi', '1'); } catch (e) { }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SAKTI – Sahabat Kinerja Terintegrasi · BPS Kota Kendari</title>
 <meta name="theme-color" content="#1F4E79">
@@ -129,6 +135,14 @@
   .massal { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: #eef5fc; border: 1px solid #c9dcf0; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; font-size: 13.5px; }
   .massal select { font: inherit; padding: 6px 8px; border: 1px solid #cfd7e0; border-radius: 8px; max-width: 320px; }
   .tersimpan { color: #1b6e3a; font-size: 12px; }
+  .gab-daftar { border: 1px solid var(--garis); border-radius: 10px; max-height: 240px; overflow: auto; margin-bottom: 8px; }
+  .gab-daftar label { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border-top: 1px solid var(--garis); margin: 0; font-weight: 400; color: var(--teks); cursor: pointer; font-size: 13.5px; }
+  .gab-daftar label:first-child { border-top: 0; } .gab-daftar input { width: auto; margin: 3px 0 0; } .gab-daftar small { color: var(--teks2); white-space: nowrap; margin-left: auto; }
+  .gab-tanda { font-size: 12px; color: #1F4E79; background: #eef5fc; border-radius: 6px; padding: 3px 7px; margin-top: 4px; display: inline-flex; gap: 6px; align-items: center; }
+  .gab-tanda button { border: 0; background: none; color: #b42318; cursor: pointer; font: inherit; font-size: 12px; padding: 0; }
+  .saran-gab { background: #fffbea; border: 1px solid #f1d39a; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 13.5px; }
+  .saran-gab .sg { border-top: 1px dashed #ecd9a6; padding: 8px 0 2px; display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+  .saran-gab .sg ul { margin: 0; padding-left: 18px; flex: 1; min-width: 220px; } .saran-gab .sg li { margin: 1px 0; }
   .modal { position: fixed; inset: 0; background: rgba(15,25,35,.5); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
   .modal.on { display: flex; }
   .modal .isi { background: #fff; border-radius: 16px; width: 100%; max-width: 540px; max-height: 92dvh; overflow-y: auto; padding: 20px 22px; }
@@ -205,7 +219,8 @@
       <div class="kartu" style="padding:0">
         <div style="padding:16px 18px 0"><h2 style="margin-bottom:10px">Daftar kegiatan <span class="kanan" id="rekapInfo" style="font-weight:400;font-size:13px;color:var(--teks2)"></span></h2>
           <div class="alat"><input type="search" id="cari" placeholder="Cari uraian kegiatan…" aria-label="Cari"><select id="fBidang" aria-label="Saring bidang"></select><select id="fRk" aria-label="Saring RK"></select><button class="btn" id="btnEkspor" title="Unduh kegiatan bulan ini ke Excel">📤 Ekspor Excel</button></div>
-          <div class="massal" id="massal" hidden><b id="mJumlah"></b> dipilih → <button class="btn kecil utama" type="button" id="mTerapkan">🎯 Pasangkan ke RK…</button><button class="btn kecil" type="button" id="mBatal">Batal pilih</button></div>
+          <div id="saranGab"></div>
+          <div class="massal" id="massal" hidden><b id="mJumlah"></b> dipilih → <button class="btn kecil utama" type="button" id="mTerapkan">🎯 Pasangkan ke RK…</button><button class="btn kecil" type="button" id="mGabung" title="Kegiatan yang sama dengan kalimat berbeda ditampilkan sebagai satu uraian di dokumen">🔗 Gabungkan uraian…</button><button class="btn kecil" type="button" id="mBatal">Batal pilih</button></div>
         </div>
         <div class="tabel-wrap"><table class="t rekap"><thead><tr><th style="width:30px"><input type="checkbox" id="pilihSemua" aria-label="Pilih semua"></th><th>Tanggal</th><th>Uraian kegiatan</th><th>Bidang</th><th>RK</th><th>Foto</th><th></th></tr></thead><tbody id="tblKeg"></tbody></table></div>
       </div>
@@ -324,6 +339,14 @@
   <div class="aksi"><button class="btn" type="button" id="riTutup">Tutup</button><button class="btn utama" type="button" id="riSimpan" disabled>Simpan</button></div>
 </div></div>
 
+<div class="modal" id="mGab"><div class="isi form" role="dialog" aria-labelledby="gabJ" style="max-width:620px">
+  <h3 id="gabJ">Gabungkan uraian kegiatan</h3>
+  <p style="color:var(--teks2);margin:4px 0 10px;font-size:13.5px">Kegiatan berikut dianggap <b>kegiatan yang sama</b>. Di dokumen Bukti Dukung, semuanya tampil sebagai <b>satu uraian</b> dan fotonya dikumpulkan di bawahnya. Catatan aslinya tidak berubah.</p>
+  <div id="gabDaftar" class="gab-daftar"></div>
+  <label for="gabTeks">Uraian yang tampil di dokumen</label><textarea id="gabTeks" rows="2"></textarea>
+  <div class="ket" id="gabKet" style="font-size:12.5px;color:var(--teks2);margin-top:4px"></div>
+  <div class="aksi"><button class="btn" type="button" id="gabBatal">Batal</button><button class="btn utama" type="button" id="gabSimpan">🔗 Gabungkan</button></div>
+</div></div>
 <div class="modal" id="mKonf"><div class="isi" role="alertdialog" style="max-width:420px">
   <h3 id="konfJ">Yakin?</h3><p id="konfT" style="color:var(--teks2);margin:6px 0 0;white-space:pre-line"></p>
   <div class="aksi"><button class="btn" id="konfBatal">Batal</button><button class="btn utama" id="konfYa" style="background:var(--merah);border-color:var(--merah)">Ya, lanjutkan</button></div>
@@ -536,11 +559,12 @@
     tb.innerHTML = ks.map(k => `<tr data-id="${k.id}"${dipilih.has(k.id) ? ' class="dipilih"' : ''}>
         <td><input type="checkbox" data-pilih ${dipilih.has(k.id) ? 'checked' : ''} aria-label="Pilih kegiatan"></td>
         <td style="white-space:nowrap">${S.esc(S.tglSedang(k.tanggal))}${k.jam ? '<br><span style="color:var(--teks2);font-size:12px">' + S.esc(k.jam) + '</span>' : ''}</td>
-        <td style="min-width:260px"><textarea data-f="teks" rows="2" aria-label="Uraian kegiatan">${S.esc(k.teks)}</textarea></td>
+        <td style="min-width:260px"><textarea data-f="teks" rows="2" aria-label="Uraian kegiatan">${S.esc(k.teks)}</textarea>${k.gabung ? `<div class="gab-tanda" title="Di dokumen Bukti Dukung tampil sebagai uraian ini">🔗 Di dokumen: <b>${S.esc(k.gabung.length > 70 ? k.gabung.slice(0, 68) + '…' : k.gabung)}</b><button type="button" data-lepasgab>lepas</button></div>` : ''}</td>
         <td><select data-f="bidang" aria-label="Bidang"${k.bidang ? '' : ' class="kosong-rk"'}><option value="">— pilih —</option>${S.bidangDari(k.bidang).map(b => `<option${b === k.bidang ? ' selected' : ''}>${S.esc(b)}</option>`).join('')}</select></td>
         <td><button type="button" class="rk-pilih${rhkById(k.rhkId) ? '' : ' kosong-rk'}" data-pilihrk title="${rhkById(k.rhkId) ? S.esc(rhkById(k.rhkId).nama) : ''}">${rhkById(k.rhkId) ? '🎯 ' + (rhkList.indexOf(rhkById(k.rhkId)) + 1) + '. ' + S.esc(rhkById(k.rhkId).nama.length > 90 ? rhkById(k.rhkId).nama.slice(0, 88) + '…' : rhkById(k.rhkId).nama) : '+ Pilih RK'}</button></td>
         <td style="white-space:nowrap">${(k.fotoIds || []).slice(0, 3).map(id => `<img class="thumb" data-foto="${id}" alt="Foto bukti">`).join('')}${(k.fotoIds || []).length > 3 ? ' +' + ((k.fotoIds.length) - 3) : ''}</td>
         <td style="white-space:nowrap"><button class="ikon" data-edit="${k.id}" title="Ubah tanggal & foto" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapus="${k.id}" title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('');
+    renderSaranGab();
     tb.querySelectorAll('img[data-foto]').forEach(async im => { const f = await ambilFoto(im.dataset.foto); if (f) im.src = f.data; });
     aturMassal();
   }
@@ -566,6 +590,64 @@
     ks.forEach(k => k.rhkId = rk ? rk.id : null); await S.putBanyak('kegiatan', ks);
     S.toast(ks.length > 1 ? ks.length + ' kegiatan ' + (rk ? 'dipasangkan ke RK' : 'dilepas dari RK') : (rk ? 'RK dipasangkan' : 'RK dilepas'), 1800);
   }
+  /* ---------- Gabungkan uraian: kegiatan berulang yang ditulis dengan kalimat berbeda ---------- */
+  const uraianEfektif = k => (k.gabung || k.teks || '').trim();
+  const KATA_UMUM = new Set('dan di ke yang untuk dengan pada dari atau ini itu serta dalam oleh secara para bagi tentang terhadap sebagai akan telah sudah juga hari tanggal'.split(' '));
+  const kataKunci = t => new Set(String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').filter(w => w.length > 1 && !KATA_UMUM.has(w)));
+  function mirip(a, b) {
+    const A = kataKunci(a), B = kataKunci(b); if (!A.size || !B.size) return false;
+    let sama = 0; A.forEach(w => { if (B.has(w)) sama++; });
+    return sama >= 2 && (sama / Math.min(A.size, B.size) >= 0.75 || sama / (A.size + B.size - sama) >= 0.5);
+  }
+  /* kelompok kalimat mirip (bidang & RK sama) yang belum digabung */
+  function saranGabungan() {
+    const abaikan = (() => { try { return new Set(JSON.parse(localStorage.getItem('sakti-abaikan-gab') || '[]')); } catch (e) { return new Set(); } })();
+    const grupKonteks = new Map();
+    kegiatan.forEach(k => { const t = uraianEfektif(k); if (!t || t === '(foto bukti)') return; const kunci = (k.bidang || '') + '|' + (k.rhkId || ''); if (!grupKonteks.has(kunci)) grupKonteks.set(kunci, new Map()); const m = grupKonteks.get(kunci); if (!m.has(t)) m.set(t, []); m.get(t).push(k); });
+    const hasil = [];
+    grupKonteks.forEach(m => {
+      const teks = [...m.keys()]; const induk = teks.map((_, i) => i); const cari = i => induk[i] === i ? i : (induk[i] = cari(induk[i]));
+      for (let i = 0; i < teks.length; i++) for (let j = i + 1; j < teks.length; j++) if (mirip(teks[i], teks[j])) induk[cari(i)] = cari(j);
+      const kel = new Map(); teks.forEach((t, i) => { const r = cari(i); if (!kel.has(r)) kel.set(r, []); kel.get(r).push(t); });
+      kel.forEach(ts => { if (ts.length < 2) return; const tanda = ts.slice().sort().join('␟'); if (abaikan.has(tanda)) return;
+        hasil.push({ tanda, teks: ts.map(t => ({ t, n: m.get(t).length })).sort((a, b) => b.n - a.n), ks: ts.flatMap(t => m.get(t)) }); });
+    });
+    return hasil.sort((a, b) => b.ks.length - a.ks.length);
+  }
+  let saranAktif = [];
+  function renderSaranGab() {
+    saranAktif = saranGabungan(); const box = $('saranGab');
+    if (!saranAktif.length) { box.innerHTML = ''; return; }
+    box.innerHTML = `<div class="saran-gab"><b>💡 ${saranAktif.length} kelompok kegiatan mirip</b> — kemungkinan kegiatan yang sama dengan kalimat berbeda. Gabungkan agar tampil sebagai satu uraian di dokumen Bukti Dukung.` +
+      saranAktif.slice(0, 5).map((s, i) => `<div class="sg"><ul>${s.teks.map(x => `<li>${S.esc(x.t.length > 110 ? x.t.slice(0, 108) + '…' : x.t)} <span style="color:var(--teks2)">(${x.n}×)</span></li>`).join('')}</ul>
+        <span style="white-space:nowrap"><button class="btn kecil utama" type="button" data-sarangab="${i}">🔗 Gabungkan…</button> <button class="btn kecil" type="button" data-abaikangab="${i}">Abaikan</button></span></div>`).join('') +
+      (saranAktif.length > 5 ? `<div style="font-size:12.5px;color:var(--teks2);padding-top:6px">+ ${saranAktif.length - 5} kelompok lain muncul setelah yang di atas selesai.</div>` : '') + '</div>';
+  }
+  $('saranGab').addEventListener('click', e => {
+    const g = e.target.closest('[data-sarangab]'); if (g) { const s = saranAktif[+g.dataset.sarangab]; if (s) bukaGabung(s.ks); return; }
+    const a = e.target.closest('[data-abaikangab]'); if (a) { const s = saranAktif[+a.dataset.abaikangab]; if (!s) return;
+      try { const L = JSON.parse(localStorage.getItem('sakti-abaikan-gab') || '[]'); L.push(s.tanda); localStorage.setItem('sakti-abaikan-gab', JSON.stringify(L.slice(-300))); } catch (x) { }
+      renderSaranGab(); S.toast('Saran disembunyikan', 1500); }
+  });
+  let gabKs = [];
+  function bukaGabung(ks) {
+    gabKs = ks.slice(); const hit = new Map(); ks.forEach(k => { const t = uraianEfektif(k); hit.set(t, (hit.get(t) || 0) + 1); });
+    const urut = [...hit.entries()].sort((a, b) => b[1] - a[1] || b[0].length - a[0].length);
+    $('gabDaftar').innerHTML = urut.map(([t, n], i) => `<label><input type="radio" name="gabPilih" value="${i}"${i ? '' : ' checked'}><span>${S.esc(t)}</span><small>${n} kegiatan</small></label>`).join('');
+    $('gabDaftar').querySelectorAll('input').forEach(r => r.onchange = () => { $('gabTeks').value = urut[+r.value][0]; });
+    $('gabTeks').value = urut[0][0];
+    const bd = [...new Set(ks.map(k => k.bidang || '—'))], rk = [...new Set(ks.map(k => k.rhkId || ''))];
+    $('gabKet').innerHTML = `${ks.length} kegiatan akan digabung. Pilih salah satu kalimat di atas atau tulis sendiri.` + (bd.length > 1 || rk.length > 1 ? '<br><span style="color:#8a5300">⚠ Bidang/RK kegiatan ini berbeda-beda — di dokumen tetap dipisah per bidang & RK. Samakan bidang/RK-nya bila memang satu kegiatan.</span>' : '');
+    $('mGab').classList.add('on'); setTimeout(() => $('gabTeks').focus(), 50);
+  }
+  $('gabBatal').onclick = () => $('mGab').classList.remove('on');
+  $('gabSimpan').onclick = async () => {
+    const t = $('gabTeks').value.trim().replace(/\s+/g, ' '); if (!t) { S.toast('Tulis uraian yang tampil di dokumen'); return; }
+    const lama = gabKs.map(k => k.gabung); gabKs.forEach(k => k.gabung = t);
+    try { await S.putBanyak('kegiatan', gabKs); $('mGab').classList.remove('on'); dipilih.clear(); renderTabel(); S.toast(gabKs.length + ' kegiatan digabung menjadi satu uraian', 3000); }
+    catch (x) { gabKs.forEach((k, i) => k.gabung = lama[i]); S.toast(/gabung/i.test(x.message) ? 'Database belum diperbarui untuk fitur ini — minta admin menjalankan setup.sql terbaru di Supabase.' : x.message, 7000); }
+  };
+  $('mGabung').onclick = () => { const ks = kegiatan.filter(k => dipilih.has(k.id)); if (ks.length < 2) { S.toast('Pilih minimal 2 kegiatan untuk digabungkan'); return; } bukaGabung(ks); };
   $('mTerapkan').onclick = () => {
     const ks = kegiatan.filter(k => dipilih.has(k.id)); if (!ks.length) return;
     const bd = [...new Set(ks.map(k => k.bidang).filter(Boolean))];
@@ -576,6 +658,12 @@
     if (pr) { if (!rhkList.length) { S.toast('Belum ada RK — tambahkan di menu RK & IKI'); location.hash = 'rk'; return; }
       const k = kegiatan.find(x => x.id === pr.closest('tr').dataset.id);
       SKPPilihRK.buka({ rhkList, bidang: k.bidang, terpilih: k.rhkId, judul: 'RK untuk: ' + (k.teks || '').slice(0, 60), onPilih: async rk => { try { await pasangRk([k], rk); renderTabel(); } catch (x) { S.toast(x.message, 5000); } } }); return; }
+    const lg = e.target.closest('[data-lepasgab]');
+    if (lg) { const k = kegiatan.find(x => x.id === lg.closest('tr').dataset.id); const g = k.gabung;
+      const sama = kegiatan.filter(x => x.gabung === g);
+      const semua = sama.length > 1 && await konfirmasi('Lepas gabungan?', 'Lepas hanya kegiatan ini, atau semua ' + sama.length + ' kegiatan dengan uraian gabungan “' + g.slice(0, 80) + '”?\n\nYa = lepas semua · Batal = hanya kegiatan ini');
+      const L = semua ? sama : [k]; L.forEach(x => x.gabung = null);
+      try { await S.putBanyak('kegiatan', L); renderTabel(); S.toast(L.length + ' kegiatan dilepas dari gabungan', 2000); } catch (x) { S.toast(x.message, 5000); } return; }
     const b = e.target.closest('[data-edit]'); if (b) { bukaKeg(b.dataset.edit); return; }
     const im = e.target.closest('img[data-foto]'); if (im && im.src) { lihat(im.src); return; }
     const h = e.target.closest('[data-hapus]'); if (!h) return; const k = kegiatan.find(x => x.id === h.dataset.hapus);
@@ -766,7 +854,7 @@
       const items = [];
       for (const k of kel.ks) {
         const fotos = []; for (const id of (k.fotoIds || [])) { const f = await ambilFoto(id); if (f && f.data) fotos.push(f); }
-        const t = (k.teks || '').trim(); const tanpaTeks = !t || t === '(foto bukti)';
+        const t = (k.gabung || k.teks || '').trim(); const tanpaTeks = !t || t === '(foto bukti)';
         let it = tanpaTeks ? items[items.length - 1] : items.find(x => x.teks === t);
         if (!it) { it = { teks: tanpaTeks ? 'Dokumentasi kegiatan' : t, fotos: [] }; items.push(it); }
         it.fotos.push(...fotos);
@@ -786,7 +874,7 @@
         const nk = pilih.reduce((a, g) => a + g.ks.length, 0), nf = pilih.reduce((a, g) => a + g.ks.reduce((x, k) => x + (k.fotoIds || []).length, 0), 0);
         btn.disabled = false;
         if (!await konfirmasi(pilih.length === 1 ? 'Simpan ke Drive & arsipkan?' : 'Simpan ' + pilih.length + ' dokumen ke Drive & arsipkan?',
-          (() => { const tp = window.SKPDinas ? SKPDinas.kegiatanTerpakai() : new Set(); const n = pilih.reduce((a, g) => a + g.ks.filter(k => tp.has(k.id)).length, 0); return n ? `⚠ ${n} kegiatan dipakai di Laporan Perjalanan Dinas — unduh laporannya dulu, karena setelah diarsipkan fotonya tidak ada lagi di aplikasi.\n\n` : ''; })() + `1. ${pilih.length} dokumen dan ${nf} foto akan disimpan ke Google Drive. Dokumen di Drive menjadi arsipnya dan link-nya tetap ada di daftar bawah.\n\n2. Kegiatan yang sudah disimpan ke Drive TIDAK BISA lagi dibuat Laporan Perjalanan Dinas. Bila ada kegiatan perjalanan dinas, buat & unduh laporannya dulu di menu Perjalanan Dinas.\n\nApakah anda setuju?.`)) return;
+          (() => { const tp = window.SKPDinas ? SKPDinas.kegiatanTerpakai() : new Set(); const n = pilih.reduce((a, g) => a + g.ks.filter(k => tp.has(k.id)).length, 0); return n ? `⚠ ${n} kegiatan dipakai di Laporan Perjalanan Dinas — unduh laporannya dulu, karena setelah diarsipkan fotonya tidak ada lagi di aplikasi.\n\n` : ''; })() + `1. ${pilih.length} dokumen dan ${nf} foto akan disimpan ke Google Drive. Dokumen di Drive menjadi arsipnya dan link-nya tetap ada di daftar bawah.\n\n2. Kegiatan yang sudah disimpan ke Drive TIDAK BISA lagi dibuat Laporan Perjalanan Dinas. Bila ada kegiatan perjalanan dinas, buat & unduh laporannya dulu di menu Perjalanan Dinas.\n\nTindakan ini tidak bisa dibatalkan.`)) return;
         btn.disabled = true; let terhapus = 0; sb = S.sibuk('Menyimpan ke Google Drive…');
         for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; const awal = pilih.length > 1 ? `Dokumen ${n} dari ${pilih.length} · ` : ''; sb.pesan(awal + 'Menyimpan ke Google Drive…'); const h = await simpanKeDrive(g, p, t => sb.pesan(awal + t)); terhapus += h.terhapus; renderDrive(); }
         S.toast((pilih.length === 1 ? 'Tersimpan di Google Drive' : pilih.length + ' dokumen tersimpan di Google Drive') + ' · ' + terhapus + ' kegiatan diarsipkan & dihapus dari aplikasi', 5000);
