@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SKP Harian – Dashboard Pegawai</title>
+<title>SAKTI – Sahabat Kinerja Terintegrasi</title>
 <meta name="theme-color" content="#1F4E79">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dashboard SKP">
+<meta name="apple-mobile-web-app-title" content="SAKTI">
 <link rel="manifest" href="manifest-dashboard.json">
 <link rel="icon" href="icons/dashboard-192.png">
 <link rel="apple-touch-icon" href="icons/dashboard-192.png">
@@ -169,7 +169,7 @@
 <body>
 <div class="app">
   <nav class="sisi" aria-label="Menu utama">
-    <div class="brand"><img src="icons/dashboard-192.png" alt=""><div>SKP Harian<small>Jurnal Kinerja Pegawai</small></div></div>
+    <div class="brand"><img src="icons/dashboard-192.png" alt=""><div>SAKTI<small>Sahabat Kinerja Terintegrasi</small></div></div>
     <a class="menu" href="#dashboard" data-r="dashboard"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a>
     <a class="menu" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
     <a class="menu" href="#rekap" data-r="rekap"><svg viewBox="0 0 24 24"><path d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-2 14-4-4 1.4-1.4 2.6 2.6 6.6-6.6L19 9l-8 8z"/></svg>Rekap Kegiatan</a>
@@ -214,7 +214,7 @@
       <div class="kartu" style="padding:0">
         <div style="padding:16px 18px 0">
           <div class="alat"><input type="search" id="rkCari" placeholder="Cari kata dalam RK atau IKI…" aria-label="Cari RK"><select id="rkFBidang" aria-label="Saring bidang"></select>
-            <button class="btn" type="button" id="rkImpor">📥 Impor Excel</button><button class="btn" type="button" id="rkEkspor">📤 Ekspor</button><button class="btn utama" type="button" id="rkTambah">+ Tambah RK</button></div>
+            <button class="btn" type="button" id="rkImpor">📥 Impor Excel</button><button class="btn" type="button" id="rkEkspor">📤 Ekspor</button><button class="btn" type="button" id="rkKosong" style="color:#b42318">🗑 Hapus RK saya</button><button class="btn utama" type="button" id="rkTambah">+ Tambah RK</button></div>
           <div id="rkRingkas" style="font-size:13px;color:var(--teks2);margin:-4px 0 10px"></div>
         </div>
         <div class="tabel-wrap"><table class="t rk-tabel"><thead><tr><th style="width:44px">No</th><th style="width:120px">Bidang</th><th>Rencana Kinerja (RK)</th><th>Indikator Kinerja Individu (IKI)</th><th class="num" style="width:80px">Kegiatan</th><th style="width:76px"></th></tr></thead><tbody id="rkTbl"></tbody></table></div>
@@ -457,6 +457,17 @@
   $('rkTbl').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (!tr) return; const r = rhkById(tr.dataset.id);
     if (r && r.bersama) { S.toast('RK ini dari admin. Hanya admin yang dapat mengubah atau menghapusnya.'); return; }
     if (e.target.closest('[data-ubahrk]')) bukaRk(r); else if (e.target.closest('[data-hapusrk]')) hapusRk(r); });
+  /* Kosongkan RK sendiri sekaligus (ikut saringan bidang & pencarian); RK dari admin tidak ikut */
+  $('rkKosong').onclick = async () => {
+    const f = $('rkFBidang').value, q = $('rkCari').value.trim().toLowerCase();
+    const L = rhkList.filter(r => !r.bersama && (!f || (f === '-' ? !r.bidang : r.bidang === f)) && (!q || ((r.nama || '') + ' ' + (r.indikator || '')).toLowerCase().includes(q)));
+    if (!L.length) { S.toast(rhkList.some(r => r.bersama) ? 'Tidak ada RK tambahan Anda yang bisa dihapus. RK dari admin (🔒) hanya bisa dihapus admin.' : 'Belum ada RK'); return; }
+    const ids = new Set(L.map(r => r.id)), terkait = kegiatan.filter(k => ids.has(k.rhkId));
+    const semua = L.length === rhkList.filter(r => !r.bersama).length;
+    if (!await konfirmasi(semua ? 'Hapus semua RK Anda?' : 'Hapus ' + L.length + ' RK yang tampil?',
+      L.length + ' RK & IKI ' + (semua ? 'tambahan Anda' : (f && f !== '-' ? 'bidang ' + f + ' ' : '') + 'yang sedang tampil') + ' akan dihapus. RK dari admin (🔒) tidak ikut terhapus.' + (terkait.length ? ' ' + terkait.length + ' kegiatan yang terpasang akan menjadi "belum ber-RK" (kegiatannya tidak dihapus).' : '') + ' Sebaiknya klik 📤 Ekspor dulu sebagai cadangan.')) return;
+    try { await S.hapusBanyakRk([...ids]); terkait.forEach(k => k.rhkId = null); rhkList = rhkList.filter(r => !ids.has(r.id)); renderRkMenu(); S.toast(L.length + ' RK dihapus', 4000); } catch (x) { S.toast(x.message, 5000); }
+  };
   $('rkEkspor').onclick = async () => {
     if (!rhkList.length) { S.toast('Belum ada RK'); return; }
     try { const X = await SKPExcel.lib(); const wb = X.utils.book_new(); const ws = X.utils.aoa_to_sheet([['Bidang', 'RK', 'IKI']].concat(rhkList.map(r => [r.bidang || '', r.nama || '', r.indikator || ''])));
@@ -613,15 +624,16 @@
   function periode() {
     const mode = $('uMode').value;
     if (mode === 'triwulan') { const q = Number($('uTw').value), y = Number($('uTahun').value) || now.getFullYear(); const m1 = 3 * q - 2, m3 = 3 * q;
-      return { dari: y + '-' + S.pad(m1) + '-01', sampai: y + '-' + S.pad(m3) + '-' + S.pad(new Date(y, m3, 0).getDate()), label: 'Triwulan ' + q + ' ' + y }; }
-    if (mode === 'bulan') { const m = $('uBulan').value || ym; const [y, mm] = m.split('-').map(Number); return { dari: m + '-01', sampai: m + '-' + S.pad(new Date(y, mm, 0).getDate()), label: S.namaBulan(m) }; }
+      return { dari: y + '-' + S.pad(m1) + '-01', sampai: y + '-' + S.pad(m3) + '-' + S.pad(new Date(y, m3, 0).getDate()), label: 'Triwulan ' + q + ' ' + y, kode: 'Trw' + q + '_' + y }; }
+    if (mode === 'bulan') { const m = $('uBulan').value || ym; const [y, mm] = m.split('-').map(Number); return { dari: m + '-01', sampai: m + '-' + S.pad(new Date(y, mm, 0).getDate()), label: S.namaBulan(m), kode: S.BULAN[mm - 1] + '_' + y }; }
     let a = $('uDari').value || ym + '-01', b = $('uSampai').value || a; if (a > b) [a, b] = [b, a];
-    return { dari: a, sampai: b, label: S.tglSedang(a) + ' s.d. ' + S.tglSedang(b) };
+    return { dari: a, sampai: b, label: S.tglSedang(a) + ' s.d. ' + S.tglSedang(b), kode: a + '_sd_' + b };
   }
   let judulManual = false;
   function kelompok(ks) {
     const b = $('uBidang').value; const grup = [];
-    S.bidangDari(ks.map(k => k.bidang)).filter(x => !b || x === b).forEach(bd => { const kk = ks.filter(k => k.bidang === bd); if (kk.length) grup.push({ bidang: bd, ks: urut(kk) }); });
+    // satu dokumen untuk setiap RK di setiap bidang (RK sama dengan IKI berbeda tetap satu dokumen)
+    S.bidangDari(ks.map(k => k.bidang)).filter(x => !b || x === b).forEach(bd => { const kk = urut(ks.filter(k => k.bidang === bd)); if (kk.length) perRk(kk).forEach(x => grup.push({ bidang: bd, rk: x.rk, rks: x.rks, ks: x.ks })); });
     return grup;
   }
   function renderUpload() {
@@ -633,12 +645,12 @@
     const grup = kelompok(ks); const tanpa = $('uBidang').value ? 0 : ks.filter(k => !k.bidang).length;
     const kurang = ['nama', 'nip'].filter(f => !profil[f]);
     $('uRingkas').innerHTML = `<b>Periode ${S.esc(p.label)}</b> · ${ks.length} kegiatan · ${ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)} foto · <b>${grup.length} dokumen</b>` +
-      '<br>Format mengikuti dokumen Bukti Dukung kantor. Satu dokumen per bidang; bila ada beberapa RK, isinya dipisah per RK (masing-masing di halaman baru dengan RK & IKI-nya). Pasangkan RK di menu <a href="#rekap">Rekap Kegiatan</a>.' +
+      '<br>Satu dokumen untuk setiap RK di setiap bidang — bidang dengan 2 RK menghasilkan 2 dokumen. Nama file: <i>Bidang_RK_Periode</i>. Pasangkan RK di menu <a href="#rekap">Rekap Kegiatan</a>.' +
       (kurang.length ? `<br><span style="color:#8a5300">⚠ ${kurang.includes('nip') ? 'NIP baru belum diisi admin' : 'Nama belum lengkap'} — <a href="#profil">cek Profil</a>.</span>` : '');
     let html = '';
     if (!grup.length) html = '<div class="kosong">Belum ada kegiatan pada periode ini.<br>Catat lewat menu <a href="input.html">Input</a> dengan memilih bidang.</div>';
-    else html = '<div class="tabel-wrap"><table class="t"><thead><tr><th>Bidang (1 dokumen)</th><th>Isi per RK</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>' +
-      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${perRk(g.ks).map(x => x.rk ? '🎯 ' + S.esc(x.rk.nama.length > 55 ? x.rk.nama.slice(0, 53) + '…' : x.rk.nama) + ' (' + x.ks.length + ')' : '<span style="color:#b26a00">⚠ Tanpa RK (' + x.ks.length + ') — RK & IKI kosong</span>').join('<br>')}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button">Unduh .docx</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a" title="Simpan ke Google Drive lalu hapus kegiatan & foto ini dari aplikasi">☁ Simpan &amp; arsipkan</button>` : ''}</td></tr>`).join('') +
+    else html = '<div class="tabel-wrap"><table class="t"><thead><tr><th>Bidang</th><th>RK (1 dokumen)</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>' +
+      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${g.rk ? '🎯 ' + S.esc(g.rk.nama.length > 90 ? g.rk.nama.slice(0, 88) + '…' : g.rk.nama) + (g.rks.length > 1 ? ' <span style="color:#2E75B6">(' + g.rks.length + ' IKI)</span>' : '') : '<span style="color:#b26a00">⚠ Tanpa RK — RK & IKI kosong</span>'}<div style="color:var(--teks2);font-size:11.5px;margin-top:3px;word-break:break-all">📄 ${S.esc(namaDok(g, p))}</div></td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button">Unduh .docx</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a" title="Simpan dokumen & foto ke Google Drive lalu hapus kegiatan & foto ini dari aplikasi">☁ Simpan &amp; arsipkan</button>` : ''}</td></tr>`).join('') +
       `</tbody></table></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn utama" type="button" id="btnZip">Unduh semua (${grup.length} dokumen, .zip)</button>${adaDrive() ? `<button class="btn" type="button" id="btnDriveSemua" style="color:#0b6b3a;border-color:#9fd3b5">☁ Simpan semua ke Drive &amp; arsipkan (${grup.length})</button>` : ''}</div>`;
     if (tanpa) html += `<p style="font-size:13px;color:#8a5300;margin:12px 0 0">⚠ ${tanpa} kegiatan belum memilih bidang sehingga tidak masuk dokumen. Lengkapi lewat ikon pensil di <a href="#dashboard">Dashboard</a>.</p>`;
     $('uDaftar').innerHTML = html;
@@ -658,11 +670,28 @@
   }
   async function salin(teks) { try { await navigator.clipboard.writeText(teks); S.toast('Link disalin'); } catch (e) { const t = document.createElement('textarea'); t.value = teks; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); S.toast('Link disalin'); } catch (x) { S.toast('Gagal menyalin — salin manual dari kolom Dokumen'); } t.remove(); } }
   /* Simpan ke Drive, lalu hapus kegiatan & foto dokumen itu dari database aplikasi (Drive menjadi arsipnya) */
-  async function simpanKeDrive(g, p) {
+  /* Foto kegiatan → Drive: FOTO KEGIATAN / Bidang / Bulan / Pengguna / RK */
+  async function simpanFotoKeDrive(g, lapor) {
+    const daftar = []; g.ks.forEach(k => (k.fotoIds || []).forEach((id, j) => daftar.push({ k, id, j })));
+    let n = 0;
+    for (const x of daftar) {
+      lapor && lapor(++n, daftar.length);
+      const f = await ambilFoto(x.id); if (!f || !f.data) continue;
+      const bln = x.k.tanggal.slice(0, 7), mm = Number(bln.slice(5));
+      const nama = x.k.tanggal + '_' + String(x.k.jam || '').replace(':', '') + '_' + bersihFile(x.k.teks && x.k.teks !== '(foto bukti)' ? x.k.teks : 'foto', 40) + '_' + String(x.id).slice(-5) + '.jpg';
+      try { await S.drive(driveCfg.url, 'foto', { bidang: g.bidang, bulan: bln + ' ' + S.BULAN[mm - 1], rk: g.rk ? g.rk.nama : 'Tanpa RK', nama, data: f.data.split(',')[1] }); }
+      catch (e) { throw new Error(/tidak dikenal/i.test(e.message) ? 'Apps Script di Google Drive belum diperbarui (perlu Code.gs terbaru untuk menyimpan foto). Hubungi admin. Data tidak dihapus.' : 'Gagal menyimpan foto ke Drive: ' + e.message + '. Data tidak dihapus.'); }
+    }
+    return daftar.length;
+  }
+  async function simpanKeDrive(g, p, lapor) {
+    const nFoto = await simpanFotoKeDrive(g, lapor && ((i, n) => lapor('Menyimpan foto ' + i + ' dari ' + n + '…')));
+    lapor && lapor('Menyimpan dokumen…');
     const r = await buatBukti(g, p);
-    // bila bidang & periode ini sudah pernah diarsipkan, simpan sebagai dokumen tambahan agar arsip lama tidak tertimpa
-    const sudah = dokumen.filter(d => d.bidang === g.bidang && d.periode === p.label).length;
-    const nama = sudah ? r.nama.replace(/\.docx$/, ' (' + (sudah + 1) + ').docx') : r.nama;
+    // nama sama pernah diarsipkan → simpan sebagai dokumen tambahan agar arsip lama tidak tertimpa
+    const dasar = r.nama.replace(/\.docx$/, '');
+    const sudah = dokumen.filter(d => d.nama === r.nama || (d.nama || '').startsWith(dasar + ' (')).length;
+    const nama = sudah ? dasar + ' (' + (sudah + 1) + ').docx' : r.nama;
     const hasil = await S.drive(driveCfg.url, 'simpan', { nama, periode: p.label, data: await S.blobKeBase64(r.blob) });
     if (!hasil.id || !hasil.url || !(hasil.ukuran > 0)) throw new Error('Google Drive tidak mengonfirmasi file tersimpan; data tidak dihapus');
     const doc = { id: 'd_' + S.uid(), bidang: g.bidang, periode: p.label, nama: hasil.nama || nama, driveId: hasil.id, url: hasil.url, ukuran: hasil.ukuran, dibuat: new Date().toISOString() };
@@ -711,9 +740,12 @@
     const sisa = ks.filter(k => !rhkById(k.rhkId)); if (sisa.length) out.push({ rk: null, rks: [], ks: sisa }); return out;
   }
   const ikiGabung = rks => { const L = []; rks.forEach(r => { const t = (r.indikator || '').trim(); if (t && !L.some(x => kunciRk(x) === kunciRk(t))) L.push(t); }); return L.length > 1 ? L.map((t, i) => (i + 1) + '. ' + t).join('\n') : (L[0] || ''); };
+  /* Nama file: Bidang_RK_Trw4_2026.docx */
+  const bersihFile = (t, n) => String(t || '').replace(/[\\/:*?"<>|#%\n\r\t]+/g, ' ').replace(/[.\s]+$/, '').replace(/\s+/g, ' ').trim().slice(0, n).trim();
+  const namaDok = (g, p) => bersihFile(g.bidang, 40) + '_' + bersihFile(g.rk ? g.rk.nama : 'Tanpa RK', 90) + '_' + (p.kode || bersihFile(p.label, 40)) + '.docx';
   async function buatBukti(g, p) {
     const bagian = [];
-    for (const kel of perRk(g.ks)) {
+    for (const kel of [{ rk: g.rk, rks: g.rks || [], ks: g.ks }]) {
       // satu kegiatan = satu uraian + fotonya; uraian sama digabung, foto tanpa uraian ikut kegiatan sebelumnya
       const items = [];
       for (const k of kel.ks) {
@@ -726,7 +758,7 @@
       bagian.push({ rk: kel.rk ? kel.rk.nama : '', iki: kel.rk ? ikiGabung(kel.rks) : '', items });
     }
     const blob = await DOCX.buktiDukung({ template: await ambilTemplate(), kop, judul: $('uJudul').value.trim() || ('Bukti Dukung SKP ' + p.label), nama: profil.nama || '', nip: profil.nip || '', bagian });
-    return { blob, nama: 'Bukti_Dukung_' + amanNama(g.bidang) + '_' + amanNama(p.label) + '.docx' };
+    return { blob, nama: namaDok(g, p) };
   }
   $('uDaftar').addEventListener('click', async e => {
     const bd = e.target.closest('[data-drive]'), bds = e.target.closest('#btnDriveSemua');
@@ -738,9 +770,9 @@
         const nk = pilih.reduce((a, g) => a + g.ks.length, 0), nf = pilih.reduce((a, g) => a + g.ks.reduce((x, k) => x + (k.fotoIds || []).length, 0), 0);
         btn.disabled = false;
         if (!await konfirmasi(pilih.length === 1 ? 'Simpan ke Drive & arsipkan?' : 'Simpan ' + pilih.length + ' dokumen ke Drive & arsipkan?',
-          `Setelah dokumen tersimpan di Google Drive, ${nk} kegiatan dan ${nf} foto (${pilih.map(g => g.bidang).join(', ')} · ${p.label}) akan DIHAPUS dari aplikasi untuk menghemat ruang database. Dokumen di Drive menjadi arsipnya dan link-nya tetap ada di daftar bawah. Tindakan ini tidak bisa dibatalkan.`)) return;
+          `${pilih.length} dokumen dan ${nf} foto akan disimpan ke Google Drive (foto juga disimpan di folder FOTO KEGIATAN / Bidang / Bulan / Nama / RK). Setelah itu ${nk} kegiatan dan ${nf} foto (${[...new Set(pilih.map(g => g.bidang))].join(', ')} · ${p.label}) DIHAPUS dari aplikasi untuk menghemat ruang database. Dokumen di Drive menjadi arsipnya dan link-nya tetap ada di daftar bawah. Tindakan ini tidak bisa dibatalkan.`)) return;
         btn.disabled = true; let terhapus = 0; sb = S.sibuk('Menyimpan ke Google Drive…');
-        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; sb.pesan(pilih.length > 1 ? `Menyimpan dokumen ${n} dari ${pilih.length} ke Google Drive…` : 'Menyimpan dokumen ke Google Drive…'); const h = await simpanKeDrive(g, p); terhapus += h.terhapus; renderDrive(); }
+        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; const awal = pilih.length > 1 ? `Dokumen ${n} dari ${pilih.length} · ` : ''; sb.pesan(awal + 'Menyimpan ke Google Drive…'); const h = await simpanKeDrive(g, p, t => sb.pesan(awal + t)); terhapus += h.terhapus; renderDrive(); }
         S.toast((pilih.length === 1 ? 'Tersimpan di Google Drive' : pilih.length + ' dokumen tersimpan di Google Drive') + ' · ' + terhapus + ' kegiatan diarsipkan & dihapus dari aplikasi', 5000);
         sb.selesai(); renderUpload();
         $('driveKartu').scrollIntoView({ behavior: 'smooth', block: 'start' });

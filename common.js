@@ -1,4 +1,4 @@
-/* SKP Harian — lapisan data (database Supabase), login, & utilitas bersama */
+/* SAKTI (Sahabat Kinerja Terintegrasi) — lapisan data (database Supabase), login, & utilitas bersama */
 (function () {
   'use strict';
   const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -101,6 +101,11 @@
       for (let i = 0; i < paths.length; i += 100) { const r = await c.storage.from(BUCKET).remove(paths.slice(i, i + 100)); if (r.error) gagalFoto += paths.slice(i, i + 100).length; }
       notify(); return { gagalFoto };
     },
+    async hapusBanyakRk(ids) {   // hapus banyak RK sekaligus (kegiatan yang memakainya otomatis menjadi tanpa RK)
+      const c = client();
+      for (let i = 0; i < ids.length; i += 200) cek(await c.from('rk').delete().in('id', ids.slice(i, i + 200)), 'Gagal menghapus RK');
+      notify();
+    },
     async hapusBanyakKegiatan(ks) {   // hapus banyak kegiatan + fotonya sekaligus
       const c = client();
       const paths = ks.flatMap(k => (k.fotoIds || []).map(fotoPath));
@@ -126,12 +131,17 @@
   #skp-login{position:fixed;inset:0;z-index:1000;overflow:auto;font-family:"Plus Jakarta Sans","Segoe UI",-apple-system,Roboto,Arial,sans-serif;color:#13294b;
     background:radial-gradient(120% 90% at 100% 0,rgba(255,255,255,.0) 55%,rgba(255,255,255,0) 56%),linear-gradient(135deg,#e9f2ff 0%,#cfe2fb 55%,#9cc3f2 100%)}
   #skp-login .lg-latar{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-  #skp-login .lg-hero{position:absolute;left:0;top:0;bottom:0;width:58%;background:url(img/login-hero.jpg?v=20) left center/cover no-repeat;
+  #skp-login .lg-hero{position:absolute;left:0;top:0;bottom:0;width:58%;background:url(img/login-sakti.jpg) left center/cover no-repeat;
     -webkit-mask-image:linear-gradient(90deg,#000 78%,transparent 100%);mask-image:linear-gradient(90deg,#000 78%,transparent 100%)}
   #skp-login .lg-swoosh{position:absolute;right:-12%;top:-28%;width:62%;height:48%;border-radius:50%;border-bottom:26px solid #f39a1e;transform:rotate(-12deg);opacity:.95}
   #skp-login .lg-swoosh2{position:absolute;right:-18%;top:-30%;width:70%;height:52%;border-radius:50%;background:linear-gradient(160deg,#1556c4,#0b3b8f);transform:rotate(-12deg)}
   #skp-login .lg-bar{position:absolute;right:3%;bottom:16%;display:flex;gap:14px;align-items:flex-end;opacity:.35}
   #skp-login .lg-bar i{display:block;width:30px;border-radius:4px 4px 0 0;background:linear-gradient(#8fb6ec,#bcd5f6)}
+  #skp-login .lg-teks{position:absolute;left:5.5vw;bottom:9vh;color:#fff;max-width:44vw;text-shadow:0 2px 12px rgba(0,20,60,.35)}
+  #skp-login .lg-teks .t1{font-size:clamp(56px,7.2vw,112px);font-weight:800;letter-spacing:2px;line-height:1}
+  #skp-login .lg-teks .t2{font-size:clamp(20px,2.3vw,36px);font-weight:700;margin-top:8px;line-height:1.15}
+  #skp-login .lg-teks i{display:block;width:150px;height:6px;border-radius:3px;background:#f39a1e;margin:16px 0 14px}
+  #skp-login .lg-teks .t3{font-size:clamp(15px,1.45vw,22px);font-weight:500;line-height:1.35;opacity:.95}
   #skp-login .lg-isi{position:relative;min-height:100%;display:flex;align-items:center;justify-content:flex-end;padding:28px 6vw 28px 20px;box-sizing:border-box}
   #skp-login .kartu-login{position:relative;background:rgba(246,250,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);
     border-radius:26px;width:100%;max-width:440px;padding:30px 34px 28px;box-shadow:0 24px 60px rgba(11,45,105,.22);box-sizing:border-box}
@@ -162,7 +172,7 @@
   @media (max-width:860px){
     #skp-login .lg-hero{width:100%;-webkit-mask-image:none;mask-image:none;background-position:22% center}
     #skp-login .lg-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,40,100,.35),rgba(10,40,100,.7))}
-    #skp-login .lg-swoosh,#skp-login .lg-swoosh2,#skp-login .lg-bar{display:none}
+    #skp-login .lg-swoosh,#skp-login .lg-swoosh2,#skp-login .lg-bar,#skp-login .lg-teks{display:none}
     #skp-login .lg-isi{justify-content:center;padding:22px 16px}
     #skp-login .kartu-login{padding:24px 20px 18px;border-radius:22px}
     #skp-login h1{font-size:26px}#skp-login .sub{font-size:14.5px}#skp-login .sambut{font-size:13.5px;margin:10px 0 12px}
@@ -178,10 +188,10 @@
   function layar(html) {
     let el = document.getElementById('skp-login');
     if (!el) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); el = document.createElement('div'); el.id = 'skp-login'; document.body.appendChild(el); }
-    el.innerHTML = `<div class="lg-latar" aria-hidden="true"><div class="lg-swoosh2"></div><div class="lg-swoosh"></div><div class="lg-bar"><i style="height:70px"></i><i style="height:105px"></i><i style="height:140px"></i><i style="height:175px"></i></div><div class="lg-hero"></div></div>
+    el.innerHTML = `<div class="lg-latar" aria-hidden="true"><div class="lg-swoosh2"></div><div class="lg-swoosh"></div><div class="lg-bar"><i style="height:70px"></i><i style="height:105px"></i><i style="height:140px"></i><i style="height:175px"></i></div><div class="lg-hero"></div><div class="lg-teks"><div class="t1">SAKTI</div><div class="t2">Sahabat Kinerja Terintegrasi</div><i></i><div class="t3">Asisten Cerdas Penyusunan<br>SKP Triwulanan BPS</div></div></div>
       <div class="lg-isi"><div class="kartu-login" role="dialog" aria-label="Masuk">
-      <img class="lg-logo" src="img/logo-bps.png?v=20" alt="Logo BPS"><h1>SKP Harian</h1><div class="sub">${esc(CFG.SUBJUDUL_LOGIN || 'BPS – Sasaran Kinerja Pegawai')}</div>
-      <div class="sambut">Selamat datang di aplikasi SKP<br>${esc(CFG.NAMA_INSTANSI || 'Badan Pusat Statistik')}</div>${html}</div></div>`;
+      <img class="lg-logo" src="img/logo-bps.png?v=20" alt="Logo BPS"><h1>SAKTI</h1><div class="sub">Sahabat Kinerja Terintegrasi</div>
+      <div class="sambut">Asisten Cerdas Penyusunan SKP Triwulanan BPS${CFG.NAMA_INSTANSI ? '<br><b>' + esc(CFG.NAMA_INSTANSI) + '</b>' : ''}</div>${html}</div></div>`;
     el.hidden = false; return el;
   }
   const pwField = (id, ac, ph = 'Password') => `<div class="fld"><span class="ic">${IKON.kunci}</span><input id="${id}" type="password" autocomplete="${ac}" required placeholder="${ph}" aria-label="${ph}"><button type="button" class="mata" data-lihat="${id}" aria-label="Tampilkan password">${IKON.tutup}</button></div>`;
@@ -376,7 +386,7 @@
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
-    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),
+    list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakRk: ids => proses('Menghapus ' + ids.length + ' RK…', () => db.hapusBanyakRk(ids), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),
     onChange: f => listeners.add(f),
     async profil() { return db.get('meta', 'profil'); },
     async hapusKegiatan(k) { return proses('Menghapus kegiatan…', async () => { for (const f of (k.fotoIds || [])) await db.del('foto', f); await db.del('kegiatan', k.id); }, 150); },

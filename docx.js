@@ -1,4 +1,4 @@
-/* SKP Harian — pembuat dokumen Word (.docx) langsung di browser, tanpa library luar */
+/* SAKTI — pembuat dokumen Word (.docx) langsung di browser, tanpa library luar */
 (function () {
   'use strict';
   const enc = new TextEncoder();

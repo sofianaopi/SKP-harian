@@ -1,8 +1,8 @@
 {
  "id": "index.html",
- "name": "SKP Harian – Dashboard",
- "short_name": "Dashboard SKP",
- "description": "Dashboard kinerja, target SKP, dan unduh laporan Word",
+ "name": "SAKTI – Sahabat Kinerja Terintegrasi",
+ "short_name": "SAKTI",
+ "description": "Asisten Cerdas Penyusunan SKP Triwulanan BPS",
  "start_url": "index.html",
  "scope": "./",
  "display": "standalone",

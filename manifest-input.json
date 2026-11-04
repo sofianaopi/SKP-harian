@@ -1,8 +1,8 @@
 {
  "id": "input.html",
- "name": "SKP Harian – Catat Kegiatan",
- "short_name": "Catat SKP",
- "description": "Catat kegiatan harian seperti chat WhatsApp",
+ "name": "SAKTI – Catat Kegiatan",
+ "short_name": "Catat SAKTI",
+ "description": "Catat kegiatan harian seperti chat WhatsApp — SAKTI",
  "start_url": "input.html",
  "scope": "./",
  "display": "standalone",

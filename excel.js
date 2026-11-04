@@ -1,4 +1,4 @@
-/* SKP Harian — input banyak kegiatan lewat Excel (impor), template, dan ekspor.
+/* SAKTI — input banyak kegiatan lewat Excel (impor), template, dan ekspor.
    Memakai SheetJS (vendor/xlsx.full.min.js, lisensi Apache-2.0) yang dimuat saat dibutuhkan. */
 (function () {
   'use strict';

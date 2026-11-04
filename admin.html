@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Admin Pegawai – SKP Harian</title>
+<title>Admin – SAKTI</title>
 <meta name="theme-color" content="#1F4E79">
 <link rel="icon" href="icons/dashboard-192.png">
 <style>
@@ -102,13 +102,13 @@
 <body>
 <header>
   <img src="icons/dashboard-192.png" alt="">
-  <h1>Admin SKP Harian<small id="hdrSub">SKP Harian</small></h1>
+  <h1>Admin SAKTI<small id="hdrSub">Sahabat Kinerja Terintegrasi</small></h1>
   <button id="btnKeluar" type="button">Keluar</button>
 </header>
 <nav class="tab" aria-label="Menu admin"><a href="#dashboard" data-r="dashboard">Dashboard</a><a href="#pengguna" data-r="pengguna">Pengguna</a><a href="#bidang" data-r="bidang">Bidang</a><a href="#rk" data-r="rk">RK &amp; IKI</a></nav>
 <main>
   <section id="v-dashboard" hidden>
-    <div class="kepala"><div style="flex:1"><h2>Monitoring pengisian SKP Harian</h2><p>Jumlah kegiatan yang dicatat setiap pegawai. Isi pekerjaan tetap hanya bisa dilihat oleh pegawai yang bersangkutan.</p></div><div class="bulan" id="bulan"></div></div>
+    <div class="kepala"><div style="flex:1"><h2>Monitoring pengisian kegiatan pegawai</h2><p>Jumlah kegiatan yang dicatat setiap pegawai. Isi pekerjaan tetap hanya bisa dilihat oleh pegawai yang bersangkutan.</p></div><div class="bulan" id="bulan"></div></div>
     <div class="ringkas">
       <div><b id="mAktif">0</b><span>pegawai aktif</span></div>
       <div><b id="mHari">0</b><span>mengisi hari ini</span><div class="progress"><i id="pHari"></i></div></div>
@@ -148,7 +148,7 @@
   </section>
   <section id="v-rk" hidden>
     <div class="kepala"><div style="flex:1"><h2>RK &amp; IKI</h2><p>Rencana Kinerja (RK) dan Indikator Kinerja Individu (IKI) yang ditambahkan di sini tampil untuk <b>semua pegawai</b> sesuai bidangnya, dan hanya bisa diubah oleh admin. Pegawai tetap bisa menambahkan RK sendiri bila belum ada di daftar.</p></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="rkaImpor">📥 Impor Excel</button><button class="btn" type="button" id="rkaEkspor">📤 Ekspor</button><button class="btn utama" type="button" id="rkaTambah">+ Tambah RK</button></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="rkaImpor">📥 Impor Excel</button><button class="btn" type="button" id="rkaEkspor">📤 Ekspor</button><button class="btn bahaya" type="button" id="rkaKosong">🗑 Hapus semua</button><button class="btn utama" type="button" id="rkaTambah">+ Tambah RK</button></div></div>
     <div class="kartu">
       <div class="alat"><input type="search" id="rkaCari" placeholder="Cari kata dalam RK atau IKI…" aria-label="Cari RK"><select id="rkaFBidang" aria-label="Saring bidang"></select></div>
       <div id="rkaRingkas" style="font-size:13px;color:var(--teks2);padding:10px 14px 0"></div>
@@ -587,6 +587,15 @@
       try { await S.del('rhk', r.id); rkA = rkA.filter(x => x !== r); renderRkA(); S.toast('RK dihapus'); } catch (x) { S.toast(x.message, 5000); }
     }
   });
+  /* Kosongkan RK sekaligus: menghapus semua RK yang sedang tampil (ikut saringan bidang & pencarian) */
+  const rkaTampil = () => { const f = $('rkaFBidang').value, q = $('rkaCari').value.trim().toLowerCase(); return rkA.filter(r => (!f || r.bidang === f) && (!q || ((r.nama || '') + ' ' + (r.indikator || '')).toLowerCase().includes(q))); };
+  $('rkaKosong').onclick = async () => {
+    const L = rkaTampil(); if (!L.length) { S.toast('Tidak ada RK yang dihapus'); return; }
+    const semua = L.length === rkA.length, f = $('rkaFBidang').value;
+    if (!await konfirmasiYa(semua ? 'Hapus SEMUA RK & IKI?' : 'Hapus ' + L.length + ' RK & IKI yang tampil?',
+      (semua ? 'Seluruh ' + L.length + ' RK & IKI dari admin' : L.length + ' RK & IKI' + (f ? ' bidang ' + f : '') + ' yang sedang tampil') + ' akan dihapus dari daftar semua pegawai. RK tambahan milik pegawai sendiri tidak ikut terhapus. Kegiatan pegawai tidak terhapus, tetapi yang terpasang ke RK ini menjadi "belum ber-RK". Tindakan ini tidak bisa dibatalkan — sebaiknya klik 📤 Ekspor dulu sebagai cadangan.', 'Ya, hapus ' + L.length + ' RK')) return;
+    try { await S.hapusBanyakRk(L.map(r => r.id)); const hapus = new Set(L); rkA = rkA.filter(r => !hapus.has(r)); renderRkA(); S.toast(L.length + ' RK & IKI dihapus', 4000); } catch (x) { S.toast(x.message, 5000); }
+  };
   $('rkaEkspor').onclick = async () => {
     if (!rkA.length) { S.toast('Belum ada RK'); return; }
     try { await unduhXlsx('RK_IKI_Bersama_SKP_Harian.xlsx', [['Bidang', 'RK', 'IKI']].concat(rkA.map(r => [r.bidang || '', r.nama || '', r.indikator || ''])), [14, 70, 70]); } catch (x) { S.toast(x.message, 5000); }
@@ -646,7 +655,7 @@
   $('btnKeluar').onclick = () => S.keluar();
 
   S.mulai({ admin: true }).then(async ({ uid, pegawai }) => { isiDlUnit();
-    sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SKP Harian');
+    sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'SAKTI');
     try { await muat(); } catch (x) { S.toast(x.message, 6000); }
     muatKop(); muatDrive(); route(); window.addEventListener('hashchange', route);
   });

@@ -1,4 +1,4 @@
-/* SKP Harian — panel pemilih RK (bukan dropdown): RK bidang terpilih tampil utuh beserta IKI, bisa dicari. */
+/* SAKTI — panel pemilih RK (bukan dropdown): RK bidang terpilih tampil utuh beserta IKI, bisa dicari. */
 (function () {
   'use strict';
   const S = window.SKP;
