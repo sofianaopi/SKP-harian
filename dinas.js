@@ -213,7 +213,8 @@
       }
       sb.pesan('Menyusun dokumen Word…');
       const p = C.profil();
-      const blob = await DOCX.laporanDinas({ template: await ambilTemplate(), jenis: l.jenis, nomor: l.nomor, tglSt: l.tglSt ? S.tglSedang(l.tglSt) : '', nama: p.nama || '',
+      const [kopD, footerD] = await Promise.all([S.get('meta', 'kop_dinas').catch(() => null), S.get('meta', 'footer_dinas').catch(() => null)]);
+      const blob = await DOCX.laporanDinas({ template: await ambilTemplate(), kop: kopD, footer: footerD, jenis: l.jenis, nomor: l.nomor, tglSt: l.tglSt ? S.tglSedang(l.tglSt) : '', nama: p.nama || '',
         periode: l.periode || periodeDari(l.isi.map(r => r.tanggal)),
         baris: l.isi.map(r => ({ tanggal: r.tanggal ? S.tglSedang(r.tanggal) : '', uraian: r.uraian, masalah: r.masalah, solusi: r.solusi })),
         tempatTgl: [l.tempat, l.tglLap ? S.tglSedang(l.tglLap) : ''].filter(Boolean).join(', '), jabatan: l.jabatan, ketua: l.ketua, petugas: p.nama || '', fotos });

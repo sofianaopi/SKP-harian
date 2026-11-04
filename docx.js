@@ -89,17 +89,23 @@
   const td = u => new TextDecoder().decode(u);
   const b64 = u => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
   const unb64 = s => { const b = atob(s); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
-  async function extractKop(buf) {
+  /* Ambil header (kop) atau footer dari dokumen Word, beserta gambar & gaya yang dipakai */
+  async function extractBagian(buf, jenis) {
+    const k = await extractKop(buf, jenis);
+    return { xml: k.headerXml, rels: k.hrels, media: k.media, styles: k.styles };
+  }
+  async function extractKop(buf, jenis = 'header') {
+    const tag = jenis === 'footer' ? 'footerReference' : 'headerReference', awalan = jenis === 'footer' ? 'ftr_' : 'kop_';
     const z = await readZip(buf);
     const doc = td(await z.get('word/document.xml'));
     const rels = td(await z.get('word/_rels/document.xml.rels'));
     const sects = doc.match(/<w:sectPr[\s\S]*?<\/w:sectPr>/g) || [];
     let hdrId = null, sect = null;
-    for (const sp of sects) { const m = sp.match(/<w:headerReference[^>]*w:type="default"[^>]*r:id="([^"]+)"/) || sp.match(/<w:headerReference[^>]*r:id="([^"]+)"[^>]*w:type="default"/); if (m) { hdrId = m[1]; sect = sp; break; } }
+    for (const sp of sects) { const m = sp.match(new RegExp('<w:' + tag + '[^>]*w:type="default"[^>]*r:id="([^"]+)"')) || sp.match(new RegExp('<w:' + tag + '[^>]*r:id="([^"]+)"[^>]*w:type="default"')); if (m) { hdrId = m[1]; sect = sp; break; } }
     sect = sect || sects[sects.length - 1] || '';
     const pgSz = (sect.match(/<w:pgSz[^>]*\/>/) || ['<w:pgSz w:w="11906" w:h="16838"/>'])[0];
     const pgMar = (sect.match(/<w:pgMar[^>]*\/>/) || ['<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/>'])[0];
-    if (!hdrId) throw new Error('Template tidak memiliki kop/header');
+    if (!hdrId) throw new Error(jenis === 'footer' ? 'Dokumen ini tidak memiliki footer. Isi footer di Word (Insert → Footer), simpan, lalu unggah lagi.' : 'Dokumen ini tidak memiliki kop/header. Isi kop di Word (Insert → Header), simpan, lalu unggah lagi.');
     const rel = rels.match(new RegExp('<Relationship[^>]*Id="' + hdrId + '"[^>]*>')) [0];
     const target = rel.match(/Target="([^"]+)"/)[1].replace(/^\/?word\//, '');
     const headerXml = td(await z.get('word/' + target));
@@ -108,9 +114,9 @@
     const media = [];
     for (const m of hrels.matchAll(/Target="(media\/[^"]+)"/g)) {
       const data = await z.get('word/' + m[1]); if (!data) continue;
-      const nm = 'kop_' + m[1].split('/').pop(); media.push({ name: nm, b64: b64(data) });
+      const nm = awalan + m[1].split('/').pop(); media.push({ name: nm, b64: b64(data) });
     }
-    hrels = hrels.replace(/Target="media\/([^"]+)"/g, 'Target="media/kop_$1"');
+    hrels = hrels.replace(/Target="media\/([^"]+)"/g, 'Target="media/' + awalan + '$1"');
     // gaya (style) yang dipakai kop, beserta induknya, agar ukuran huruf kop sama persis
     let styles = '';
     try {
@@ -394,7 +400,7 @@
     const sp0 = '<w:spacing w:after="0" w:line="240" w:lineRule="auto"/>';
     let b = '';
     // Judul
-    b += P(R('LAPORAN PERJALANAN DINAS ' + String(o.jenis || '').toUpperCase(), 20), sp0 + '<w:jc w:val="right"/>');
+    b += P(R('LAPORAN PERJALANAN DINAS ' + String(o.jenis || '').toUpperCase(), 20), '<w:spacing w:before="240" w:after="0" w:line="240" w:lineRule="auto"/><w:jc w:val="right"/>');
     b += P('', sp0);
     // Identitas
     [['Nomor Surat Tugas', o.nomor], ['Tanggal Surat Tugas', o.tglSt], ['Nama Petugas', o.nama], ['Periode Penugasan', o.periode]].forEach(([l, v]) =>
@@ -456,15 +462,37 @@
       if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
       o._media = media;
     }
-    const doc = asli.replace(/<w:p><w:r><w:t>\{\{ISI\}\}<\/w:t><\/w:r><\/w:p>/, b);
+    let doc = asli.replace(/<w:p><w:r><w:t>\{\{ISI\}\}<\/w:t><\/w:r><\/w:p>/, b);
+    // Kop & footer unggahan admin (khusus laporan perjalanan dinas)
+    const ganti = {}, tambahMedia = [];
+    const pasangMedia = list => (list || []).forEach(md => { tambahMedia.push({ name: 'word/media/' + md.name, data: unb64(md.b64) }); const e = md.name.split('.').pop().toLowerCase(); if (!new RegExp('Extension="' + e + '"', 'i').test(ct)) ct = ct.replace('<Default ', `<Default Extension="${e}" ContentType="${MIME[e] || 'application/octet-stream'}"/><Default `); });
+    let gayaTambah = '';
+    if (o.kop && o.kop.xml) {
+      const m = rels.match(/<Relationship [^>]*\/header"[^>]*>/); const tgt = m && (m[0].match(/Target="([^"]+)"/) || [])[1];
+      if (tgt) { const hn = 'word/' + tgt.replace(/^\/?word\//, ''); ganti[hn] = o.kop.xml; ganti['word/_rels/' + hn.split('/').pop() + '.rels'] = o.kop.rels || '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>'; pasangMedia(o.kop.media); gayaTambah += o.kop.styles || ''; }
+    }
+    if (o.footer && o.footer.xml) {
+      ganti['word/footer_dinas.xml'] = o.footer.xml; ganti['word/_rels/footer_dinas.xml.rels'] = o.footer.rels || '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>';
+      rels = rels.replace('</Relationships>', '<Relationship Id="rIdFooterDinas" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer_dinas.xml"/></Relationships>');
+      ct = ct.replace('</Types>', '<Override PartName="/word/footer_dinas.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>');
+      doc = doc.replace(/<w:footerReference[^>]*\/>/g, '').replace(/(<w:headerReference[^>]*\/>)/, '$1<w:footerReference w:type="default" r:id="rIdFooterDinas"/>');
+      pasangMedia(o.footer.media); gayaTambah += o.footer.styles || '';
+    }
+    if (gayaTambah) {
+      const st = td(await z.get('word/styles.xml'));
+      const tambah = (gayaTambah.match(/<w:style [\s\S]*?<\/w:style>/g) || []).filter((g, i, arr) => { const id = (g.match(/w:styleId="([^"]+)"/) || [])[1]; return id && !st.includes('w:styleId="' + id + '"') && arr.findIndex(y => y.includes('w:styleId="' + id + '"')) === i; }).join('');
+      if (tambah) ganti['word/styles.xml'] = st.replace('</w:styles>', tambah + '</w:styles>');
+    }
     const files = [];
     for (const n of z.names) {
       if (n === 'word/document.xml') files.push({ name: n, data: doc });
       else if (n === 'word/_rels/document.xml.rels') files.push({ name: n, data: rels });
       else if (n === '[Content_Types].xml') files.push({ name: n, data: ct });
+      else if (ganti[n] != null) { files.push({ name: n, data: ganti[n] }); delete ganti[n]; }
       else if (!n.endsWith('/')) files.push({ name: n, data: await z.get(n) });
     }
-    return zip(files.concat(o._media || []));
+    Object.entries(ganti).forEach(([n, d]) => files.push({ name: n, data: d }));
+    return zip(files.concat(o._media || [], tambahMedia));
   }
-  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, buktiDukung, laporanDinas, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
+  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, extractBagian, buktiDukung, laporanDinas, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
 })();

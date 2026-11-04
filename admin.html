@@ -121,11 +121,24 @@
       <div class="tabel-wrap"><table><thead><tr><th>Nama</th><th>NIP baru</th><th>Unit kerja</th><th class="num">Hari terisi</th><th class="num">Kegiatan</th><th class="num">Foto</th><th>Terakhir mengisi</th><th>Hari ini</th></tr></thead><tbody id="tblRekap"></tbody></table></div>
     </div>
     <div class="kartu" style="padding:16px 18px;max-width:760px">
-      <h3 style="margin:0 0 6px;font-size:16px">Kop surat dokumen</h3>
+      <h3 style="margin:0 0 6px;font-size:16px">Kop surat dokumen Bukti Dukung</h3>
       <p style="margin:0 0 12px;font-size:13.5px;color:var(--teks2)">Kop dipakai di semua dokumen Bukti Dukung pegawai. Unggah dokumen Word (.docx) kantor yang sudah berisi kop di bagian header. Bila belum diunggah, dipakai kop bawaan cetakan.</p>
       <div id="kopInfo" class="kop-prev" style="font-size:13.5px;margin-bottom:12px"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn utama" id="btnKop" type="button">Unggah kop (.docx)</button><button class="btn bahaya" id="btnKopHapus" type="button" hidden>Kembali ke kop bawaan</button></div>
       <input type="file" id="fileKop" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+    </div>
+    <div class="kartu" style="padding:16px 18px;max-width:760px;margin-top:16px">
+      <h3 style="margin:0 0 6px;font-size:16px">Kop &amp; footer Laporan Perjalanan Dinas</h3>
+      <p style="margin:0 0 12px;font-size:13.5px;color:var(--teks2)">Dipakai di semua Laporan Perjalanan Dinas (pengawasan / pendataan lapangan) pegawai. Unggah dokumen Word (.docx) yang berisi kop di bagian <b>header</b>, dan dokumen yang berisi <b>footer</b> — boleh dokumen yang sama. Bila belum diunggah, dipakai kop bawaan BPS Kota Kendari tanpa footer.</p>
+      <div class="sd-baris" style="border-top:1px solid var(--garis);padding:12px 0">
+        <b style="font-size:14px">Kop (header)</b><div id="kopDinasInfo" class="kop-prev" style="font-size:13.5px;margin:6px 0 10px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn utama" id="btnKopDinas" type="button">Unggah kop (.docx)</button><button class="btn bahaya" id="btnKopDinasHapus" type="button" hidden>Kembali ke kop bawaan</button></div>
+      </div>
+      <div class="sd-baris" style="border-top:1px solid var(--garis);padding:12px 0 0">
+        <b style="font-size:14px">Footer</b><div id="footerDinasInfo" class="kop-prev" style="font-size:13.5px;margin:6px 0 10px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn utama" id="btnFooterDinas" type="button">Unggah footer (.docx)</button><button class="btn bahaya" id="btnFooterDinasHapus" type="button" hidden>Hapus footer</button></div>
+      </div>
+      <input type="file" id="fileSuratDinas" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
     </div>
     <div class="kartu" style="padding:16px 18px;max-width:760px;margin-top:16px">
       <h3 style="margin:0 0 6px;font-size:16px">☁ Penyimpanan Google Drive</h3>
@@ -457,6 +470,26 @@
     try { await S.proses('Memasang kop surat…', async () => { const k = await DOCX.extractKop(await f.arrayBuffer()); k.id = 'kop'; k.nama = f.name; await S.put('meta', k); kop = k; renderKop(); }); S.toast('Kop surat dipasang untuk semua pegawai'); }
     catch (x) { S.toast('Gagal membaca dokumen: ' + (x && x.message || x), 5000); }
   };
+  /* ---------- Kop & footer Laporan Perjalanan Dinas ---------- */
+  const SD = { kop_dinas: { label: 'Kop', info: 'kopDinasInfo', hapus: 'btnKopDinasHapus', jenis: 'header', kosong: 'Memakai kop bawaan (BPS Kota Kendari).' },
+               footer_dinas: { label: 'Footer', info: 'footerDinasInfo', hapus: 'btnFooterDinasHapus', jenis: 'footer', kosong: 'Belum ada footer.' } };
+  const nilaiSD = {}; let sdAktif = null;
+  const teksPratinjau = xml => String(xml || '').replace(/<w:tab\/>/g, ' ').replace(/<\/w:p>/g, ' · ').replace(/<[^>]+>/g, '').replace(/\s*·\s*(·\s*)+/g, ' · ').replace(/^[\s·]+|[\s·]+$/g, '').slice(0, 160);
+  function renderSD() {
+    Object.entries(SD).forEach(([k, c]) => { const v = nilaiSD[k];
+      $(c.info).innerHTML = v ? `✅ ${c.label} terpasang dari <b>${S.esc(v.nama || 'dokumen')}</b>${teksPratinjau(v.xml) ? `<div style="color:var(--teks2);margin-top:4px">“${S.esc(teksPratinjau(v.xml))}”</div>` : ''}<div style="margin-top:8px">${(v.media || []).filter(m => /\.(png|jpe?g|gif)$/i.test(m.name)).map(m => `<img src="data:${/png$/i.test(m.name) ? 'image/png' : 'image/jpeg'};base64,${m.b64}" alt="">`).join('')}</div>` : `<span style="color:var(--teks2)">${c.kosong}</span>`;
+      $(c.hapus).hidden = !v; });
+  }
+  async function muatSD() { for (const k of Object.keys(SD)) { try { nilaiSD[k] = await S.get('meta', k); } catch (x) { nilaiSD[k] = null; } } renderSD(); }
+  $('btnKopDinas').onclick = () => { sdAktif = 'kop_dinas'; $('fileSuratDinas').click(); };
+  $('btnFooterDinas').onclick = () => { sdAktif = 'footer_dinas'; $('fileSuratDinas').click(); };
+  $('fileSuratDinas').onchange = async () => {
+    const f = $('fileSuratDinas').files[0]; $('fileSuratDinas').value = ''; if (!f || !sdAktif) return; const k = sdAktif, c = SD[k];
+    try { await S.proses('Memasang ' + c.label.toLowerCase() + ' laporan perjalanan dinas…', async () => { const v = await DOCX.extractBagian(await f.arrayBuffer(), c.jenis); v.id = k; v.nama = f.name; await S.put('meta', v); nilaiSD[k] = v; renderSD(); }); S.toast(c.label + ' Laporan Perjalanan Dinas dipasang untuk semua pegawai'); }
+    catch (x) { S.toast('Gagal membaca dokumen: ' + (x && x.message || x), 6000); }
+  };
+  Object.entries(SD).forEach(([k, c]) => $(c.hapus).onclick = async () => { try { await S.del('meta', k); nilaiSD[k] = null; renderSD(); S.toast(c.label + ' laporan perjalanan dinas dihapus'); } catch (x) { S.toast(x.message); } });
+
   $('btnKopHapus').onclick = async () => { try { await S.del('meta', 'kop'); kop = null; renderKop(); S.toast('Kembali memakai kop bawaan'); } catch (x) { S.toast(x.message); } };
 
   /* ---------- Google Drive ---------- */
@@ -657,7 +690,7 @@
   S.mulai({ admin: true }).then(async ({ uid, pegawai }) => { isiDlUnit();
     sayaId = uid; $('hdrSub').textContent = pegawai.nama + ' · ' + (S.config.NAMA_INSTANSI || 'BPS Kota Kendari');
     try { await muat(); } catch (x) { S.toast(x.message, 6000); }
-    muatKop(); muatDrive(); route(); window.addEventListener('hashchange', route);
+    muatKop(); muatSD(); muatDrive(); route(); window.addEventListener('hashchange', route);
   });
 })();
 </script>
