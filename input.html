@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Catat SAKTI">
 <link rel="manifest" href="manifest-input.json">
-<link rel="icon" href="icons/input-192.png">
-<link rel="apple-touch-icon" href="icons/input-192.png">
+<link rel="icon" href="icons/input-192.png?v=2">
+<link rel="apple-touch-icon" href="icons/input-192.png?v=2">
 <style>
   :root { --hijau:#008069; --hijau-tua:#005c4b; --kirim:#00a884; --gel:#d9fdd3; --bg:#efeae2; --teks:#111b21; --abu:#667781; --biru:#53bdeb; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -21,6 +21,14 @@
   .ikon-btn { background: none; border: 0; color: inherit; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; text-decoration: none; }
   .ikon-btn:active { background: rgba(255,255,255,.15); }
   .ikon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+  #menuAkun { position: fixed; top: calc(52px + env(safe-area-inset-top)); right: 8px; z-index: 60; background: #fff; color: #111b21; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); min-width: 230px; padding: 6px 0; }
+  #menuAkun[hidden] { display: none; }
+  #menuAkun .ma-akun { padding: 8px 16px 10px; border-bottom: 1px solid #e9edef; margin-bottom: 4px; }
+  #menuAkun .ma-akun b { display: block; font-size: 14.5px; } #menuAkun .ma-akun small { color: #667781; font-size: 12.5px; }
+  #menuAkun a, #menuAkun button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 16px; border: 0; background: none; font: inherit; font-size: 15px; color: inherit; text-decoration: none; cursor: pointer; text-align: left; }
+  #menuAkun a:active, #menuAkun button:active, #menuAkun a:hover, #menuAkun button:hover { background: #f0f2f5; }
+  #menuAkun svg { width: 20px; height: 20px; fill: #54656f; flex-shrink: 0; }
+  #menuAkun .keluar { color: #b42318; border-top: 1px solid #e9edef; margin-top: 4px; } #menuAkun .keluar svg { fill: #b42318; }
   .avatar { width: 40px; height: 40px; border-radius: 50%; background: #dfe5e7; color: var(--hijau); display: grid; place-items: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
   .judul { flex: 1; min-width: 0; line-height: 1.2; }
   .judul b { display: block; font-size: 17px; font-weight: 600; }
@@ -107,13 +115,20 @@
 <body>
 <header>
   <a class="ikon-btn" href="index.html" title="Buka Dashboard" aria-label="Buka Dashboard"><svg viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg></a>
-  <div class="avatar">SKP</div>
+  <img class="avatar" src="icons/input-192.png?v=2" alt="" style="background:#fff;object-fit:cover">
   <div class="judul"><b>Catatan Kegiatan</b><small id="sub">memuat…</small></div>
   <button class="ikon-btn" id="pasang" title="Pasang aplikasi" aria-label="Pasang aplikasi"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
   <button class="ikon-btn" id="btnExcel" title="Input banyak dari Excel" aria-label="Input banyak dari Excel"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM9 17H6v-2h3v2zm0-4H6v-2h3v2zm0-4H6V7h3v2zm9 8h-7v-2h7v2zm0-4h-7v-2h7v2zm0-4h-7V7h7v2z"/></svg></button>
   <button class="ikon-btn" id="btnTgl" title="Catat untuk tanggal lain" aria-label="Pilih tanggal"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></svg></button>
+  <button class="ikon-btn" id="btnMenu" title="Menu" aria-label="Menu" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button>
   <input type="date" id="tglPick" aria-hidden="true" tabindex="-1">
 </header>
+<div id="menuAkun" role="menu" hidden>
+  <div class="ma-akun"><b id="maNama">—</b><small id="maNip"></small></div>
+  <a role="menuitem" href="index.html"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Buka Dashboard</a>
+  <a role="menuitem" href="index.html#profil"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>Profil &amp; ganti password</a>
+  <button type="button" role="menuitem" id="maKeluar" class="keluar"><svg viewBox="0 0 24 24"><path d="M10 17l1.4-1.4L8.8 13H20v-2H8.8l2.6-2.6L10 7l-5 5 5 5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5z"/></svg>Keluar (sign out)</button>
+</div>
 
 <main id="chat" aria-live="polite"></main>
 
@@ -329,6 +344,14 @@
   S.onChange(segarkan);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   S.registerSW();
+  /* Menu ⋮: akun, dashboard, profil, keluar */
+  const menuAkun = $('menuAkun');
+  const tutupMenu = () => { menuAkun.hidden = true; $('btnMenu').setAttribute('aria-expanded', 'false'); };
+  $('btnMenu').onclick = e => { e.stopPropagation(); const buka = menuAkun.hidden; menuAkun.hidden = !buka; $('btnMenu').setAttribute('aria-expanded', String(buka));
+    if (buka) { const s = S.saya || {}; $('maNama').textContent = s.nama || '—'; $('maNip').textContent = s.nip_baru || s.nip || ''; } };
+  document.addEventListener('click', e => { if (!menuAkun.hidden && !menuAkun.contains(e.target)) tutupMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') tutupMenu(); });
+  $('maKeluar').onclick = () => { tutupMenu(); if (confirm('Keluar dari akun ini?')) S.keluar(); };
   S.mulai().then(({ pegawai }) => { if (pegawai.peran === 'admin') { location.replace('admin.html'); return; } masuk = true; return muat(); }).catch(e => S.toast(e.message, 6000));
 })();
 </script>
