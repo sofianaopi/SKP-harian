@@ -53,6 +53,18 @@
   .ikon svg { width: 18px; height: 18px; fill: currentColor; display: block; }
   .bidang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .rk-tbl td { vertical-align: top; line-height: 1.4; } .rk-tbl .rk-nm { font-weight: 600; } .rk-tbl .iki { color: var(--teks2); } .rk-tbl mark { background: #fff1a8; padding: 0; }
+  .rk-baris { cursor: pointer; } .rk-baris:hover td { background: #f4f8fd; } .rk-baris.buka td { background: #eef5fc; border-bottom-color: transparent; }
+  .rk-panah { display: inline-block; width: 22px; height: 22px; border-radius: 6px; text-align: center; line-height: 22px; color: #2E75B6; transition: transform .15s; } .rk-baris.buka .rk-panah { transform: rotate(90deg); }
+  .rk-jml { display: inline-block; font-size: 12px; font-weight: 600; color: #1F4E79; background: #e8f0fa; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .rk-detail > td { background: #f7fafd; padding: 0 12px 12px 52px !important; }
+  .iki-list { list-style: none; margin: 0; padding: 0; border: 1px solid #dde7f2; border-radius: 10px; background: #fff; overflow: hidden; }
+  .iki-list li { display: flex; gap: 12px; align-items: flex-start; padding: 9px 12px; border-top: 1px solid #edf1f6; font-size: 13.5px; line-height: 1.45; }
+  .iki-list li:first-child { border-top: 0; } .iki-list .iki-no { flex: 0 0 auto; font-weight: 700; color: #2E75B6; min-width: 40px; } .iki-list .iki-t { flex: 1; } .iki-list .iki-a { flex: 0 0 auto; white-space: nowrap; } .iki-list .iki-a .btn { padding: 5px 10px; font-size: 12.5px; }
+  .iki-tambah { margin-top: 8px; border: 1px dashed #9cbad9; background: none; color: #1F4E79; border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .pager { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px 4px; font-size: 13px; color: var(--teks2); }
+  .pg-nav { display: flex; gap: 4px; flex-wrap: wrap; } .pg-nav button { min-width: 34px; height: 34px; border: 1px solid #d5dfea; background: #fff; border-radius: 8px; font: inherit; font-weight: 600; color: #1F4E79; cursor: pointer; }
+  .pg-nav button.aktif { background: #1F4E79; border-color: #1F4E79; color: #fff; } .pg-nav button:disabled { opacity: .4; cursor: default; } .pg-titik { padding: 0 4px; line-height: 34px; }
+  @media (max-width: 640px) { .rk-detail > td { padding-left: 12px !important; } .iki-list li { flex-wrap: wrap; } .iki-list .iki-t { flex-basis: calc(100% - 52px); } }
   .rk-tbl .aks { white-space: nowrap; text-align: right; } .rk-tbl .aks .btn { padding: 5px 10px; font-size: 12.5px; }
   #mRkA textarea { width: 100%; box-sizing: border-box; min-height: 74px; padding: 10px 11px; border: 1px solid #cfd7e0; border-radius: 9px; font: inherit; resize: vertical; }
   .bd-tambah { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; } .bd-tambah input { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #cfd7e0; border-radius: 9px; font: inherit; }
@@ -165,7 +177,8 @@
     <div class="kartu">
       <div class="alat"><input type="search" id="rkaCari" placeholder="Cari kata dalam RK atau IKI…" aria-label="Cari RK"><select id="rkaFBidang" aria-label="Saring bidang"></select></div>
       <div id="rkaRingkas" style="font-size:13px;color:var(--teks2);padding:10px 14px 0"></div>
-      <div class="tabel-wrap"><table class="rk-tbl"><thead><tr><th style="width:40px">No</th><th style="width:120px">Bidang</th><th>Rencana Kinerja (RK)</th><th>Indikator Kinerja Individu (IKI)</th><th style="width:130px"></th></tr></thead><tbody id="rkaTbl"></tbody></table></div>
+      <div class="tabel-wrap"><table class="rk-tbl"><thead><tr><th style="width:40px">No</th><th style="width:130px">Bidang</th><th>Rencana Kinerja (RK) <span style="font-weight:400;text-transform:none;letter-spacing:0">— klik untuk melihat IKI</span></th><th style="width:90px">IKI</th><th style="width:40px"></th></tr></thead><tbody id="rkaTbl"></tbody></table></div>
+      <div class="pager" id="rkaPager"></div>
     </div>
   </section>
   <section id="v-bidang" hidden>
@@ -586,17 +599,29 @@
     const rows = rkA.map((r, i) => ({ r, no: i + 1 })).filter(x => (!f.value || x.r.bidang === f.value) && (!q || ((x.r.nama || '') + ' ' + (x.r.indikator || '')).toLowerCase().includes(q)));
     const perB = S.bidangDari(rkA.map(r => r.bidang)).map(b => [b, rkA.filter(r => r.bidang === b).length]).filter(x => x[1]);
     $('rkaRingkas').textContent = rkA.length ? new Set(rkA.map(r => (r.bidang || '') + '|' + kunciRk(r.nama))).size + ' RK, ' + rkA.length + ' IKI · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') : '';
-    $('rkaTbl').innerHTML = rows.length ? kelompokRkA(rows).map(x => `<tr data-id="${x.r.id}"><td>${x.no}</td>${x.span === 0 ? '' : `<td rowspan="${x.span}"><b>${S.esc(x.r.bidang || '—')}</b></td><td class="rk-nm" rowspan="${x.span}">${tandaiA(x.r.nama, q)}${x.span > 1 ? `<div style="font-size:11px;font-weight:600;color:#2E75B6;margin-top:3px">${x.span} IKI</div>` : ''}</td>`}<td class="iki">${tandaiA(x.r.indikator, q) || '—'}</td>
-      <td class="aks"><button class="btn" type="button" data-rka-ubah>Ubah</button> <button class="btn bahaya" type="button" data-rka-hapus>Hapus</button></td></tr>`).join('')
+    // satu baris per RK; IKI tampil saat RK diklik; 20 RK per halaman
+    const grup = S.kelompokRk(rkA.filter(r => !f.value || r.bidang === f.value)).filter(g => !q || g.nama.toLowerCase().includes(q) || g.iki.some(r => (r.indikator || '').toLowerCase().includes(q))); rkaGrup = grup;
+    const totHal = Math.max(1, Math.ceil(grup.length / RKA_PER_HAL)); if (rkaHal > totHal) rkaHal = totHal; if (rkaHal < 1) rkaHal = 1;
+    const awal = (rkaHal - 1) * RKA_PER_HAL;
+    $('rkaTbl').innerHTML = grup.length ? grup.slice(awal, awal + RKA_PER_HAL).map((g, i) => {
+      const buka = rkaBuka.has(g.kunci) || (!!q && !rkaTutup.has(g.kunci) && !kunciRk(g.nama).includes(q) && g.iki.some(r => kunciRk(r.indikator).includes(q)));
+      return `<tr class="rk-baris${buka ? ' buka' : ''}" data-grup="${S.esc(g.kunci)}" tabindex="0" aria-expanded="${buka}"><td>${awal + i + 1}</td><td><b>${S.esc(g.bidang || '—')}</b></td><td class="rk-nm">${tandaiA(g.nama, q)}</td><td><span class="rk-jml">${g.iki.length} IKI</span></td><td><span class="rk-panah" aria-hidden="true">›</span></td></tr>` +
+        (buka ? `<tr class="rk-detail"><td colspan="5"><ul class="iki-list">${g.iki.map((r, n) => `<li data-id="${r.id}"><span class="iki-no">IKI ${n + 1}</span><span class="iki-t">${tandaiA(r.indikator, q) || '<i style="color:var(--teks2)">(IKI belum diisi)</i>'}</span><span class="iki-a"><button class="btn" type="button" data-rka-ubah>Ubah</button> <button class="btn bahaya" type="button" data-rka-hapus>Hapus</button></span></li>`).join('')}</ul>
+          <button type="button" class="iki-tambah" data-tambahiki="${S.esc(g.kunci)}">+ Tambah IKI untuk RK ini</button></td></tr>` : '');
+    }).join('')
       : `<tr><td colspan="5" style="padding:18px;color:var(--teks2);text-align:center">${rkA.length ? 'Tidak ada RK yang cocok.' : 'Belum ada RK. Klik “+ Tambah RK”, atau “📥 Impor Excel” untuk memasukkan banyak RK sekaligus.'}</td></tr>`;
+    S.pager($('rkaPager'), rkaHal, totHal, grup.length, 'RK', RKA_PER_HAL);
   }
-  $('rkaCari').oninput = renderRkA; $('rkaFBidang').onchange = renderRkA;
-  function bukaRkA(r) {
+  const RKA_PER_HAL = 20; let rkaHal = 1, rkaGrup = []; const rkaBuka = new Set(), rkaTutup = new Set();
+  $('rkaPager').addEventListener('click', e => { const b = e.target.closest('[data-hal]'); if (!b || b.disabled) return; rkaHal = +b.dataset.hal; renderRkA(); $('v-rk').scrollIntoView({ block: 'start' }); });
+  $('rkaCari').oninput = () => { rkaHal = 1; rkaTutup.clear(); renderRkA(); }; $('rkaFBidang').onchange = () => { rkaHal = 1; renderRkA(); };
+  function bukaRkA(r, preset) {
     rkAEdit = r; $('rkaJ').textContent = r ? 'Ubah RK' : 'Tambah RK';
     $('rkaBidang').innerHTML = '<option value="">— pilih bidang —</option>' + S.bidangDari(r && r.bidang).map(b => `<option>${S.esc(b)}</option>`).join('');
     $('rkaBidang').value = r ? (r.bidang || '') : ($('rkaFBidang').value || '');
     $('rkaNama').value = r ? r.nama : ''; $('rkaIki').value = r ? (r.indikator || '') : '';
-    $('mRkA').classList.add('on'); setTimeout(() => $(r ? 'rkaNama' : 'rkaBidang').focus(), 50);
+    if (preset) { $('rkaBidang').innerHTML = '<option value="">— pilih bidang —</option>' + S.bidangDari(preset.bidang).map(b => `<option>${S.esc(b)}</option>`).join(''); $('rkaBidang').value = preset.bidang || ''; $('rkaNama').value = preset.nama || ''; $('rkaJ').textContent = 'Tambah IKI'; }
+    $('mRkA').classList.add('on'); setTimeout(() => $(preset ? 'rkaIki' : r ? 'rkaNama' : 'rkaBidang').focus(), 50);
   }
   $('rkaTambah').onclick = () => bukaRkA(null);
   $('rkaBatal').onclick = () => $('mRkA').classList.remove('on');
@@ -613,13 +638,16 @@
     finally { $('rkaSimpan').disabled = false; }
   };
   $('rkaTbl').addEventListener('click', async e => {
-    const tr = e.target.closest('tr[data-id]'); if (!tr) return; const r = rkA.find(x => x.id === tr.dataset.id); if (!r) return;
+    const tg = e.target.closest('tr.rk-baris'); if (tg) { const k = tg.dataset.grup; if (tg.classList.contains('buka')) { rkaBuka.delete(k); rkaTutup.add(k); } else { rkaBuka.add(k); rkaTutup.delete(k); } renderRkA(); return; }
+    const ti = e.target.closest('[data-tambahiki]'); if (ti) { const g = rkaGrup.find(x => x.kunci === ti.dataset.tambahiki); if (g) bukaRkA(null, { bidang: g.bidang, nama: g.nama }); return; }
+    const tr = e.target.closest('li[data-id]'); if (!tr) return; const r = rkA.find(x => x.id === tr.dataset.id); if (!r) return;
     if (e.target.closest('[data-rka-ubah]')) bukaRkA(r);
     else if (e.target.closest('[data-rka-hapus]')) {
       if (!await konfirmasiYa('Hapus RK ini?', (r.nama || '').slice(0, 160) + ' — RK hilang dari daftar semua pegawai. Kegiatan pegawai yang sudah dipasangkan ke RK ini tidak terhapus, tetapi menjadi "belum ber-RK".', 'Ya, hapus RK')) return;
       try { await S.del('rhk', r.id); rkA = rkA.filter(x => x !== r); renderRkA(); S.toast('RK dihapus'); } catch (x) { S.toast(x.message, 5000); }
     }
   });
+  $('rkaTbl').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr.rk-baris')) { e.preventDefault(); e.target.click(); } });
   /* Kosongkan RK sekaligus: menghapus semua RK yang sedang tampil (ikut saringan bidang & pencarian) */
   const rkaTampil = () => { const f = $('rkaFBidang').value, q = $('rkaCari').value.trim().toLowerCase(); return rkA.filter(r => (!f || r.bidang === f) && (!q || ((r.nama || '') + ' ' + (r.indikator || '')).toLowerCase().includes(q))); };
   $('rkaKosong').onclick = async () => {

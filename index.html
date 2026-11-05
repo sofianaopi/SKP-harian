@@ -114,6 +114,19 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   .bawah-nav { display: none; }
   .rk-tabel td { vertical-align: top; } .rk-tabel .rk-teks { font-weight: 600; line-height: 1.4; } .rk-tabel .iki { color: var(--teks2); line-height: 1.4; }
   .rk-tabel mark { background: #fff1a8; padding: 0; }
+  .rk-baris { cursor: pointer; } .rk-baris:hover td { background: #f4f8fd; } .rk-baris.buka td { background: #eef5fc; border-bottom-color: transparent; }
+  .rk-baris .rk-teks { font-weight: 600; line-height: 1.4; } .rk-panah { display: inline-block; width: 22px; height: 22px; border-radius: 6px; text-align: center; line-height: 22px; color: #2E75B6; transition: transform .15s; }
+  .rk-baris.buka .rk-panah { transform: rotate(90deg); } .rk-jml { display: inline-block; font-size: 12px; font-weight: 600; color: #1F4E79; background: #e8f0fa; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .rk-detail > td { background: #f7fafd; padding: 0 12px 12px 56px !important; }
+  .iki-list { list-style: none; margin: 0; padding: 0; border: 1px solid #dde7f2; border-radius: 10px; background: #fff; overflow: hidden; }
+  .iki-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-top: 1px solid #edf1f6; font-size: 13.5px; line-height: 1.45; }
+  .iki-list li:first-child { border-top: 0; } .iki-list .iki-no { flex: 0 0 auto; font-weight: 700; color: #2E75B6; min-width: 40px; } .iki-list .iki-t { flex: 1; }
+  .iki-list .iki-k { flex: 0 0 auto; font-size: 12px; color: var(--teks2); white-space: nowrap; } .iki-list .iki-a { flex: 0 0 auto; white-space: nowrap; }
+  .iki-tambah { margin-top: 8px; border: 1px dashed #9cbad9; background: none; color: #1F4E79; border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .pager { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 18px 16px; font-size: 13px; color: var(--teks2); }
+  .pg-nav { display: flex; gap: 4px; flex-wrap: wrap; } .pg-nav button { min-width: 34px; height: 34px; border: 1px solid #d5dfea; background: #fff; border-radius: 8px; font: inherit; font-weight: 600; color: #1F4E79; cursor: pointer; }
+  .pg-nav button.aktif { background: #1F4E79; border-color: #1F4E79; color: #fff; } .pg-nav button:disabled { opacity: .4; cursor: default; } .pg-titik { padding: 0 4px; line-height: 34px; }
+  @media (max-width: 640px) { .rk-detail > td { padding-left: 12px !important; } .iki-list li { flex-wrap: wrap; } .iki-list .iki-t { flex-basis: calc(100% - 52px); } }
   .rk-tabel td[rowspan] { background: #fbfcfe; } .rk-n { font-size: 11px; font-weight: 600; color: #2E75B6; margin-top: 3px; }
   .rk-admin { display: inline-block; font-size: 11.5px; font-weight: 600; color: #1F4E79; background: #e8f0fa; border-radius: 6px; padding: 3px 7px; } .rk-dari { font-size: 11px; color: #2E75B6; margin-top: 2px; }
   .rk-pilih { display: block; width: 100%; min-width: 200px; max-width: 320px; text-align: left; font: inherit; font-size: 12.5px; line-height: 1.35; padding: 6px 8px; border: 1px solid #cfd7e0; border-radius: 8px; background: #fff; cursor: pointer; color: var(--teks); }
@@ -238,7 +251,8 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
             <button class="btn" type="button" id="rkImpor">📥 Impor Excel</button><button class="btn" type="button" id="rkEkspor">📤 Ekspor</button><button class="btn" type="button" id="rkKosong" style="color:#b42318">🗑 Hapus RK saya</button><button class="btn utama" type="button" id="rkTambah">+ Tambah RK</button></div>
           <div id="rkRingkas" style="font-size:13px;color:var(--teks2);margin:-4px 0 10px"></div>
         </div>
-        <div class="tabel-wrap"><table class="t rk-tabel"><thead><tr><th style="width:44px">No</th><th style="width:120px">Bidang</th><th>Rencana Kinerja (RK)</th><th>Indikator Kinerja Individu (IKI)</th><th class="num" style="width:80px">Kegiatan</th><th style="width:76px"></th></tr></thead><tbody id="rkTbl"></tbody></table></div>
+        <div class="tabel-wrap"><table class="t rk-tabel"><thead><tr><th style="width:44px">No</th><th style="width:130px">Bidang</th><th>Rencana Kinerja (RK) <span style="font-weight:400;text-transform:none;letter-spacing:0">— klik untuk melihat IKI</span></th><th style="width:90px">IKI</th><th class="num" style="width:80px">Kegiatan</th><th style="width:40px"></th></tr></thead><tbody id="rkTbl"></tbody></table></div>
+        <div class="pager" id="rkPager"></div>
       </div>
     </section>
 
@@ -449,19 +463,33 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     const nAdm = rhkList.filter(r => r.bersama).length;
     const nRk = new Set(rhkList.map(r => (r.bidang || '') + '|' + kunciRk(r.nama))).size;
     $('rkRingkas').textContent = rhkList.length ? nRk + ' RK, ' + rhkList.length + ' IKI' + (nAdm ? ' (' + nAdm + ' dari admin, ' + (rhkList.length - nAdm) + ' tambahan Anda)' : '') + ' · ' + perB.map(x => x[0] + ' ' + x[1]).join(' · ') + (rhkList.some(r => !r.bidang) ? ' · tanpa bidang ' + rhkList.filter(r => !r.bidang).length : '') : '';
-    $('rkTbl').innerHTML = rows.length ? kelompokRk(rows).map(x => `<tr data-id="${x.r.id}"${x.span === 0 ? ' class="rk-lanjut"' : ''}><td>${x.no}</td>${x.span === 0 ? '' : `<td rowspan="${x.span}">${x.r.bidang ? '<b>' + S.esc(x.r.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}${x.r.bersama ? '<div class="rk-dari">dari admin</div>' : ''}</td>
-        <td class="rk-teks" rowspan="${x.span}">${tandai(x.r.nama, q)}${x.span > 1 ? `<div class="rk-n">${x.span} IKI</div>` : ''}</td>`}<td class="iki">${tandai(x.r.indikator, q) || '—'}</td><td class="num">${jml(x.r.id)}</td>
-        <td style="white-space:nowrap">${x.r.bersama ? '<span class="rk-admin" title="RK dari admin — hanya admin yang dapat mengubah">🔒 Admin</span>' : `<button class="ikon" data-ubahrk title="Ubah" aria-label="Ubah"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button><button class="ikon hapus" data-hapusrk title="Hapus" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>`}</td></tr>`).join('')
+    // satu baris per RK (Bidang + RK); IKI tampil saat RK diklik; 20 RK per halaman
+    const grup = S.kelompokRk(rhkList.filter(r => !f.value || (f.value === '-' ? !r.bidang : r.bidang === f.value))).filter(g => !q || g.nama.toLowerCase().includes(q) || g.iki.some(r => (r.indikator || '').toLowerCase().includes(q))); rkGrup = grup;   // RK cocok → semua IKI-nya ikut tampil
+    const totHal = Math.max(1, Math.ceil(grup.length / RK_PER_HAL)); if (rkHal > totHal) rkHal = totHal; if (rkHal < 1) rkHal = 1;
+    const awal = (rkHal - 1) * RK_PER_HAL, tampil = grup.slice(awal, awal + RK_PER_HAL);
+    const IK_UBAH = '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>', IK_HPS = '<svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+    $('rkTbl').innerHTML = tampil.length ? tampil.map((g, i) => {
+      const buka = rkBuka.has(g.kunci) || (!!q && !rkTutupCari.has(g.kunci) && !kunciRk(g.nama).includes(q) && g.iki.some(r => kunciRk(r.indikator).includes(q)));   // cocok di IKI → terbuka otomatis
+      const adm = g.iki.some(r => r.bersama), nKeg = g.iki.reduce((a, r) => a + jml(r.id), 0);
+      return `<tr class="rk-baris${buka ? ' buka' : ''}" data-grup="${S.esc(g.kunci)}" tabindex="0" aria-expanded="${buka}"><td>${awal + i + 1}</td><td>${g.bidang ? '<b>' + S.esc(g.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}${adm ? '<div class="rk-dari">dari admin</div>' : ''}</td>
+        <td class="rk-teks">${tandai(g.nama, q)}</td><td><span class="rk-jml">${g.iki.length} IKI</span></td><td class="num">${nKeg}</td><td><span class="rk-panah" aria-hidden="true">›</span></td></tr>` +
+        (buka ? `<tr class="rk-detail"><td colspan="6"><ul class="iki-list">${g.iki.map((r, n) => `<li data-id="${r.id}"><span class="iki-no">IKI ${n + 1}</span><span class="iki-t">${tandai(r.indikator, q) || '<i style="color:var(--teks2)">(IKI belum diisi)</i>'}</span><span class="iki-k">${jml(r.id)} kegiatan</span><span class="iki-a">${r.bersama ? '<span class="rk-admin" title="RK dari admin — hanya admin yang dapat mengubah">🔒 Admin</span>' : `<button class="ikon" data-ubahrk title="Ubah" aria-label="Ubah">${IK_UBAH}</button><button class="ikon hapus" data-hapusrk title="Hapus" aria-label="Hapus">${IK_HPS}</button>`}</span></li>`).join('')}</ul>
+          <button type="button" class="iki-tambah" data-tambahiki="${S.esc(g.kunci)}">+ Tambah IKI untuk RK ini</button></td></tr>` : '');
+    }).join('')
       : `<tr><td colspan="6"><div class="kosong">${rhkList.length ? 'Tidak ada RK yang cocok.' : 'Belum ada RK. Klik “+ Tambah RK”, atau “📥 Impor Excel” untuk memasukkan banyak RK sekaligus.'}</div></td></tr>`;
+    S.pager($('rkPager'), rkHal, totHal, grup.length, 'RK', RK_PER_HAL);
   }
-  $('rkCari').oninput = renderRkMenu; $('rkFBidang').onchange = renderRkMenu;
+  const RK_PER_HAL = 20; let rkHal = 1, rkGrup = []; const rkBuka = new Set(), rkTutupCari = new Set();
+  $('rkPager').addEventListener('click', e => { const b = e.target.closest('[data-hal]'); if (!b || b.disabled) return; rkHal = +b.dataset.hal; renderRkMenu(); $('v-rk').scrollIntoView({ block: 'start' }); });
+  $('rkCari').oninput = () => { rkHal = 1; rkTutupCari.clear(); renderRkMenu(); }; $('rkFBidang').onchange = () => { rkHal = 1; renderRkMenu(); };
   let rkEdit = null;
-  function bukaRk(r) {
+  function bukaRk(r, preset) {
     rkEdit = r; $('rkEJ').textContent = r ? 'Ubah RK' : 'Tambah RK';
     $('rkEBidang').innerHTML = '<option value="">— pilih bidang —</option>' + S.bidangDari(rhkList.map(r => r.bidang)).map(b => `<option>${S.esc(b)}</option>`).join('');
     $('rkEBidang').value = r ? (r.bidang || '') : ($('rkFBidang').value && $('rkFBidang').value !== '-' ? $('rkFBidang').value : '');
     $('rkENama').value = r ? r.nama : ''; $('rkEIki').value = r ? (r.indikator || '') : ''; $('rkEHapus').hidden = !r;
-    $('mRkEdit').classList.add('on'); setTimeout(() => $(r ? 'rkENama' : 'rkEBidang').focus(), 50);
+    if (preset) { if (preset.bidang) $('rkEBidang').value = preset.bidang; $('rkENama').value = preset.nama || ''; $('rkEJ').textContent = 'Tambah IKI'; }
+    $('mRkEdit').classList.add('on'); setTimeout(() => $(preset ? 'rkEIki' : r ? 'rkENama' : 'rkEBidang').focus(), 50);
   }
   $('rkTambah').onclick = () => bukaRk(null);
   $('rkEBatal').onclick = () => $('mRkEdit').classList.remove('on');
@@ -482,9 +510,13 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     try { terkait.forEach(k => k.rhkId = null); if (terkait.length) await S.putBanyak('kegiatan', terkait); await S.del('rhk', r.id); rhkList = rhkList.filter(x => x.id !== r.id); renderRkMenu(); S.toast('RK dihapus'); return true; } catch (x) { S.toast(x.message); return false; }
   }
   $('rkEHapus').onclick = async () => { if (await hapusRk(rkEdit)) $('mRkEdit').classList.remove('on'); };
-  $('rkTbl').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (!tr) return; const r = rhkById(tr.dataset.id);
-    if (r && r.bersama) { S.toast('RK ini dari admin. Hanya admin yang dapat mengubah atau menghapusnya.'); return; }
+  $('rkTbl').addEventListener('click', e => {
+    const tg = e.target.closest('tr.rk-baris'); if (tg) { const k = tg.dataset.grup; if (tg.classList.contains('buka')) { rkBuka.delete(k); rkTutupCari.add(k); } else { rkBuka.add(k); rkTutupCari.delete(k); } renderRkMenu(); return; }
+    const ti = e.target.closest('[data-tambahiki]'); if (ti) { const g = rkGrup.find(x => x.kunci === ti.dataset.tambahiki); if (g) bukaRk(null, { bidang: g.bidang, nama: g.nama }); return; }
+    const li = e.target.closest('li[data-id]'); if (!li) return; const r = rhkById(li.dataset.id);
+    if (r && r.bersama) { if (e.target.closest('.rk-admin')) S.toast('RK ini dari admin. Hanya admin yang dapat mengubah atau menghapusnya.'); return; }
     if (e.target.closest('[data-ubahrk]')) bukaRk(r); else if (e.target.closest('[data-hapusrk]')) hapusRk(r); });
+  $('rkTbl').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr.rk-baris')) { e.preventDefault(); e.target.click(); } });
   /* Kosongkan RK sendiri sekaligus (ikut saringan bidang & pencarian); RK dari admin tidak ikut */
   $('rkKosong').onclick = async () => {
     const f = $('rkFBidang').value, q = $('rkCari').value.trim().toLowerCase();

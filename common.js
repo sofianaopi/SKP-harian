@@ -332,6 +332,22 @@
   function tglPanjang(s) { const d = parseYmd(s); return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
   function tglSedang(s) { const d = parseYmd(s); return d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
   /* "2–4 November 2026", "30 Oktober – 2 November 2026", atau satu tanggal */
+  /* RK & IKI: kelompokkan baris (bidang + nama RK sama) → satu RK berisi beberapa IKI */
+  const kunciRkTeks = s => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  function kelompokRk(list) {
+    const m = new Map(), out = [];
+    list.forEach(r => { const k = (r.bidang || '') + '|' + kunciRkTeks(r.nama); let g = m.get(k); if (!g) { g = { kunci: k, bidang: r.bidang || '', nama: r.nama || '', iki: [] }; m.set(k, g); out.push(g); } g.iki.push(r); });
+    return out;
+  }
+  /* Navigasi halaman: ‹ 1 2 3 … 9 › — dipakai tabel RK & IKI */
+  function pager(el, hal, total, jumlah, satuan, perHal) {
+    if (total <= 1) { el.innerHTML = jumlah ? `<span class="pg-info">${jumlah} ${satuan}</span>` : ''; return; }
+    const no = []; for (let i = 1; i <= total; i++) if (i === 1 || i === total || Math.abs(i - hal) <= 1) no.push(i); else if (no[no.length - 1] !== '…') no.push('…');
+    const a = (hal - 1) * perHal + 1, z = Math.min(hal * perHal, jumlah);
+    el.innerHTML = `<span class="pg-info">Menampilkan ${a}–${z} dari ${jumlah} ${satuan}</span><span class="pg-nav"><button type="button" data-hal="${hal - 1}" ${hal <= 1 ? 'disabled' : ''} aria-label="Halaman sebelumnya">‹</button>` +
+      no.map(i => i === '…' ? '<span class="pg-titik">…</span>' : `<button type="button" data-hal="${i}"${i === hal ? ' class="aktif" aria-current="page"' : ''}>${i}</button>`).join('') +
+      `<button type="button" data-hal="${hal + 1}" ${hal >= total ? 'disabled' : ''} aria-label="Halaman berikutnya">›</button></span>`;
+  }
   function rentangTgl(a, b) {
     if (!a) return ''; if (!b || b <= a) return tglSedang(a);
     const A = parseYmd(a), Z = parseYmd(b);
@@ -402,7 +418,7 @@
   }
 
   const api = {
-    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
+    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
