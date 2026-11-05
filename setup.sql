@@ -63,7 +63,8 @@ create table if not exists public.kegiatan (     -- catatan kegiatan harian
 );
 create index if not exists kegiatan_user_tgl on public.kegiatan(user_id, tanggal);
 alter table public.kegiatan add column if not exists bidang text;
-alter table public.kegiatan add column if not exists gabung text;   -- uraian gabungan: kegiatan berulang dengan kalimat berbeda tampil sebagai satu uraian di dokumen
+alter table public.kegiatan add column if not exists gabung text;   -- uraian gabungan: kegiatan berulang dengan kalimat berbeda tampil sebagai satu baris/uraian
+alter table public.kegiatan add column if not exists tanggal_akhir date;   -- kegiatan beberapa hari: tanggal selesai (tanggal = mulai)
 alter table public.kegiatan add column if not exists jenis_id text references public.jenis_kegiatan(id) on delete set null;
 
 create table if not exists public.dokumen (       -- dokumen Bukti Dukung yang disimpan ke Google Drive

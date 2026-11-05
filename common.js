@@ -28,9 +28,10 @@
   }
 
   /* ---------- Pemetaan baris database <-> objek aplikasi ---------- */
-  const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', bidang: r.bidang || null, jenisId: r.jenis_id || null, rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0, gabung: r.gabung === undefined ? undefined : (r.gabung || null) });
+  const keK = r => ({ id: r.id, tanggal: r.tanggal, jam: r.jam || '', teks: r.teks || '', bidang: r.bidang || null, jenisId: r.jenis_id || null, rhkId: r.rk_id || null, jumlah: r.jumlah || 1, fotoIds: Array.isArray(r.foto) ? r.foto : [], dibuat: Number(r.dibuat) || 0, gabung: r.gabung === undefined ? undefined : (r.gabung || null), tanggalAkhir: r.tanggal_akhir === undefined ? undefined : (r.tanggal_akhir || null) });
   const dariK = k => { const o = { id: k.id, user_id: uid, tanggal: k.tanggal, jam: k.jam || null, teks: k.teks || '', bidang: k.bidang || null, jenis_id: k.jenisId || null, rk_id: k.rhkId || null, jumlah: Math.max(1, parseInt(k.jumlah) || 1), foto: k.fotoIds || [], dibuat: k.dibuat || Date.now() };
     if (k.gabung !== undefined) o.gabung = k.gabung || null;   // kolom baru: hanya dikirim bila sudah dipakai
+    if (k.tanggalAkhir !== undefined) o.tanggal_akhir = k.tanggalAkhir && k.tanggalAkhir > k.tanggal ? k.tanggalAkhir : null;
     return o; };
   const keR = r => ({ id: r.id, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || '', satuan: r.satuan || '', target: Number(r.target) || 0, targetBulan: r.target_bulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
   const dariR = r => ({ id: r.id, user_id: uid, bidang: r.bidang || null, nama: r.nama || '', indikator: r.indikator || null, satuan: r.satuan || null, target: Number(r.target) || 0, target_bulan: r.targetBulan || {}, urutan: r.urutan || 0, bersama: !!r.bersama });
@@ -330,6 +331,14 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function tglPanjang(s) { const d = parseYmd(s); return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
   function tglSedang(s) { const d = parseYmd(s); return d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
+  /* "2–4 November 2026", "30 Oktober – 2 November 2026", atau satu tanggal */
+  function rentangTgl(a, b) {
+    if (!a) return ''; if (!b || b <= a) return tglSedang(a);
+    const A = parseYmd(a), Z = parseYmd(b);
+    if (A.getFullYear() !== Z.getFullYear()) return tglSedang(a) + ' – ' + tglSedang(b);
+    if (A.getMonth() !== Z.getMonth()) return A.getDate() + ' ' + BULAN[A.getMonth()] + ' – ' + tglSedang(b);
+    return A.getDate() + '–' + tglSedang(b);
+  }
   function namaBulan(ym) { const [y, m] = ym.split('-').map(Number); return BULAN[m - 1] + ' ' + y; }
   function labelHari(s) { const t = ymd(new Date()); const k = new Date(); k.setDate(k.getDate() - 1); if (s === t) return 'Hari ini'; if (s === ymd(k)) return 'Kemarin'; return tglPanjang(s); }
   function targetBulan(rhk, ym) { if (rhk.targetBulan && rhk.targetBulan[ym] != null && rhk.targetBulan[ym] !== '') return Number(rhk.targetBulan[ym]); return Number(rhk.target || 0); }
@@ -393,7 +402,7 @@
   }
 
   const api = {
-    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
+    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),

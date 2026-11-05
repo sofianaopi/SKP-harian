@@ -197,13 +197,14 @@
     const hd = ['No', 'Hari / Tanggal', 'Uraian Kegiatan', 'Output', 'Rencana Kinerja (RK)', 'Bukti'];
     const rows = [tr(hd.map((h, i) => tc(p(h, { b: true, jc: 'center' }), w[i], { fill: HEAD, va: 'center' })), { header: true })];
     let no = 0; let lastTgl = null;
-    const counts = {}; kegiatan.forEach(k => counts[k.tanggal] = (counts[k.tanggal] || 0) + 1);
+    const kt = k => k.tanggal + '|' + (k.tanggalAkhir && k.tanggalAkhir > k.tanggal ? k.tanggalAkhir : '');
+    const counts = {}; kegiatan.forEach(k => counts[kt(k)] = (counts[kt(k)] || 0) + 1);
     for (const k of kegiatan) {
       no++;
       const r = k.rhkId ? rhkMap[k.rhkId] : null;
-      const first = k.tanggal !== lastTgl; lastTgl = k.tanggal;
-      const merge = counts[k.tanggal] > 1 ? (first ? 'restart' : true) : null;
-      const tglCell = first ? p(S.tglPanjang(k.tanggal)) : p('');
+      const first = kt(k) !== lastTgl; lastTgl = kt(k);
+      const merge = counts[kt(k)] > 1 ? (first ? 'restart' : true) : null;
+      const tglCell = first ? (k.tanggalAkhir && k.tanggalAkhir > k.tanggal ? [p(S.tglPanjang(k.tanggal)), p('s.d. ' + S.tglPanjang(k.tanggalAkhir))] : p(S.tglPanjang(k.tanggal))) : p('');
       const uraian = (k.jam ? [p(k.teks || '-'), p(k.jam, { sz: 16, color: '808080' })] : [p(k.teks || '-')]);
       const output = r ? (k.jumlah || 1) + ' ' + (r.satuan || '') : (k.jumlah > 1 ? String(k.jumlah) : '-');
       const bukti = (lampiranNo && lampiranNo[k.id]) ? 'Lamp. ' + lampiranNo[k.id] : ((k.fotoIds || []).length ? (k.fotoIds.length + ' foto') : '-');
@@ -279,7 +280,7 @@
           const rId = 'rIdImg' + (images.length + 1);
           images.push({ rId, name: 'image' + (images.length + 1) + '.jpeg', bytes: dataUrlBytes(f.data) });
           const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
-          const cap = 'Lampiran ' + L.n + (L.fotos.length > 1 ? String.fromCharCode(97 + idx) : '') + ' — ' + S.tglSedang(L.k.tanggal);
+          const cap = 'Lampiran ' + L.n + (L.fotos.length > 1 ? String.fromCharCode(97 + idx) : '') + ' — ' + S.rentangTgl(L.k.tanggal, L.k.tanggalAkhir);
           cells.push(tc([p(img(rId, Math.round(w), Math.round(h)), { jc: 'center', before: 60, after: 60 }), p(cap, { b: true, sz: 18, jc: 'center' }), p((L.k.teks || '').slice(0, 160), { sz: 18, jc: 'center', after: 60 })], cw, { va: 'top' }));
         });
       }
@@ -344,7 +345,9 @@
           });
           if (fx) fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="60"/><w:jc w:val="center"/></w:pPr></w:p>';
           else fx = '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120" w:after="120"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:i/><w:color w:val="808080"/><w:sz w:val="18"/></w:rPr><w:t>(tidak ada foto)</w:t></w:r></w:p>';
-          return u + rowF.replace(pf, fx);
+          // beberapa foto: baris foto boleh terpotong antarhalaman agar tidak menyisakan halaman kosong
+          const rf = (it.fotos || []).length > 1 ? rowF.replace(/<w:cantSplit\/>/g, '') : rowF;
+          return u + rf.replace(pf, fx);
         }).join('');
         d = d.replace(rowF, '').replace(rowU, isi);
       }

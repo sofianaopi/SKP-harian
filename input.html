@@ -151,10 +151,17 @@
   <input type="file" id="fileKamera" accept="image/*" capture="environment" hidden>
 </div>
 
+<div class="lapis" id="lapisTgl"><div class="sheet" role="dialog" aria-label="Tanggal kegiatan">
+  <h3>📅 Tanggal kegiatan</h3>
+  <p style="margin:-6px 0 10px;font-size:13px;color:#667781">Kegiatan beberapa hari (mis. pelatihan 3 hari)? Isi juga <b>sampai tanggal</b>. Di daftar, kegiatan tampil satu kali pada tanggal mulainya.</p>
+  <div class="baris"><div><label for="tDari">Dari tanggal</label><input type="date" id="tDari"></div><div><label for="tSampai">Sampai tanggal <span style="font-weight:400">(opsional)</span></label><input type="date" id="tSampai"></div></div>
+  <div class="aksi"><button class="b-batal" id="tHariIni">Hari ini</button><button class="b-batal" id="tBatal">Batal</button><button class="b-utama" id="tPakai">Pakai</button></div>
+</div></div>
 <div class="lapis" id="lapisEdit"><div class="sheet" role="dialog" aria-label="Ubah kegiatan">
   <h3>Ubah kegiatan</h3>
   <label for="eTeks">Uraian kegiatan</label><textarea id="eTeks"></textarea>
-  <div class="baris"><div><label for="eTgl">Tanggal</label><input type="date" id="eTgl"></div><div><label for="eJam">Jam</label><input type="time" id="eJam"></div></div>
+  <div class="baris"><div><label for="eTgl">Tanggal</label><input type="date" id="eTgl"></div><div><label for="eTglAkhir">Sampai <span style="font-weight:400">(opsional)</span></label><input type="date" id="eTglAkhir"></div></div>
+  <div class="baris"><div><label for="eJam">Jam</label><input type="time" id="eJam"></div><div></div></div>
   <label for="eBidang">Bidang</label><select id="eBidang"></select>
   <div id="eRkBox"><label for="eRkBtn">Rencana Kinerja (RK)</label><button type="button" id="eRkBtn" class="e-rk"></button><input type="hidden" id="eRhk">
   <input type="hidden" id="eJml"></div>
@@ -172,7 +179,7 @@
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
-  let rhkList = [], kegiatan = [], profil = {}, pilihBidang = null, tglCatat = null, lampiran = [], editing = null;
+  let rhkList = [], kegiatan = [], profil = {}, pilihBidang = null, tglCatat = null, tglAkhir = null, lampiran = [], editing = null;
   const fotoCache = new Map();
 
   let rkPerBidang = {};
@@ -235,7 +242,8 @@
       const tag = k.bidang ? `<div class="tag">📁 <span>${S.esc(k.bidang)}</span>${rr ? `<em>&nbsp;· 🎯 RK ${rr.i + 1}</em>` : ''}</div><br>` : '<div class="tag" style="color:#b26a00;background:#fff3dc">⚠ <span>belum pilih bidang</span></div><br>';
       const nf = (k.fotoIds || []).length;
       const fotos = nf ? `<div class="fotos n${Math.min(nf, 4) === 4 ? 4 : Math.min(nf, 3)}">${k.fotoIds.slice(0, nf > 4 ? 4 : nf).map(id => `<div class="ph" data-foto="${id}"></div>`).join('')}</div>` : '';
-      html += `<div class="gel${ekor ? ' ekor' : ''}" data-id="${k.id}">${fotos}${tag}<span class="isi">${S.esc(k.teks || '')}</span><span class="meta">${S.esc(k.jam || '')} ${centang}</span></div>`;
+      const rentang = k.tanggalAkhir && k.tanggalAkhir > k.tanggal ? `<div class="tag" style="background:#e7f0fb;color:#1f4e79">📅 ${S.esc(S.rentangTgl(k.tanggal, k.tanggalAkhir))}</div><br>` : '';
+      html += `<div class="gel${ekor ? ' ekor' : ''}" data-id="${k.id}">${fotos}${tag}${rentang}<span class="isi">${S.esc(k.teks || '')}</span><span class="meta">${S.esc(k.jam || '')} ${centang}</span></div>`;
     }
     chat.innerHTML = html;
     chat.querySelectorAll('[data-foto]').forEach(isiFoto);
@@ -286,7 +294,7 @@
       const now = new Date();
       const fotoIds = [];
       for (const f of lampiran) { const id = 'f' + S.uid(); await S.put('foto', { id, data: f.data, w: f.w, h: f.h }); fotoIds.push(id); fotoCache.set(id, Promise.resolve({ id, data: f.data })); }
-      const k = { id: 'k' + S.uid(), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang, jenisId: null, rhkId: rkAktif() ? rkAktif().id : null, jumlah: 1, fotoIds, dibuat: Date.now() };
+      const k = { id: 'k' + S.uid(), ...(tglAkhir ? { tanggalAkhir: tglAkhir } : {}), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang, jenisId: null, rhkId: rkAktif() ? rkAktif().id : null, jumlah: 1, fotoIds, dibuat: Date.now() };
       await S.put('kegiatan', k);
       kegiatan.push(k); ta.value = ''; autosize(); lampiran = []; renderPratinjau();
       $('chat').scrollTop = $('chat').scrollHeight; renderChat(); $('chat').scrollTop = $('chat').scrollHeight; renderSub();
@@ -298,15 +306,27 @@
 
   /* Catat untuk tanggal lain */
   $('btnExcel').onclick = () => SKPExcel.bukaImpor({ kegiatanAda: () => kegiatan, selesai: () => muat().then(() => { $('chat').scrollTop = $('chat').scrollHeight; }) });
-  $('btnTgl').onclick = () => { const p = $('tglPick'); p.value = tglCatat || S.ymd(new Date()); p.max = S.ymd(new Date()); if (p.showPicker) { try { p.showPicker(); return; } catch (e) { } } p.style.pointerEvents = 'auto'; p.focus(); p.click(); };
-  $('tglPick').onchange = () => { const v = $('tglPick').value; setTgl(v && v !== S.ymd(new Date()) ? v : null); };
-  $('bannerX').onclick = () => setTgl(null);
-  function setTgl(v) { tglCatat = v; $('banner').classList.toggle('on', !!v); if (v) $('bannerTeks').textContent = '📅 Mencatat untuk ' + S.tglPanjang(v); ta.placeholder = v ? 'Ketik kegiatan tanggal ' + S.tglSedang(v) + '…' : 'Ketik kegiatan hari ini…'; }
+  /* Tanggal kegiatan: satu tanggal atau rentang (dari–sampai) */
+  $('btnTgl').onclick = () => { const hari = S.ymd(new Date()); $('tDari').value = tglCatat || hari; $('tSampai').value = tglAkhir || ''; $('tDari').max = hari; $('tSampai').max = hari; $('tSampai').min = $('tDari').value; $('lapisTgl').classList.add('on'); };
+  $('tDari').onchange = () => { $('tSampai').min = $('tDari').value; if ($('tSampai').value && $('tSampai').value < $('tDari').value) $('tSampai').value = ''; };
+  $('tBatal').onclick = () => $('lapisTgl').classList.remove('on');
+  $('lapisTgl').onclick = e => { if (e.target.id === 'lapisTgl') $('lapisTgl').classList.remove('on'); };
+  $('tHariIni').onclick = () => { setTgl(null, null); $('lapisTgl').classList.remove('on'); };
+  $('tPakai').onclick = () => { const a = $('tDari').value || S.ymd(new Date()), z = $('tSampai').value; setTgl(a, z && z > a ? z : null); $('lapisTgl').classList.remove('on'); };
+  $('bannerX').onclick = () => setTgl(null, null);
+  function setTgl(v, akhir) {
+    const hari = S.ymd(new Date()); if (v === hari && !akhir) v = null;
+    tglCatat = v; tglAkhir = akhir || null; const aktif = !!(v || tglAkhir);
+    $('banner').classList.toggle('on', aktif);
+    const mulai = v || hari;
+    if (aktif) $('bannerTeks').textContent = '📅 Mencatat untuk ' + (tglAkhir ? S.rentangTgl(mulai, tglAkhir) + ' (' + (Math.round((S.parseYmd(tglAkhir) - S.parseYmd(mulai)) / 864e5) + 1) + ' hari)' : S.tglPanjang(mulai));
+    ta.placeholder = aktif ? 'Ketik kegiatan ' + (tglAkhir ? S.rentangTgl(mulai, tglAkhir) : 'tanggal ' + S.tglSedang(mulai)) + '…' : 'Ketik kegiatan hari ini…';
+  }
 
   /* Ubah / hapus */
   function bukaEdit(id) {
     const k = kegiatan.find(x => x.id === id); if (!k) return; editing = JSON.parse(JSON.stringify(k));
-    $('eTeks').value = k.teks || ''; $('eTgl').value = k.tanggal; $('eJam').value = k.jam || ''; $('eJml').value = k.jumlah || 1;
+    $('eTeks').value = k.teks || ''; $('eTgl').value = k.tanggal; $('eTglAkhir').value = k.tanggalAkhir || ''; $('eJam').value = k.jam || ''; $('eJml').value = k.jumlah || 1;
     $('eRhk').value = k.rhkId || ''; tampilERk(); $('eRkBox').hidden = !rhkList.length;
     $('eBidang').innerHTML = '<option value="">— Pilih bidang —</option>' + S.bidangDari(k.bidang).map(b => `<option>${S.esc(b)}</option>`).join(''); $('eBidang').value = k.bidang || '';
     const ef = $('eFoto'); ef.innerHTML = (k.fotoIds || []).length ? '' : '<small style="color:#667781">Tidak ada foto</small>';
@@ -324,7 +344,7 @@
   $('eSimpan').onclick = async () => {
     if (!editing) return;
     const hapus = editing._hapusFoto || []; delete editing._hapusFoto;
-    Object.assign(editing, { teks: $('eTeks').value.trim() || '(foto bukti)', tanggal: $('eTgl').value || editing.tanggal, jam: $('eJam').value, bidang: $('eBidang').value || null, rhkId: $('eRhk').value || null, jumlah: Math.max(1, parseInt($('eJml').value) || 1) });
+    Object.assign(editing, { teks: $('eTeks').value.trim() || '(foto bukti)', tanggal: $('eTgl').value || editing.tanggal, ...(($('eTglAkhir').value || editing.tanggalAkhir !== undefined) ? { tanggalAkhir: $('eTglAkhir').value > ($('eTgl').value || editing.tanggal) ? $('eTglAkhir').value : null } : {}), jam: $('eJam').value, bidang: $('eBidang').value || null, rhkId: $('eRhk').value || null, jumlah: Math.max(1, parseInt($('eJml').value) || 1) });
     const sb = S.sibuk('Menyimpan perubahan…');
     try { await S.put('kegiatan', editing); for (const f of hapus) await S.del('foto', f); const i = kegiatan.findIndex(x => x.id === editing.id); kegiatan[i] = editing; tutupEdit(); renderChat(); renderSub(); S.toast('Kegiatan diperbarui'); }
     catch (e) { S.toast('Gagal menyimpan'); } finally { sb.selesai(); }

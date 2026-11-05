@@ -109,8 +109,9 @@
   async function ekspor(kegiatan, label) {
     const X = await lib(); const wb = X.utils.book_new();
     const ks = kegiatan.slice().sort((a, b) => (a.tanggal + (a.jam || '')).localeCompare(b.tanggal + (b.jam || '')));
-    const data = [['Tanggal', 'Jam', 'Bidang', 'Uraian Kegiatan', 'Jumlah Foto']].concat(ks.map(k => { const [y, m, d] = k.tanggal.split('-'); return [d + '/' + m + '/' + y, k.jam || '', k.bidang || '', k.teks || '', (k.fotoIds || []).length]; }));
-    const ws = X.utils.aoa_to_sheet(data); ws['!cols'] = [{ wch: 12 }, { wch: 7 }, { wch: 11 }, { wch: 80 }, { wch: 11 }];
+    const fmt = t => { const [y, m, d] = t.split('-'); return d + '/' + m + '/' + y; };
+    const data = [['Tanggal', 'Jam', 'Bidang', 'Uraian Kegiatan', 'Jumlah Foto', 'Sampai', 'Uraian Gabungan']].concat(ks.map(k => [fmt(k.tanggal), k.jam || '', k.bidang || '', k.teks || '', (k.fotoIds || []).length, k.tanggalAkhir && k.tanggalAkhir > k.tanggal ? fmt(k.tanggalAkhir) : '', k.gabung || '']));
+    const ws = X.utils.aoa_to_sheet(data); ws['!cols'] = [{ wch: 12 }, { wch: 7 }, { wch: 11 }, { wch: 80 }, { wch: 11 }, { wch: 12 }, { wch: 50 }];
     X.utils.book_append_sheet(wb, ws, 'Kegiatan');
     await simpanFile(X, wb, 'Kegiatan_SKP_Harian_' + String(label || 'semua').replace(/[^\w]+/g, '_') + '.xlsx');
   }
