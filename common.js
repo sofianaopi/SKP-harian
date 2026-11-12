@@ -311,7 +311,20 @@
     await muatBidang();
     const el = document.getElementById('skp-login'); if (el) el.hidden = true;
     c.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') location.reload(); });
+    if (saya.peran !== 'admin' && !/kuis\.html/i.test(location.pathname)) { ajakKuis(); setInterval(ajakKuis, 45000); }
     return { uid, pegawai: saya };
+  }
+  /* Ajakan ikut Kuis BerAKHLAK yang sedang berlangsung (dipandu admin) */
+  async function ajakKuis() {
+    let k = null; try { const r = await client().rpc('kuis_aktif'); k = r.error ? null : r.data; } catch (e) { }
+    let el = document.getElementById('skp-kuis'); const tutup = (() => { try { return sessionStorage.getItem('sakti-kuis-tutup'); } catch (e) { return null; } })();
+    if (!k || (tutup === k.pin && !k.ikut)) { if (el) el.remove(); return; }
+    if (!document.getElementById('skp-kuis-css')) { const st = document.createElement('style'); st.id = 'skp-kuis-css'; st.textContent = `#skp-kuis{position:fixed;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top));z-index:1002;display:flex;align-items:center;gap:10px;width:min(440px,calc(100vw - 24px));box-sizing:border-box;background:linear-gradient(135deg,#46178f,#7b2ff7);color:#fff;border-radius:16px;padding:10px 10px 10px 14px;box-shadow:0 10px 28px rgba(70,23,143,.4);font-family:inherit;animation:skpKz .5s cubic-bezier(.3,1.5,.6,1)}
+      #skp-kuis .ik{font-size:24px}#skp-kuis .tx{flex:1;font-size:13px;line-height:1.3;min-width:0}#skp-kuis .tx b{display:block;font-size:14.5px}#skp-kuis a{background:#fff;color:#46178f;font-weight:800;text-decoration:none;border-radius:10px;padding:9px 14px;font-size:14px;white-space:nowrap}
+      #skp-kuis button{background:none;border:0;color:#fff;opacity:.8;font-size:20px;cursor:pointer;padding:0 4px}@keyframes skpKz{from{transform:translate(-50%,-30px);opacity:0}}`; document.head.appendChild(st); }
+    if (!el) { el = document.createElement('div'); el.id = 'skp-kuis'; document.body.appendChild(el); }
+    el.innerHTML = `<span class="ik">🎮</span><span class="tx"><b>${esc(k.judul)}</b>${k.ikut ? 'Anda sedang bermain' : 'Sedang berlangsung · PIN ' + esc(k.pin)}</span><a href="kuis.html${k.ikut ? '' : '?pin=' + encodeURIComponent(k.pin)}">${k.ikut ? 'Kembali' : 'Ikut'} ›</a><button type="button" aria-label="Tutup">×</button>`;
+    el.querySelector('button').onclick = () => { try { sessionStorage.setItem('sakti-kuis-tutup', k.pin); } catch (e) { } el.remove(); };
   }
   async function token() { const { data } = await client().auth.getSession(); if (!data.session) throw new Error('Sesi berakhir, silakan masuk lagi.'); return data.session.access_token; }
   /* Kirim perintah ke Google Apps Script (penyimpan dokumen ke Google Drive) */
@@ -436,6 +449,34 @@
     { h: 'L', n: 'Loyal', w: '#b91c1c', m: 'Berdedikasi dan mengutamakan kepentingan Bangsa dan Negara', p: ['Memegang teguh ideologi Pancasila, UUD 1945, setia kepada NKRI serta pemerintahan yang sah', 'Menjaga nama baik sesama ASN, pimpinan, instansi, dan negara', 'Menjaga rahasia jabatan dan negara'] },
     { h: 'A', n: 'Adaptif', w: '#ea580c', m: 'Terus berinovasi dan antusias dalam menggerakkan serta menghadapi perubahan', p: ['Cepat menyesuaikan diri menghadapi perubahan', 'Terus berinovasi dan mengembangkan kreativitas', 'Bertindak proaktif'] },
     { h: 'K', n: 'Kolaboratif', w: '#059669', m: 'Membangun kerja sama yang sinergis', p: ['Memberi kesempatan kepada berbagai pihak untuk berkontribusi', 'Terbuka dalam bekerja sama untuk menghasilkan nilai tambah', 'Menggerakkan pemanfaatan berbagai sumber daya untuk tujuan bersama'] }];
+  /* Bank soal kuis BerAKHLAK — dibuat otomatis dari materi nilai dasar ASN (SE Menteri PANRB No. 20 Tahun 2021) */
+  function soalBerakhlak() {
+    const B = BERAKHLAK, acak = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const pilih = (benar, salah) => { const p = acak([benar].concat(acak(salah).slice(0, 3))); return { p, b: p.indexOf(benar) }; };
+    const lain = v => B.filter(x => x !== v);
+    const L = [];
+    B.forEach(v => {
+      v.p.forEach(pp => L.push(Object.assign({ t: `Panduan perilaku “${pp}” termasuk nilai BerAKHLAK…`, k: 'perilaku' }, pilih(v.n, lain(v).map(x => x.n)))));
+      L.push(Object.assign({ t: `Makna nilai ${v.n} adalah…`, k: 'makna' }, pilih(v.m, lain(v).map(x => x.m))));
+      L.push(Object.assign({ t: `“${v.m}” adalah makna dari nilai…`, k: 'makna' }, pilih(v.n, lain(v).map(x => x.n))));
+      const bukan = lain(v).flatMap(x => x.p); L.push(Object.assign({ t: `Manakah yang BUKAN panduan perilaku nilai ${v.n}?`, k: 'bukan' }, pilih(acak(bukan)[0], v.p)));
+    });
+    ['B', 'H', 'L'].forEach(h => { const v = B.find(x => x.h === h); L.push(Object.assign({ t: `Huruf “${h}” pada BerAKHLAK adalah singkatan dari…`, k: 'huruf' }, pilih(v.n, lain(v).map(x => x.n)))); });
+    [[1, 'pertama'], [4, 'keempat'], [5, 'kelima'], [7, 'ketujuh']].forEach(([i, k]) => { const v = B[i - 1]; L.push(Object.assign({ t: `Nilai ${k} dalam urutan BerAKHLAK adalah…`, k: 'urutan' }, pilih(v.n, lain(v).map(x => x.n)))); });
+    L.push(Object.assign({ t: 'BerAKHLAK terdiri dari berapa nilai dasar ASN?', k: 'umum' }, pilih('7 nilai', ['5 nilai', '6 nilai', '8 nilai'])));
+    L.push(Object.assign({ t: 'Employer branding ASN yang diluncurkan bersama core values BerAKHLAK adalah…', k: 'umum' }, pilih('Bangga Melayani Bangsa', ['Melayani dengan Hati', 'ASN Berintegritas', 'Kerja Cerdas, Kerja Ikhlas'])));
+    L.push(Object.assign({ t: 'Implementasi core values BerAKHLAK diatur dalam…', k: 'umum' }, pilih('SE Menteri PANRB No. 20 Tahun 2021', ['PP No. 11 Tahun 2017', 'UU No. 5 Tahun 2014', 'Perpres No. 81 Tahun 2010'])));
+    return L;
+  }
+  function susunKuis(n, durasi, tambahan, hanyaTambahan) {   // pilih n soal acak, variasi jenis, tiap soal {t, p[4], b, d}
+    const acak = a => a.map(x => [Math.random(), x]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
+    const tb = (tambahan || []).map(q => ({ t: q.teks, p: q.pilihan, b: q.benar, k: 'tambahan' }));
+    let pool = hanyaTambahan ? acak(tb) : acak(tb).concat(acak(soalBerakhlak()));
+    const out = [], hit = {};
+    for (const q of pool) { if (out.length >= n) break; const k = q.k; if (k !== 'tambahan' && (hit[k] || 0) >= Math.ceil(n / 3)) continue; hit[k] = (hit[k] || 0) + 1; out.push(q); }
+    for (const q of pool) { if (out.length >= n) break; if (!out.includes(q)) out.push(q); }
+    return acak(out).map(q => ({ t: q.t, p: q.p, b: q.b, d: durasi }));
+  }
   function nilaiHariIni(d) {   // berganti setiap hari, berurutan B-A-K-H-L-A-K; panduan perilaku bergilir tiap putaran
     d = d || new Date(); const hari = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
     const i = ((hari % 7) + 7) % 7, v = BERAKHLAK[i]; return Object.assign({ i, perilaku: v.p[Math.floor(hari / 7) % 3] }, v);
@@ -490,7 +531,7 @@
 
   const api = {
     BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, cocokRk, tokenRk, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
-    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
+    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, soalBerakhlak, susunKuis, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
     list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakRk: ids => proses('Menghapus ' + ids.length + ' RK…', () => db.hapusBanyakRk(ids), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),
@@ -507,7 +548,7 @@
   const waLink = () => 'https://wa.me/' + WA_NOMOR + '?text=' + encodeURIComponent(waPesan());
   const IKON_WA = '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.2-.6-6-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.4 10.4 0 0 1-1.6-5.6C5.1 9.9 10 5.2 16 5.2s10.9 4.7 10.9 10.6S22 26.4 16 26.4zm6-7.9c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.1 1.4 3.3c.2.2 2.3 3.5 5.6 4.9 2.8 1.1 3.3.9 3.9.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.6-.4z"/></svg>';
   function pasangWA() {
-    if (document.getElementById('skp-wa') || /(input|pimpinan)\.html/i.test(location.pathname) || !WA_NOMOR) return;
+    if (document.getElementById('skp-wa') || /(input|pimpinan|kuis)\.html/i.test(location.pathname) || !WA_NOMOR) return;
     const st = document.createElement('style');
     st.textContent = `#skp-wa{position:fixed;right:18px;bottom:18px;z-index:1001;font-family:inherit}
     #skp-wa .wa-tbl{width:56px;height:56px;border-radius:50%;border:0;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);transition:transform .15s}

@@ -259,6 +259,7 @@
     <a href="#bidang" data-r="bidang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>Bidang</a>
     <a href="#rk" data-r="rk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>RK &amp; IKI</a>
     <a href="#pesan" data-r="pesan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Pesan &amp; Saran<span class="sb-badge" id="psBadge" hidden></span></a>
+    <a href="#kuis" data-r="kuis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4"/><circle cx="15.5" cy="11" r="1" fill="currentColor"/><circle cx="18" cy="13.5" r="1" fill="currentColor"/></svg>Kuis BerAKHLAK</a>
     <div class="sb-grup">Sistem</div>
     <a href="#pengaturan" data-r="pengaturan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Pengaturan</a>
   </nav>
@@ -306,6 +307,7 @@
       <div class="tabel-wrap"><table><thead><tr><th>Nama</th><th>NIP baru</th><th>Unit kerja</th><th class="num">Hari terisi</th><th class="num">Kegiatan</th><th class="num">Foto</th><th>Terakhir mengisi</th><th>Hari ini</th></tr></thead><tbody id="tblRekap"></tbody></table></div>
     </div>
   </section>
+  <section id="v-kuis" hidden></section>
   <section id="v-pesan" hidden>
     <div class="d-kpi" id="psRingkas" style="grid-template-columns:repeat(4,1fr)"></div>
     <div class="ps-wrap">
@@ -442,6 +444,8 @@
 <script src="common.js"></script>
 <script src="docx.js"></script>
 <script src="excel.js"></script>
+<script src="vendor/qrcode.min.js"></script>
+<script src="kuis-admin.js"></script>
 <script>
 (function () {
   const S = window.SKP, $ = id => document.getElementById(id);
@@ -982,15 +986,15 @@
     catch (x) { S.toast(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : x.message, 6000); b.disabled = false; b.textContent = 'Coba lagi'; }
   };
 
-  const ROUTES = ['dashboard', 'pengguna', 'bidang', 'rk', 'pesan', 'pengaturan'];
-  const JUDUL_R = { dashboard: ['Dashboard', 'Pantau pengisian kegiatan pegawai'], pengguna: ['Pengguna', 'Kelola akun pegawai dan admin'], bidang: ['Bidang', 'Bidang pekerjaan untuk kegiatan dan dokumen'], rk: ['RK & IKI', 'Rencana Kinerja dan Indikator Kinerja Individu bersama'], pengaturan: ['Pengaturan', 'Kop dokumen, laporan perjalanan dinas, dan Google Drive'], pesan: ['Pesan & Saran', 'Masukan pegawai untuk pengembangan SAKTI'] };
+  const ROUTES = ['dashboard', 'pengguna', 'bidang', 'rk', 'pesan', 'kuis', 'pengaturan'];
+  const JUDUL_R = { dashboard: ['Dashboard', 'Pantau pengisian kegiatan pegawai'], pengguna: ['Pengguna', 'Kelola akun pegawai dan admin'], bidang: ['Bidang', 'Bidang pekerjaan untuk kegiatan dan dokumen'], rk: ['RK & IKI', 'Rencana Kinerja dan Indikator Kinerja Individu bersama'], pengaturan: ['Pengaturan', 'Kop dokumen, laporan perjalanan dinas, dan Google Drive'], pesan: ['Pesan & Saran', 'Masukan pegawai untuk pengembangan SAKTI'], kuis: ['Kuis BerAKHLAK', 'Permainan kuis langsung untuk menghafal nilai BerAKHLAK'] };
   const CARI_R = { dashboard: 'mCari', pengguna: 'cari', rk: 'rkaCari', pesan: 'psCari' };
   const tutupSb = () => { $('sb').classList.remove('buka'); $('sbLatar').classList.remove('on'); };
   $('hamb').onclick = () => { $('sb').classList.add('buka'); $('sbLatar').classList.add('on'); };
   $('sbTutup').onclick = tutupSb; $('sbLatar').onclick = tutupSb;
   $('tbCari').oninput = () => { const r = location.hash.slice(1) || 'dashboard', id = CARI_R[r]; if (!id || !$(id)) return; $(id).value = $('tbCari').value; $(id).dispatchEvent(new Event('input')); };
   function route() { let r = location.hash.slice(1); if (!ROUTES.includes(r)) r = 'dashboard'; ROUTES.forEach(x => $('v-' + x).hidden = x !== r); document.querySelectorAll('nav.tab a').forEach(a => a.classList.toggle('aktif', a.dataset.r === r));
-    $('tbJudul').textContent = JUDUL_R[r][0]; $('tbSub').textContent = JUDUL_R[r][1]; $('tbCariBox').style.visibility = CARI_R[r] ? '' : 'hidden'; $('tbCari').value = CARI_R[r] && $(CARI_R[r]) ? $(CARI_R[r]).value : ''; tutupSb(); window.scrollTo(0, 0); if (r === 'dashboard') muatRekap(); if (r === 'bidang') { bdUbah = -1; renderBidang(); } if (r === 'rk') muatRkA(); if (r === 'pesan') muatPesan(true); }
+    $('tbJudul').textContent = JUDUL_R[r][0]; $('tbSub').textContent = JUDUL_R[r][1]; $('tbCariBox').style.visibility = CARI_R[r] ? '' : 'hidden'; $('tbCari').value = CARI_R[r] && $(CARI_R[r]) ? $(CARI_R[r]).value : ''; tutupSb(); window.scrollTo(0, 0); if (r === 'dashboard') muatRekap(); if (r === 'bidang') { bdUbah = -1; renderBidang(); } if (r === 'rk') muatRkA(); if (r === 'pesan') muatPesan(true); if (r === 'kuis' && window.KuisAdmin) KuisAdmin.render(); }
 
   /* ---------- Pesan & Saran dari pegawai ---------- */
   let pesan = [], psPilih = null, psSaring = 'aktif', psMuat = false;
