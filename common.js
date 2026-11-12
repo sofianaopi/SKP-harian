@@ -443,6 +443,17 @@
       <div class="bk-isi"><span class="bk-huruf">${v.h}</span><div><b>${esc(v.n)}</b><p>${esc(v.m)}</p></div></div>
       <div class="bk-perilaku">“${esc(v.perilaku)}”</div></div>`;
   }
+  function bannerNilaiHariIni() {   // banner di bagian paling atas dashboard
+    const v = nilaiHariIni(); const POS = [0, 3, 4, 5, 6, 7, 8];
+    const akr = 'BerAKHLAK'.split('').map((c, j) => j === POS[v.i] ? `<b>${c}</b>` : `<span>${c}</span>`).join('');
+    return `<div class="bkb" style="--w:${v.w}"><span class="bkb-h">${v.h}</span><div class="bkb-tx"><div class="bkb-lbl">Nilai BerAKHLAK hari ini · ${tglPanjang(ymd(new Date()))}</div>
+      <div class="bkb-n">${esc(v.n)}<span><i class="bkb-dash"> — </i>${esc(v.m)}</span></div><div class="bkb-p">Panduan perilaku: “${esc(v.perilaku)}”</div></div><div class="bkb-akr" aria-hidden="true">${akr}</div></div>`;
+  }
+  if (!document.getElementById('skp-bkb-css')) {
+    const st = document.createElement('style'); st.id = 'skp-bkb-css';
+    st.textContent = '.bkb{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e6ebf1;border-left:6px solid var(--w);border-radius:16px;padding:14px 18px;margin-bottom:18px;box-shadow:0 2px 10px rgba(16,40,70,.05)}.bkb-h{width:52px;height:52px;flex:0 0 auto;border-radius:14px;background:var(--w);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800;box-shadow:0 6px 14px rgba(0,0,0,.15)}.bkb-tx{flex:1;min-width:0}.bkb-lbl{font-size:11.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--w)}.bkb-n{font-size:17px;font-weight:800;color:#1e293b;margin-top:2px}.bkb-n span{font-weight:500;color:#334155;font-size:14.5px}.bkb-dash{font-style:normal}.bkb-p{font-size:12.5px;color:#64748b;font-style:italic;margin-top:3px}.bkb-akr{font-size:22px;font-weight:800;letter-spacing:3px;color:#cbd5e1;flex:0 0 auto}.bkb-akr b{color:var(--w)}@media (max-width:760px){.bkb{padding:12px 14px;gap:12px;margin-bottom:14px}.bkb-h{width:44px;height:44px;font-size:23px}.bkb-akr{display:none}.bkb-dash{display:none}.bkb-n{font-size:15.5px}.bkb-n span{display:block;font-size:13px;margin-top:2px}.bkb-lbl{font-size:10.5px}}';
+    (document.head || document.documentElement).appendChild(st);
+  }
   function sibukRender() {
     let o = document.getElementById('skp-sibuk');
     const aktif = sibukList.filter(x => x.tampil);
@@ -475,7 +486,7 @@
 
   const api = {
     BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, cocokRk, tokenRk, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
-    BERAKHLAK, nilaiHariIni, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
+    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
     list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakRk: ids => proses('Menghapus ' + ids.length + ' RK…', () => db.hapusBanyakRk(ids), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),

@@ -345,6 +345,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   <main>
     <!-- DASHBOARD -->
     <section id="v-dashboard" hidden>
+      <div id="dNilai"></div>
       <div class="d-hero">
         <div class="d-hero-atas"><div><h2 id="sapa">Selamat datang</h2><p class="d-sub"><span id="sapaSub">Ringkasan kerja harian</span><span class="d-tgl" id="dTgl"></span></p></div>
           <div class="d-hero-aksi"><div class="bulan" data-bulan></div></div></div>
@@ -603,6 +604,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     return { ks, arsip, isi, keg: ks.length + arsip.reduce((a, r) => a + r.jumlah, 0), foto: ks.reduce((a, k) => a + (k.fotoIds || []).length, 0) + arsip.reduce((a, r) => a + r.foto, 0) };
   }
   function renderDashboard() {
+    $('dNilai').innerHTML = S.bannerNilaiHariIni();
     const K = statBulan(ym), L = statBulan(ymGeser(ym, -1)), ks = K.ks; const jam = now.getHours();
     $('sapa').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (profil.nama ? ', ' + profil.nama.split(/[ ,]/)[0] : '');
     $('sapaSub').textContent = 'Kerja harian ' + S.namaBulan(ym) + (profil.jabatan ? ' · ' + profil.jabatan : ''); $('dTgl').textContent = S.tglPanjang(S.ymd(now));

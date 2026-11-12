@@ -273,6 +273,7 @@
     <div class="av" id="tbAv" title="">A</div></div>
 <main>
   <section id="v-dashboard" hidden>
+      <div id="dNilai"></div>
     <div class="d-hero">
       <div class="d-hero-atas"><div><h2 id="dSalam">Selamat datang, Admin</h2><p class="d-sub">Ringkasan pengisian kegiatan pegawai <span id="dSubBln"></span><span class="d-tgl" id="dTgl"></span></p></div>
         <div class="d-hero-aksi"><div class="bulan" id="bulan"></div><button class="d-btn-kaca" id="dSegar" type="button" title="Muat ulang" aria-label="Muat ulang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg></button></div></div>
@@ -678,6 +679,7 @@
   }
   function relHari(s) { if (!s) return 'belum pernah'; const a = S.parseYmd(s), b = S.parseYmd(S.ymd(now)); const d = Math.round((b - a) / 864e5); return d <= 0 ? 'hari ini' : d === 1 ? 'kemarin' : d < 7 ? d + ' hari lalu' : S.tglSedang(s); }
   function renderRekap() {
+    $('dNilai').innerHTML = S.bannerNilaiHariIni();
     const K = ringkas(rekap), L = ringkas(rekapLalu), n = K.n || 1;
     const jam = now.getHours(), salam = jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam';
     $('dSalam').textContent = salam + ', ' + (($('sbNama').textContent || 'Admin').split(' ')[0]);
