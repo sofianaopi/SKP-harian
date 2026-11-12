@@ -47,7 +47,7 @@
   tr:last-child td { border-bottom: 0; }
   .nip { font-variant-numeric: tabular-nums; white-space: nowrap; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 10px; }
-  .b-admin { background: #e8eefc; color: #2848a8; } .b-peg { background: #eef1f4; color: #4b5866; } .b-on { background: #e3f4ea; color: #1b6e3a; } .b-off { background: #fde8e8; color: #a12020; }
+  .b-admin { background: #e8eefc; color: #2848a8; } .b-pim { background: #fef3c7; color: #92400e; } .b-peg { background: #eef1f4; color: #4b5866; } .b-on { background: #e3f4ea; color: #1b6e3a; } .b-off { background: #fde8e8; color: #a12020; }
   .ikon { border: 0; background: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--teks2); }
   .ikon:hover { background: var(--bg); color: var(--teks); } .ikon.hapus:hover { color: var(--merah); }
   .ikon svg { width: 18px; height: 18px; fill: currentColor; display: block; }
@@ -355,7 +355,7 @@
   <div class="ringkas"><div><b id="nTotal">0</b><span>pengguna terdaftar</span></div><div><b id="nAktif">0</b><span>akun aktif</span></div><div><b id="nAdmin">0</b><span>admin</span></div></div>
   <div class="kartu">
     <div class="alat"><input type="search" id="cari" placeholder="Cari nama, NIP lama/baru, jabatan, unit…" aria-label="Cari pegawai">
-      <select id="fStatus" aria-label="Saring status"><option value="">Semua status</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option><option value="admin">Admin</option></select></div>
+      <select id="fStatus" aria-label="Saring status"><option value="">Semua status</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option><option value="admin">Admin</option><option value="pimpinan">Pimpinan</option></select></div>
     <div class="tabel-wrap"><table><thead><tr><th>Username / NIP lama</th><th>Nama</th><th>NIP baru</th><th>Jabatan / Unit kerja</th><th>Peran</th><th>Status</th><th></th></tr></thead><tbody id="tbl"></tbody></table></div>
   </div>
   </section>
@@ -387,7 +387,7 @@
 
 <div class="modal" id="mPeg"><form class="isi form" id="fPeg" role="dialog" aria-labelledby="mJ" autocomplete="off">
   <h3 id="mJ">Tambah pengguna</h3><div class="ket" id="mKet"></div>
-  <label for="iPeran">Jenis akun</label><select id="iPeran"><option value="pegawai">Pegawai — mencatat kegiatan</option><option value="admin">Admin — monitoring, pengguna & kop</option></select>
+  <label for="iPeran">Jenis akun</label><select id="iPeran"><option value="pegawai">Pegawai — mencatat kegiatan</option><option value="pimpinan">Pimpinan — evaluasi kegiatan semua pegawai</option><option value="admin">Admin — monitoring, pengguna & kop</option></select>
   <div class="g2">
     <div><label for="iNama" id="lbNama">Nama lengkap (dengan gelar) *</label><input id="iNama" required></div>
     <div><label for="iNip" id="lbNip">NIP lama (dipakai untuk masuk) *</label><input id="iNip" required autocapitalize="off"><div class="ket" id="nipKet">9 digit, mis. 340012345</div></div>
@@ -454,13 +454,13 @@
   function render() {
     $('nTotal').textContent = daftar.length; $('nAktif').textContent = daftar.filter(p => p.aktif).length; $('nAdmin').textContent = daftar.filter(p => p.peran === 'admin').length;
     const q = $('cari').value.trim().toLowerCase(), f = $('fStatus').value;
-    const rows = daftar.filter(p => (!q || [p.nama, p.nip, p.nip_baru, p.jabatan, p.unit].join(' ').toLowerCase().includes(q)) && (!f || (f === 'aktif' ? p.aktif : f === 'nonaktif' ? !p.aktif : p.peran === 'admin')));
+    const rows = daftar.filter(p => (!q || [p.nama, p.nip, p.nip_baru, p.jabatan, p.unit].join(' ').toLowerCase().includes(q)) && (!f || (f === 'aktif' ? p.aktif : f === 'nonaktif' ? !p.aktif : p.peran === f)));
     $('tbl').innerHTML = rows.length ? rows.map(p => `<tr>
       <td class="nip">${S.esc(p.nip)}</td>
       <td><b>${S.esc(p.nama)}</b>${p.id === sayaId ? ' <span class="badge b-peg">Anda</span>' : ''}</td>
       <td class="nip">${S.esc(p.nip_baru || '—')}</td>
       <td>${S.esc(p.jabatan || '—')}${p.unit ? '<br><span style="color:var(--teks2);font-size:12.5px">' + S.esc(p.unit) + '</span>' : ''}</td>
-      <td><span class="badge ${p.peran === 'admin' ? 'b-admin' : 'b-peg'}">${p.peran === 'admin' ? 'Admin' : 'Pegawai'}</span></td>
+      <td><span class="badge ${p.peran === 'admin' ? 'b-admin' : p.peran === 'pimpinan' ? 'b-pim' : 'b-peg'}">${p.peran === 'admin' ? 'Admin' : p.peran === 'pimpinan' ? 'Pimpinan' : 'Pegawai'}</span></td>
       <td><span class="badge ${p.aktif ? 'b-on' : 'b-off'}">${p.aktif ? 'Aktif' : 'Nonaktif'}</span></td>
       <td class="aksi-td" style="white-space:nowrap"><button class="ikon" data-edit="${p.id}" title="Ubah" aria-label="Ubah ${S.esc(p.nama)}"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>${p.id === sayaId ? '' : `<button class="ikon hapus" data-hapus="${p.id}" title="Hapus" aria-label="Hapus ${S.esc(p.nama)}"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>`}</td></tr>`).join('')
       : `<tr><td colspan="7"><div class="kosong">${daftar.length ? 'Tidak ada pegawai yang cocok.' : 'Belum ada pengguna. Klik “+ Tambah pengguna”.'}</div></td></tr>`;
@@ -483,7 +483,7 @@
   $('iPeran').onchange = aturJenisAkun;
   function buka(p) {
     edit = p; $('mErr').textContent = '';
-    $('mJ').textContent = p ? 'Ubah data ' + (p.peran === 'admin' ? 'admin' : 'pegawai') : 'Tambah pengguna';
+    $('mJ').textContent = p ? 'Ubah data ' + (p.peran === 'admin' ? 'admin' : p.peran === 'pimpinan' ? 'pimpinan' : 'pegawai') : 'Tambah pengguna';
     $('mKet').textContent = p ? 'Mengubah NIP lama/username juga mengubah yang dipakai untuk masuk.' : 'Admin cukup nama, username, dan password. Pegawai diisi lengkap.';
     Object.entries(F).forEach(([id, f]) => $(id).value = p ? (p[f] || '') : '');
     $('iPeran').value = p ? p.peran : 'pegawai'; $('iAktif').value = !p || p.aktif ? '1' : '0';
@@ -529,7 +529,7 @@
     X.utils.book_append_sheet(wb, ws, 'Pengguna'); if (lembar2) { const p = X.utils.aoa_to_sheet(lembar2); p['!cols'] = [{ wch: 20 }, { wch: 90 }]; X.utils.book_append_sheet(wb, p, 'Petunjuk'); }
     await S.download(nama, new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
   }
-  $('btnEksporPeg').onclick = () => unduhXlsx('Daftar_Pengguna_SKP_Harian.xlsx', [['Nama Lengkap', 'NIP Lama / Username', 'NIP Baru', 'Jabatan', 'Unit Kerja', 'Peran', 'Status']].concat(daftar.map(p => [p.nama, p.nip, p.nip_baru || '', p.jabatan || '', p.unit || '', p.peran === 'admin' ? 'Admin' : 'Pegawai', p.aktif ? 'Aktif' : 'Nonaktif'])), [32, 18, 24, 28, 18, 10, 10]).catch(x => S.toast(x.message));
+  $('btnEksporPeg').onclick = () => unduhXlsx('Daftar_Pengguna_SKP_Harian.xlsx', [['Nama Lengkap', 'NIP Lama / Username', 'NIP Baru', 'Jabatan', 'Unit Kerja', 'Peran', 'Status']].concat(daftar.map(p => [p.nama, p.nip, p.nip_baru || '', p.jabatan || '', p.unit || '', p.peran === 'admin' ? 'Admin' : p.peran === 'pimpinan' ? 'Pimpinan' : 'Pegawai', p.aktif ? 'Aktif' : 'Nonaktif'])), [32, 18, 24, 28, 18, 10, 10]).catch(x => S.toast(x.message));
   let impor = [], akunBaru = [];
   $('btnImporPeg').onclick = () => { SKPExcel.lib().catch(() => { }); impor = []; akunBaru = []; $('ipHasil').innerHTML = ''; $('ipNama').textContent = ''; $('ipSimpan').disabled = true; $('ipSimpan').textContent = 'Simpan'; $('ipSimpan').hidden = false; $('ipAkun').hidden = true; $('mImpor').classList.add('on'); };
   $('ipTutup').onclick = () => $('mImpor').classList.remove('on');
@@ -649,7 +649,7 @@
     bar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18M8 17V11M13 17V7M18 17v-4"/></svg>',
     alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>' };
   const WARNA_AV = ['#2E75B6', '#059669', '#f97316', '#7c3aed', '#db2777', '#0891b2', '#ca8a04', '#4f46e5'];
-  const inisial = n => String(n || '?').replace(/[,.].*$/, '').trim().split(/\s+/).filter(w => !/^(hj|h|dr|ir|drs|dra)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+  const inisial = n => String(n || '?').replace(/,.*$/, '').trim().split(/\s+/).map(w => w.replace(/\.+$/, '')).filter(w => w && !/^(hj|h|dr|ir|drs|dra|prof)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
   const warnaAv = n => { let s = 0; for (const c of String(n || '')) s = (s * 31 + c.charCodeAt(0)) >>> 0; return WARNA_AV[s % WARNA_AV.length]; };
   const fmt = n => Number(n || 0).toLocaleString('id-ID');
   const ymGeser = (v, d) => { const [y, m] = v.split('-').map(Number); const t = new Date(y, m - 1 + d, 1); return t.getFullYear() + '-' + S.pad(t.getMonth() + 1); };

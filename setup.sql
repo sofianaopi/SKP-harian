@@ -17,12 +17,15 @@ create table if not exists public.pegawai (
   atasan_nama    text,
   atasan_nip     text,
   atasan_jabatan text,
-  peran          text not null default 'pegawai' check (peran in ('pegawai', 'admin')),
+  peran          text not null default 'pegawai' check (peran in ('pegawai', 'admin', 'pimpinan')),
   aktif          boolean not null default true,
   dibuat         timestamptz not null default now()
 );
 
 alter table public.pegawai add column if not exists nip_baru text;   -- NIP 18 digit (tampil di dokumen)
+-- peran 'pimpinan': membaca kegiatan semua pegawai untuk evaluasi (halaman pimpinan.html)
+alter table public.pegawai drop constraint if exists pegawai_peran_check;
+alter table public.pegawai add constraint pegawai_peran_check check (peran in ('pegawai', 'admin', 'pimpinan'));
 comment on column public.pegawai.nip is 'Username login: NIP lama (9 digit) untuk pegawai, atau nama pengguna untuk admin';
 
 create table if not exists public.jenis_kegiatan (   -- daftar jenis kegiatan per bidang (dipakai bersama)
@@ -111,6 +114,23 @@ create table if not exists public.saran (  -- Saran untuk pengembang: dikirim pe
 );
 create index if not exists saran_dibuat on public.saran(dibuat desc);
 
+create table if not exists public.kegiatan_arsip (   -- salinan ringkas kegiatan yang sudah disimpan ke Drive (tanpa foto) — untuk evaluasi pimpinan
+  id            text primary key,
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  tanggal       date not null,
+  tanggal_akhir date,
+  jam           text,
+  teks          text,
+  gabung        text,
+  bidang        text,
+  rk_id         text,
+  rk_nama       text,
+  iki           text,
+  foto          int not null default 0,
+  diarsip       timestamptz not null default now()
+);
+create index if not exists kegiatan_arsip_user on public.kegiatan_arsip(user_id, tanggal);
+
 create table if not exists public.kegiatan_ringkas (   -- ringkasan kegiatan yang sudah diarsipkan ke Google Drive
   user_id uuid not null references auth.users(id) on delete cascade,
   tanggal date not null,
@@ -128,6 +148,11 @@ create table if not exists public.pengaturan (   -- pengaturan kantor (mis. kop 
 create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.pegawai where id = auth.uid() and peran = 'admin' and aktif);
+$$;
+
+create or replace function public.is_pimpinan() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.pegawai where id = auth.uid() and peran = 'pimpinan' and aktif);
 $$;
 
 create or replace function public.is_pegawai() returns boolean
@@ -223,6 +248,11 @@ language plpgsql security definer set search_path = public as $$
 declare n int;
 begin
   if not public.is_pegawai() then raise exception 'Tidak diizinkan'; end if;
+  insert into public.kegiatan_arsip (id, user_id, tanggal, tanggal_akhir, jam, teks, gabung, bidang, rk_id, rk_nama, iki, foto)
+    select k.id, k.user_id, k.tanggal, k.tanggal_akhir, k.jam, k.teks, k.gabung, k.bidang, k.rk_id, r.nama, r.indikator, coalesce(jsonb_array_length(k.foto), 0)
+      from public.kegiatan k left join public.rk r on r.id = k.rk_id
+     where k.id = any(p_ids) and k.user_id = auth.uid()
+  on conflict (id) do nothing;
   insert into public.kegiatan_ringkas (user_id, tanggal, jumlah, foto)
     select user_id, tanggal, count(*), coalesce(sum(jsonb_array_length(foto)), 0)
       from public.kegiatan where id = any(p_ids) and user_id = auth.uid()
@@ -317,6 +347,17 @@ drop policy if exists dokumen_milik_sendiri on public.dokumen;
 create policy dokumen_milik_sendiri on public.dokumen for all to authenticated
   using (user_id = auth.uid() and public.is_pegawai()) with check (user_id = auth.uid() and public.is_pegawai());
 
+-- PIMPINAN: hanya MEMBACA data pegawai, kegiatan, RK, arsip kegiatan, dan foto bukti (tidak dapat mengubah)
+drop policy if exists pegawai_baca_pimpinan on public.pegawai;
+create policy pegawai_baca_pimpinan on public.pegawai for select to authenticated using (public.is_pimpinan());
+drop policy if exists kegiatan_baca_pimpinan on public.kegiatan;
+create policy kegiatan_baca_pimpinan on public.kegiatan for select to authenticated using (public.is_pimpinan());
+drop policy if exists rk_baca_pimpinan on public.rk;
+create policy rk_baca_pimpinan on public.rk for select to authenticated using (public.is_pimpinan());
+alter table public.kegiatan_arsip enable row level security;
+drop policy if exists arsip_baca on public.kegiatan_arsip;
+create policy arsip_baca on public.kegiatan_arsip for select to authenticated using (user_id = auth.uid() or public.is_pimpinan());
+
 -- ringkasan arsip: pegawai hanya membaca miliknya (diisi lewat fungsi arsipkan_kegiatan)
 drop policy if exists ringkas_baca on public.kegiatan_ringkas;
 create policy ringkas_baca on public.kegiatan_ringkas for select to authenticated using (user_id = auth.uid());
@@ -345,6 +386,9 @@ drop policy if exists bukti_milik_sendiri on storage.objects;
 create policy bukti_milik_sendiri on storage.objects for all to authenticated
   using (bucket_id = 'bukti' and (storage.foldername(name))[1] = auth.uid()::text and public.is_pegawai())
   with check (bucket_id = 'bukti' and (storage.foldername(name))[1] = auth.uid()::text and public.is_pegawai());
+
+drop policy if exists bukti_baca_pimpinan on storage.objects;
+create policy bukti_baca_pimpinan on storage.objects for select to authenticated using (bucket_id = 'bukti' and public.is_pimpinan());
 
 -- Muat ulang daftar tabel di server API agar tabel/kolom baru langsung dikenali
 notify pgrst, 'reload schema';

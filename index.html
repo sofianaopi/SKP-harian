@@ -551,7 +551,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   const ROUTES = ['dashboard', 'rekap', 'rk', 'upload', 'dinas', 'profil', 'saran'];
   const JUDUL_R = { dashboard: ['Dashboard', 'Ringkasan kerja harian Anda'], rekap: ['Rekap Kegiatan', 'Rapikan uraian, bidang, dan RK'], rk: ['RK & IKI', 'Rencana Kinerja & Indikator Kinerja Individu'], upload: ['Upload Dokumen', 'Dokumen Bukti Dukung SKP & Google Drive'], dinas: ['Perjalanan Dinas', 'Laporan pengawasan / pendataan lapangan'], profil: ['Profil', 'Data diri, kata sandi, dan bantuan'], saran: ['Saran Pengembang', 'Kirim saran, laporan masalah, atau pertanyaan ke admin'] };
   const WARNA_AV = ['#2E75B6', '#059669', '#f97316', '#7c3aed', '#db2777', '#0891b2', '#ca8a04', '#4f46e5'];
-  const inisial = n => String(n || '?').replace(/[,.].*$/, '').trim().split(/\s+/).filter(w => !/^(hj|h|dr|ir|drs|dra)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+  const inisial = n => String(n || '?').replace(/,.*$/, '').trim().split(/\s+/).map(w => w.replace(/\.+$/, '')).filter(w => w && !/^(hj|h|dr|ir|drs|dra|prof)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
   const warnaAv = n => { let s = 0; for (const c of String(n || '')) s = (s * 31 + c.charCodeAt(0)) >>> 0; return WARNA_AV[s % WARNA_AV.length]; };
   const current = () => { const r = location.hash.slice(1); return ROUTES.includes(r) ? r : 'dashboard'; };
   function route() {
@@ -1327,6 +1327,8 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   S.registerSW();
   S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid;
     if (pegawai.peran === 'admin') { location.replace('admin.html'); return; }
+    if (pegawai.peran === 'pimpinan' && !/[?&]saya=1/.test(location.search) && !sessionStorage.getItem('sakti-pim-saya')) { location.replace('pimpinan.html'); return; }
+    if (pegawai.peran === 'pimpinan') { sessionStorage.setItem('sakti-pim-saya', '1'); const a = document.createElement('a'); a.className = 'menu menu-pim'; a.href = 'pimpinan.html'; a.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-5h2v13H7zm4-5h2v18h-2zm4 8h2v10h-2zm4-4h2v14h-2z"/></svg>Evaluasi Pimpinan'; const nav = document.querySelector('nav.sisi a[data-r=dashboard]'); nav && nav.before(a); }
     masuk = true;
     try { await muat(); } catch (e) { S.toast(e.message, 6000); }
     if (window.SKPDinas) await SKPDinas.init({ kegiatan: () => kegiatan, profil: () => profil, ambilFoto, konfirmasi }).catch(() => { });

@@ -300,6 +300,10 @@
       if (!r.data || !r.data.aktif) { pesan = !r.data ? 'Akun ini belum terdaftar sebagai pegawai. Hubungi admin.' : 'Akun Anda dinonaktifkan. Hubungi admin.'; await c.auth.signOut(); continue; }
       saya = r.data; break;
     }
+    if (opt.pimpinan && saya.peran !== 'pimpinan') {
+      layar(`<div class="ket">Halaman ini khusus <b>pimpinan</b>. Anda masuk sebagai ${esc(saya.nama)}.</div><button type="button" class="tbl" onclick="location.href='${saya.peran === 'admin' ? 'admin.html' : 'index.html'}'">Kembali</button>`);
+      return new Promise(() => { });
+    }
     if (opt.admin && saya.peran !== 'admin') {
       layar(`<div class="ket">Halaman ini khusus <b>admin</b>. Anda masuk sebagai ${esc(saya.nama)}.</div><button type="button" class="tbl" onclick="location.href='index.html'">Ke Dashboard saya</button>`);
       return new Promise(() => { });
@@ -503,7 +507,7 @@
   const waLink = () => 'https://wa.me/' + WA_NOMOR + '?text=' + encodeURIComponent(waPesan());
   const IKON_WA = '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.2-.6-6-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.4 10.4 0 0 1-1.6-5.6C5.1 9.9 10 5.2 16 5.2s10.9 4.7 10.9 10.6S22 26.4 16 26.4zm6-7.9c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.1 1.4 3.3c.2.2 2.3 3.5 5.6 4.9 2.8 1.1 3.3.9 3.9.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.6-.4z"/></svg>';
   function pasangWA() {
-    if (document.getElementById('skp-wa') || /input\.html/i.test(location.pathname) || !WA_NOMOR) return;
+    if (document.getElementById('skp-wa') || /(input|pimpinan)\.html/i.test(location.pathname) || !WA_NOMOR) return;
     const st = document.createElement('style');
     st.textContent = `#skp-wa{position:fixed;right:18px;bottom:18px;z-index:1001;font-family:inherit}
     #skp-wa .wa-tbl{width:56px;height:56px;border-radius:50%;border:0;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);transition:transform .15s}
