@@ -97,6 +97,20 @@ create table if not exists public.laporan_dinas (  -- Laporan Perjalanan Dinas (
 );
 create index if not exists laporan_dinas_user on public.laporan_dinas(user_id, diubah desc);
 
+create table if not exists public.saran (  -- Saran untuk pengembang: dikirim pegawai, dibaca & dibalas admin
+  id       text primary key,
+  user_id  uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  kategori text not null default 'Saran fitur',
+  judul    text,
+  isi      text not null,
+  gambar   text,                                  -- tangkapan layar (opsional, gambar terkompres)
+  status   text not null default 'baru',          -- baru | dibaca | diproses | selesai
+  balasan  text,
+  dibalas  timestamptz,
+  dibuat   timestamptz not null default now()
+);
+create index if not exists saran_dibuat on public.saran(dibuat desc);
+
 create table if not exists public.kegiatan_ringkas (   -- ringkasan kegiatan yang sudah diarsipkan ke Google Drive
   user_id uuid not null references auth.users(id) on delete cascade,
   tanggal date not null,
@@ -312,6 +326,18 @@ drop policy if exists pengaturan_baca on public.pengaturan;
 drop policy if exists pengaturan_admin on public.pengaturan;
 create policy pengaturan_baca  on public.pengaturan for select to authenticated using (true);
 create policy pengaturan_admin on public.pengaturan for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- saran pengembang: pegawai mengirim & melihat miliknya; admin melihat semua, mengubah status & membalas
+alter table public.saran enable row level security;
+drop policy if exists saran_baca on public.saran;
+drop policy if exists saran_kirim on public.saran;
+drop policy if exists saran_admin_ubah on public.saran;
+drop policy if exists saran_hapus on public.saran;
+create policy saran_baca on public.saran for select to authenticated using (user_id = auth.uid() or public.is_admin());
+create policy saran_kirim on public.saran for insert to authenticated
+  with check (user_id = auth.uid() and public.is_pegawai() and status = 'baru' and balasan is null and dibalas is null);
+create policy saran_admin_ubah on public.saran for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy saran_hapus on public.saran for delete to authenticated using (public.is_admin() or (user_id = auth.uid() and status = 'baru'));
 
 -- ---------- PENYIMPANAN FOTO BUKTI ----------
 insert into storage.buckets (id, name, public) values ('bukti', 'bukti', false) on conflict (id) do nothing;

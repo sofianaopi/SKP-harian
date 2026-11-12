@@ -269,6 +269,30 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   @media (max-width: 760px) { .d-baris3 { grid-template-columns: 1fr; } .pend { grid-template-columns: 1fr; } .mini4 { grid-template-columns: 1fr 1fr; } .d-hero { padding: 20px 18px; } .d-hero h2 { font-size: 22px; } .d-tgl { display: none; } .d-hero-aksi { margin-left: 0; width: 100%; } .d-tile b { font-size: 23px; } .kpi b.angka { font-size: 25px; } }
   @media (max-width: 560px) { .tb-bln .bk .ket { display: none; } .tb-bln .bk .nm { flex: 1; } .d-kep { flex-wrap: wrap; } }
   @media (max-width: 420px) { .d-hero-grid, .d-kpi { grid-template-columns: 1fr 1fr; gap: 10px; } .d-tile { padding: 12px; } .kpi { padding: 14px; } }
+  .sb-badge { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: #ef4444; color: #fff; font-size: 11.5px; font-weight: 800; display: inline-grid; place-items: center; }
+  .saran-ajak { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; text-decoration: none; color: inherit; border-color: #fde68a; background: #fffbeb; }
+  .saran-ajak .sa-ik { font-size: 26px; } .saran-ajak b { display: block; font-size: 14.5px; } .saran-ajak small { display: block; color: var(--teks2); font-size: 12.5px; margin-top: 2px; } .saran-ajak > div { flex: 1; }
+  .saran-hero { border-radius: 20px; padding: 22px 26px; color: #fff; background: linear-gradient(120deg, #1F4E79 0%, #1d63a6 60%, #2a7cc7 100%); margin-bottom: 18px; box-shadow: 0 12px 30px rgba(31,78,121,.22); }
+  .saran-hero h2 { margin: 0; font-size: 22px; } .saran-hero p { margin: 6px 0 0; opacity: .9; font-size: 14px; max-width: 720px; }
+  .saran-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 18px; align-items: start; }
+  .form textarea { width: 100%; padding: 10px 11px; border: 1px solid #cfd7e0; border-radius: 9px; font: inherit; resize: vertical; box-sizing: border-box; }
+  .sa-kat { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sa-kat button { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid #dbe3ec; background: #fff; border-radius: 11px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; text-align: left; color: var(--teks); }
+  .sa-kat button span { font-size: 17px; } .sa-kat button.on { border-color: #1d63a6; background: #eff6ff; color: #1F4E79; box-shadow: 0 0 0 3px rgba(29,99,166,.12); }
+  .sa-lampir { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .sa-prev { margin-top: 10px; position: relative; display: inline-block; } .sa-prev img { max-width: 220px; max-height: 160px; border-radius: 10px; border: 1px solid var(--garis); display: block; }
+  .sa-prev button { position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: #1d2733; color: #fff; cursor: pointer; }
+  .sa-item { border: 1px solid #e8edf3; border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #fbfcfe; }
+  .sa-item .sa-atas { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--teks2); }
+  .sa-item h4 { margin: 8px 0 4px; font-size: 14.5px; } .sa-item .sa-isi { font-size: 13.5px; white-space: pre-wrap; color: #334155; }
+  .sa-item img { max-width: 160px; max-height: 120px; border-radius: 8px; border: 1px solid var(--garis); margin-top: 8px; cursor: zoom-in; display: block; }
+  .sa-kat-chip { display: inline-flex; gap: 4px; align-items: center; font-weight: 700; color: #1F4E79; background: #e8f0fa; border-radius: 99px; padding: 2px 9px; }
+  .st-chip { display: inline-block; font-weight: 700; border-radius: 99px; padding: 2px 9px; font-size: 11.5px; }
+  .st-baru { background: #fef3c7; color: #92400e; } .st-dibaca { background: #e0f2fe; color: #075985; } .st-diproses { background: #ede9fe; color: #5b21b6; } .st-selesai { background: #dcfce7; color: #166534; }
+  .sa-balas { margin-top: 10px; background: #ecfdf3; border: 1px solid #bbf7d0; border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
+  .sa-balas b { display: block; font-size: 12px; color: #166534; margin-bottom: 3px; } .sa-balas div { white-space: pre-wrap; }
+  .sa-hapus { margin-left: auto; border: 0; background: none; color: #b42318; font-size: 12px; cursor: pointer; text-decoration: underline; font: inherit; font-size: 12px; }
+  @media (max-width: 980px) { .saran-grid { grid-template-columns: 1fr; } }
   [hidden] { display: none !important; }
   .daftar-baru time { flex-shrink: 0; }
   @media (max-width: 1100px) { .grid4 { grid-template-columns: repeat(2, 1fr); } .grid2 { grid-template-columns: 1fr; } }
@@ -305,6 +329,8 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     <a class="menu" href="#profil" data-r="profil"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg>Profil</a>
     <div class="menu-grup">Fitur tambahan</div>
     <a class="menu" href="#dinas" data-r="dinas"><svg viewBox="0 0 24 24"><path d="M14 6V4h-4v2h4zM4 8v11h16V8H4zm16-2c1.1 0 2 .9 2 2v11c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2h4V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v2h4z"/></svg>Perjalanan Dinas</a>
+    <div class="menu-grup">Bantuan</div>
+    <a class="menu" href="#saran" data-r="saran"><svg viewBox="0 0 24 24"><path d="M9 21h6v-1H9v1zm3-20a7 7 0 0 0-4 12.74V16a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 1zm2.85 11.1-.85.6V15h-4v-2.3l-.85-.6A5 5 0 1 1 14.85 12.1z"/></svg>Saran Pengembang<span class="sb-badge" id="saranBadge" hidden></span></a>
     <div class="akun" id="akunBox"></div>
     <a class="catat-btn" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
   </nav>
@@ -421,6 +447,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
             <form id="formPw" class="form" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:170px"><label for="pwBaru" style="margin-top:0">Password baru</label><input id="pwBaru" type="password" autocomplete="new-password" minlength="6" placeholder="min. 6 karakter"></div><button class="btn" type="submit">Ganti password</button></form>
             <p style="margin:14px 0 0"><button class="btn kecil" type="button" id="btnKeluar">Keluar dari akun</button></p>
           </div>
+          <a class="kartu saran-ajak" href="#saran"><span class="sa-ik">💡</span><div><b>Saran untuk Pengembang</b><small>Ada ide fitur, kendala, atau pertanyaan? Kirim ke admin agar SAKTI terus sesuai kebutuhan pegawai.</small></div><span class="sb-badge" id="saranBadge2" hidden></span><span style="color:var(--teks2);font-size:20px">›</span></a>
           <div class="kartu">
             <h2>Pasang di HP</h2>
             <ol class="langkah" style="font-size:13.5px">
@@ -430,6 +457,34 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
             </ol>
             <p style="margin:12px 0 0"><button class="btn" id="btnPasang" hidden>Pasang di perangkat ini</button></p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SARAN PENGEMBANG -->
+    <section id="v-saran" hidden>
+      <div class="saran-hero"><div><h2>💡 Saran untuk Pengembang</h2><p>Bantu kami membuat SAKTI tetap sesuai kebutuhan pegawai. Pesan Anda langsung masuk ke kotak pesan admin dan akan dibalas di halaman ini.</p></div></div>
+      <div class="saran-grid">
+        <form class="d-kartu d-pad form" id="formSaran">
+          <h3 style="margin:0 0 4px;font-size:17px">Kirim pesan baru</h3>
+          <p style="margin:0 0 6px;font-size:13px;color:var(--teks2)">Jelaskan sejelas mungkin. Tangkapan layar sangat membantu untuk laporan masalah.</p>
+          <label style="margin-top:12px">Jenis pesan</label>
+          <div class="sa-kat" id="saKat">
+            <button type="button" data-k="Saran fitur" class="on"><span>💡</span>Saran fitur</button>
+            <button type="button" data-k="Laporan masalah"><span>🐞</span>Laporan masalah</button>
+            <button type="button" data-k="Pertanyaan"><span>❓</span>Pertanyaan</button>
+            <button type="button" data-k="Lainnya"><span>💬</span>Lainnya</button>
+          </div>
+          <label for="saJudul">Judul singkat</label><input id="saJudul" maxlength="120" placeholder="Mis. Tambahkan pengingat mengisi kegiatan">
+          <label for="saIsi">Isi pesan</label><textarea id="saIsi" rows="6" maxlength="3000" placeholder="Ceritakan saran, kendala, atau pertanyaan Anda…"></textarea>
+          <div class="sa-lampir"><button type="button" class="btn kecil" id="saLampirBtn">📎 Lampirkan tangkapan layar</button><span id="saLampirInfo" style="font-size:12.5px;color:var(--teks2)">opsional</span>
+            <input type="file" id="saFile" accept="image/*" hidden></div>
+          <div id="saPrev" class="sa-prev" hidden></div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:16px"><button class="btn utama" type="submit" id="saKirim">Kirim ke admin</button><span style="font-size:12px;color:var(--teks2)">Nama Anda ikut terkirim agar admin dapat membalas.</span></div>
+        </form>
+        <div class="d-kartu d-pad">
+          <div class="d-kep"><div><h3>Pesan Anda</h3><p>Status dan balasan dari admin</p></div><span id="saJml"></span></div>
+          <div id="saDaftar"></div>
         </div>
       </div>
     </section>
@@ -496,8 +551,8 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   const ambilFoto = id => { if (!fotoCache.has(id)) fotoCache.set(id, S.get('foto', id)); return fotoCache.get(id); };
 
   /* ---------- Menu ---------- */
-  const ROUTES = ['dashboard', 'rekap', 'rk', 'upload', 'dinas', 'profil'];
-  const JUDUL_R = { dashboard: ['Dashboard', 'Ringkasan kerja harian Anda'], rekap: ['Rekap Kegiatan', 'Rapikan uraian, bidang, dan RK'], rk: ['RK & IKI', 'Rencana Kinerja & Indikator Kinerja Individu'], upload: ['Upload Dokumen', 'Dokumen Bukti Dukung SKP & Google Drive'], dinas: ['Perjalanan Dinas', 'Laporan pengawasan / pendataan lapangan'], profil: ['Profil', 'Data diri, kata sandi, dan bantuan'] };
+  const ROUTES = ['dashboard', 'rekap', 'rk', 'upload', 'dinas', 'profil', 'saran'];
+  const JUDUL_R = { dashboard: ['Dashboard', 'Ringkasan kerja harian Anda'], rekap: ['Rekap Kegiatan', 'Rapikan uraian, bidang, dan RK'], rk: ['RK & IKI', 'Rencana Kinerja & Indikator Kinerja Individu'], upload: ['Upload Dokumen', 'Dokumen Bukti Dukung SKP & Google Drive'], dinas: ['Perjalanan Dinas', 'Laporan pengawasan / pendataan lapangan'], profil: ['Profil', 'Data diri, kata sandi, dan bantuan'], saran: ['Saran Pengembang', 'Kirim saran, laporan masalah, atau pertanyaan ke admin'] };
   const WARNA_AV = ['#2E75B6', '#059669', '#f97316', '#7c3aed', '#db2777', '#0891b2', '#ca8a04', '#4f46e5'];
   const inisial = n => String(n || '?').replace(/[,.].*$/, '').trim().split(/\s+/).filter(w => !/^(hj|h|dr|ir|drs|dra)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
   const warnaAv = n => { let s = 0; for (const c of String(n || '')) s = (s * 31 + c.charCodeAt(0)) >>> 0; return WARNA_AV[s % WARNA_AV.length]; };
@@ -509,7 +564,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     render(r); window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', () => { if (masuk) route(); });
-  function render(r) { renderBulan(); if (r === 'dashboard') renderDashboard(); if (r === 'rekap') renderRekap(); if (r === 'rk') renderRkMenu(); if (r === 'upload') renderUpload(); if (r === 'profil') renderProfil(); if (r === 'dinas' && window.SKPDinas) SKPDinas.render(); }
+  function render(r) { renderBulan(); if (r === 'dashboard') renderDashboard(); if (r === 'rekap') renderRekap(); if (r === 'rk') renderRkMenu(); if (r === 'upload') renderUpload(); if (r === 'profil') renderProfil(); if (r === 'saran') renderSaran(); if (r === 'dinas' && window.SKPDinas) SKPDinas.render(); }
 
   function geserBulan(d) { const [y, m] = ym.split('-').map(Number); const t = new Date(y, m - 1 + d, 1); ym = t.getFullYear() + '-' + S.pad(t.getMonth() + 1); render(current()); }
   function renderBulan() {
@@ -1194,6 +1249,54 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
 
   /* ---------- Profil ---------- */
   const isiDlUnit = () => { $('dlUnit').innerHTML = S.BIDANG.map(b => `<option value="${S.esc(b)}">`).join(''); }; isiDlUnit();
+  /* ---------- Saran Pengembang ---------- */
+  let saranList = [], saranMuat = false, saranGambar = null, sayaUid = null;
+  const KAT_IK = { 'Saran fitur': '💡', 'Laporan masalah': '🐞', 'Pertanyaan': '❓', 'Lainnya': '💬' };
+  const ST_LBL = { baru: 'Terkirim', dibaca: 'Dibaca admin', diproses: 'Sedang diproses', selesai: 'Selesai' };
+  const lihatBalasan = () => { try { return JSON.parse(localStorage.getItem('sakti-saran-lihat') || '{}'); } catch (e) { return {}; } };
+  function badgeSaran() { const L = lihatBalasan(); const n = saranList.filter(s => s.balasan && s.dibalas && L[s.id] !== s.dibalas).length;
+    ['saranBadge', 'saranBadge2'].forEach(id => { const b = $(id); if (b) { b.hidden = !n; b.textContent = n; } }); }
+  async function muatSaran() {
+    try { saranList = (S.cek(await S.client().from('saran').select('*').order('dibuat', { ascending: false })) || []).sort((a, b) => String(b.dibuat || '').localeCompare(String(a.dibuat || ''))); saranMuat = true; }
+    catch (x) { saranList = []; if (current() === 'saran') $('saDaftar').innerHTML = `<div class="kosong" style="color:#b42318">${S.esc(/saran|relation|schema/i.test(x.message) ? 'Fitur ini belum aktif: minta admin menjalankan setup.sql terbaru di Supabase.' : x.message)}</div>`; }
+    badgeSaran();
+  }
+  const waktuSaran = t => { if (!t) return ''; const d = new Date(t); return S.tglSedang(S.ymd(d)) + ', ' + S.pad(d.getHours()) + '.' + S.pad(d.getMinutes()); };
+  async function renderSaran() {
+    if (!saranMuat) { $('saDaftar').innerHTML = '<div class="kosong">Memuat…</div>'; await muatSaran(); if (!saranMuat) return; }
+    const L = lihatBalasan(); saranList.forEach(s => { if (s.balasan && s.dibalas) L[s.id] = s.dibalas; }); try { localStorage.setItem('sakti-saran-lihat', JSON.stringify(L)); } catch (e) { }
+    badgeSaran();
+    $('saJml').innerHTML = saranList.length ? `<span class="pill-hijau">${saranList.length} pesan</span>` : '';
+    $('saDaftar').innerHTML = saranList.length ? saranList.map(s => `<div class="sa-item" data-id="${S.esc(s.id)}"><div class="sa-atas"><span class="sa-kat-chip">${KAT_IK[s.kategori] || '💬'} ${S.esc(s.kategori || '')}</span><span class="st-chip st-${S.esc(s.status)}">${ST_LBL[s.status] || S.esc(s.status)}</span><span>${S.esc(waktuSaran(s.dibuat))}</span>${s.status === 'baru' ? '<button type="button" class="sa-hapus" data-hapus>Batalkan</button>' : ''}</div>
+      ${s.judul ? `<h4>${S.esc(s.judul)}</h4>` : '<div style="height:8px"></div>'}<div class="sa-isi">${S.esc(s.isi)}</div>${s.gambar ? `<img src="${S.esc(s.gambar)}" alt="Tangkapan layar" data-lihat>` : ''}
+      ${s.balasan ? `<div class="sa-balas"><b>💬 Balasan admin · ${S.esc(waktuSaran(s.dibalas))}</b><div>${S.esc(s.balasan)}</div></div>` : ''}</div>`).join('')
+      : '<div class="kosong" style="padding:28px 8px">Belum ada pesan.<br>Saran Anda sangat berarti untuk pengembangan SAKTI 🙏</div>';
+  }
+  $('saKat').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; $('saKat').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+  $('saLampirBtn').onclick = () => $('saFile').click();
+  function tampilPrevSaran() { $('saPrev').hidden = !saranGambar; $('saLampirInfo').textContent = saranGambar ? '1 gambar dilampirkan' : 'opsional';
+    $('saPrev').innerHTML = saranGambar ? `<img src="${saranGambar}" alt=""><button type="button" aria-label="Hapus gambar">×</button>` : '';
+    if (saranGambar) $('saPrev').querySelector('button').onclick = () => { saranGambar = null; tampilPrevSaran(); }; }
+  $('saFile').onchange = async () => { const f = $('saFile').files[0]; $('saFile').value = ''; if (!f) return;
+    try { saranGambar = (await S.compressImage(f, 1200, 0.7)).data; tampilPrevSaran(); } catch (x) { S.toast(x.message); } };
+  $('formSaran').onsubmit = async e => {
+    e.preventDefault(); const isi = $('saIsi').value.trim(), judul = $('saJudul').value.trim();
+    if (isi.length < 5) { S.toast('Tuliskan isi pesan terlebih dahulu'); $('saIsi').focus(); return; }
+    const kat = ($('saKat').querySelector('.on') || {}).dataset; const b = $('saKirim'); if (b.disabled) return; b.disabled = true;
+    const rec = { id: 's' + S.uid(), user_id: sayaUid, kategori: kat ? kat.k : 'Saran fitur', judul: judul || null, isi, gambar: saranGambar || null, status: 'baru', dibuat: new Date().toISOString() };
+    try { await S.proses('Mengirim pesan ke admin…', async () => S.cek(await S.client().from('saran').insert(rec)));
+      $('saIsi').value = ''; $('saJudul').value = ''; saranGambar = null; tampilPrevSaran();
+      saranMuat = false; await renderSaran(); S.toast('Terima kasih! Pesan Anda sudah terkirim ke admin 🙏', 3500); }
+    catch (x) { S.toast(/saran|relation|schema/i.test(x.message) ? 'Fitur ini belum aktif: minta admin menjalankan setup.sql terbaru di Supabase.' : x.message, 6000); }
+    finally { b.disabled = false; }
+  };
+  $('saDaftar').addEventListener('click', async e => {
+    const im = e.target.closest('[data-lihat]'); if (im) { lihat(im.src); return; }
+    const h = e.target.closest('[data-hapus]'); if (!h) return; const id = h.closest('[data-id]').dataset.id;
+    if (!await konfirmasi('Batalkan pesan ini?', 'Pesan yang belum dibaca admin akan dihapus.')) return;
+    try { S.cek(await S.client().from('saran').delete().eq('id', id)); saranList = saranList.filter(s => s.id !== id); renderSaran(); S.toast('Pesan dibatalkan'); } catch (x) { S.toast(x.message); }
+  });
+
   function renderProfil() { $('pNama').value = profil.nama || ''; $('pUser').value = profil.username || ''; $('pNip').value = profil.nip || ''; $('pJabatan').value = profil.jabatan || ''; $('pUnit').value = profil.unit || ''; }
   $('formProfil').onsubmit = async e => {
     e.preventDefault(); if (!$('pNama').value.trim()) return;
@@ -1224,12 +1327,12 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (masuk && current() === 'dashboard') renderDashboard(); }, 200); });
   S.registerSW();
-  S.mulai().then(async ({ pegawai }) => { isiDlUnit();
+  S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid;
     if (pegawai.peran === 'admin') { location.replace('admin.html'); return; }
     masuk = true;
     try { await muat(); } catch (e) { S.toast(e.message, 6000); }
     if (window.SKPDinas) await SKPDinas.init({ kegiatan: () => kegiatan, profil: () => profil, ambilFoto, konfirmasi }).catch(() => { });
-    tampilAkun(); route();
+    tampilAkun(); route(); muatSaran();
   });
 })();
 </script>

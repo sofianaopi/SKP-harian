@@ -209,6 +209,37 @@
   @media (max-width: 760px) { .d-baris3 { grid-template-columns: 1fr; } .pend { grid-template-columns: 1fr; } .mini4 { grid-template-columns: 1fr 1fr; } .d-hero { padding: 20px 18px; } .d-hero h2 { font-size: 22px; } .d-tgl { display: none; } .d-hero-aksi { margin-left: 0; width: 100%; } .d-tile b { font-size: 23px; } .kpi b.angka { font-size: 25px; } }
   @media (max-width: 560px) { .tb-bln .bk .ket { display: none; } .tb-bln .bk .nm { flex: 1; } .d-kep { flex-wrap: wrap; } }
   @media (max-width: 420px) { .d-hero-grid, .d-kpi { grid-template-columns: 1fr 1fr; gap: 10px; } .d-tile { padding: 12px; } .kpi { padding: 14px; } }
+  .sb-badge { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: #ef4444; color: #fff; font-size: 11.5px; font-weight: 800; display: inline-grid; place-items: center; }
+  nav.tab a.aktif .sb-badge { background: #ef4444; color: #fff; }
+  .tb-lonceng { position: relative; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--teks2); text-decoration: none; } .tb-lonceng:hover { background: #f1f4f8; color: var(--teks); }
+  .tb-lonceng svg { width: 21px; height: 21px; } .tb-lonceng i { position: absolute; top: 5px; right: 4px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 99px; background: #ef4444; color: #fff; font-size: 10.5px; font-weight: 800; font-style: normal; display: grid; place-items: center; border: 2px solid #fff; }
+  .ps-wrap { display: grid; grid-template-columns: 400px 1fr; gap: 18px; align-items: start; }
+  .ps-alat { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; border-bottom: 1px solid var(--garis); }
+  .ps-alat input { flex: 1 1 100%; padding: 9px 11px; border: 1px solid var(--garis); border-radius: 9px; } .ps-alat select { padding: 7px 9px; border: 1px solid var(--garis); border-radius: 9px; margin-left: auto; }
+  .ps-alat .seg button { padding: 6px 10px; font-size: 12.5px; }
+  #psList { max-height: 68vh; overflow-y: auto; }
+  .ps-it { display: flex; gap: 11px; padding: 13px 14px; border-bottom: 1px solid #f0f3f7; cursor: pointer; position: relative; }
+  .ps-it:hover { background: #f7fafd; } .ps-it.aktif { background: #eef5fc; box-shadow: inset 3px 0 0 #1d63a6; }
+  .ps-it.baru::after { content: ""; position: absolute; top: 18px; right: 14px; width: 9px; height: 9px; border-radius: 50%; background: #ef4444; }
+  .ps-it .av { width: 38px; height: 38px; font-size: 13px; } .ps-it .tx { flex: 1; min-width: 0; }
+  .ps-it .tx b { display: block; font-size: 13.5px; padding-right: 16px; } .ps-it .tx .j { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .ps-it .tx .c { font-size: 12.5px; color: var(--teks2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ps-it .tx .m { display: flex; gap: 6px; align-items: center; margin-top: 5px; font-size: 11.5px; color: var(--teks2); flex-wrap: wrap; }
+  .ps-it.baru .tx b, .ps-it.baru .tx .j { color: #0f172a; font-weight: 800; }
+  .ps-detail { padding: 22px 24px; min-height: 300px; }
+  .ps-kep { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--garis); }
+  .ps-kep .av { width: 46px; height: 46px; font-size: 15px; } .ps-kep .nm { flex: 1; min-width: 160px; } .ps-kep .nm b { display: block; font-size: 16px; } .ps-kep .nm small { color: var(--teks2); font-size: 12.5px; }
+  .ps-kep select { padding: 8px 10px; border: 1px solid var(--garis); border-radius: 9px; font-weight: 600; }
+  .ps-detail h3 { margin: 16px 0 6px; font-size: 18px; } .ps-isi { white-space: pre-wrap; font-size: 14.5px; line-height: 1.6; color: #1e293b; }
+  .ps-detail img.ps-img { max-width: 100%; max-height: 420px; border-radius: 12px; border: 1px solid var(--garis); margin-top: 12px; cursor: zoom-in; display: block; }
+  .ps-balas-lama { margin-top: 18px; background: #ecfdf3; border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px 14px; font-size: 14px; white-space: pre-wrap; } .ps-balas-lama b { display: block; font-size: 12px; color: #166534; margin-bottom: 4px; white-space: normal; }
+  .ps-form { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--garis); } .ps-form label { font-size: 12.5px; font-weight: 600; color: var(--teks2); }
+  .ps-form textarea { width: 100%; box-sizing: border-box; min-height: 110px; margin-top: 6px; padding: 11px 12px; border: 1px solid #cfd7e0; border-radius: 10px; font: inherit; resize: vertical; }
+  .ps-form .aksi { justify-content: flex-start; margin-top: 10px; }
+  .sa-kat-chip { display: inline-flex; gap: 4px; align-items: center; font-weight: 700; color: #1F4E79; background: #e8f0fa; border-radius: 99px; padding: 2px 9px; font-size: 11.5px; }
+  .st-chip { display: inline-block; font-weight: 700; border-radius: 99px; padding: 2px 9px; font-size: 11.5px; }
+  .st-baru { background: #fef3c7; color: #92400e; } .st-dibaca { background: #e0f2fe; color: #075985; } .st-diproses { background: #ede9fe; color: #5b21b6; } .st-selesai { background: #dcfce7; color: #166534; }
+  .viewer-a { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 80; padding: 20px; } .viewer-a.on { display: flex; } .viewer-a img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+  @media (max-width: 1100px) { .ps-wrap { grid-template-columns: 1fr; } #psList { max-height: none; } #psRingkas { grid-template-columns: repeat(2, 1fr) !important; } }
   [hidden] { display: none !important; }
   @media (max-width: 720px) {
     header { padding: 12px 14px; } main { padding: 16px 12px 40px; }
@@ -227,6 +258,7 @@
     <a href="#pengguna" data-r="pengguna"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Pengguna</a>
     <a href="#bidang" data-r="bidang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>Bidang</a>
     <a href="#rk" data-r="rk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>RK &amp; IKI</a>
+    <a href="#pesan" data-r="pesan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Pesan &amp; Saran<span class="sb-badge" id="psBadge" hidden></span></a>
     <div class="sb-grup">Sistem</div>
     <a href="#pengaturan" data-r="pengaturan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Pengaturan</a>
   </nav>
@@ -237,6 +269,7 @@
   <div class="topbar"><button class="hamb" id="hamb" type="button" aria-label="Buka menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
     <div class="tb-judul"><h1 id="tbJudul">Dashboard</h1><p id="tbSub">Pantau pengisian kegiatan pegawai</p></div>
     <label class="tb-cari" id="tbCariBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="tbCari" placeholder="Cari pegawai…" aria-label="Cari"></label>
+    <a class="tb-lonceng" href="#pesan" id="tbLonceng" title="Pesan & saran pegawai" aria-label="Pesan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><i id="tbLoncengN" hidden></i></a>
     <div class="av" id="tbAv" title="">A</div></div>
 <main>
   <section id="v-dashboard" hidden>
@@ -270,6 +303,18 @@
       <div class="alat"><input type="search" id="mCari" placeholder="Cari nama, NIP, unit…" aria-label="Cari pegawai">
         <select id="mFilter" aria-label="Saring"><option value="">Semua pegawai</option><option value="belumHari">Belum mengisi hari ini</option><option value="belumBulan">Belum mengisi pada bulan ini</option></select></div>
       <div class="tabel-wrap"><table><thead><tr><th>Nama</th><th>NIP baru</th><th>Unit kerja</th><th class="num">Hari terisi</th><th class="num">Kegiatan</th><th class="num">Foto</th><th>Terakhir mengisi</th><th>Hari ini</th></tr></thead><tbody id="tblRekap"></tbody></table></div>
+    </div>
+  </section>
+  <section id="v-pesan" hidden>
+    <div class="d-kpi" id="psRingkas" style="grid-template-columns:repeat(4,1fr)"></div>
+    <div class="ps-wrap">
+      <div class="d-kartu ps-daftar">
+        <div class="ps-alat"><input type="search" id="psCari" placeholder="Cari nama atau isi pesan…" aria-label="Cari pesan">
+          <div class="seg" id="psSeg"><button type="button" data-s="aktif" class="on">Belum selesai</button><button type="button" data-s="">Semua</button><button type="button" data-s="selesai">Selesai</button></div>
+          <select id="psKat" aria-label="Jenis pesan"><option value="">Semua jenis</option><option>Saran fitur</option><option>Laporan masalah</option><option>Pertanyaan</option><option>Lainnya</option></select></div>
+        <div id="psList"></div>
+      </div>
+      <div class="d-kartu ps-detail" id="psDetail"><div class="kosong" style="padding:60px 16px">Pilih pesan di sebelah kiri untuk membaca dan membalas.</div></div>
     </div>
   </section>
   <section id="v-pengaturan" hidden>
@@ -337,6 +382,7 @@
 </main>
 </div>
 </div>
+<div class="viewer-a" id="psViewer"><img alt=""></div>
 
 <div class="modal" id="mPeg"><form class="isi form" id="fPeg" role="dialog" aria-labelledby="mJ" autocomplete="off">
   <h3 id="mJ">Tambah pengguna</h3><div class="ket" id="mKet"></div>
@@ -934,15 +980,71 @@
     catch (x) { S.toast(/bersama|column/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : x.message, 6000); b.disabled = false; b.textContent = 'Coba lagi'; }
   };
 
-  const ROUTES = ['dashboard', 'pengguna', 'bidang', 'rk', 'pengaturan'];
-  const JUDUL_R = { dashboard: ['Dashboard', 'Pantau pengisian kegiatan pegawai'], pengguna: ['Pengguna', 'Kelola akun pegawai dan admin'], bidang: ['Bidang', 'Bidang pekerjaan untuk kegiatan dan dokumen'], rk: ['RK & IKI', 'Rencana Kinerja dan Indikator Kinerja Individu bersama'], pengaturan: ['Pengaturan', 'Kop dokumen, laporan perjalanan dinas, dan Google Drive'] };
-  const CARI_R = { dashboard: 'mCari', pengguna: 'cari', rk: 'rkaCari' };
+  const ROUTES = ['dashboard', 'pengguna', 'bidang', 'rk', 'pesan', 'pengaturan'];
+  const JUDUL_R = { dashboard: ['Dashboard', 'Pantau pengisian kegiatan pegawai'], pengguna: ['Pengguna', 'Kelola akun pegawai dan admin'], bidang: ['Bidang', 'Bidang pekerjaan untuk kegiatan dan dokumen'], rk: ['RK & IKI', 'Rencana Kinerja dan Indikator Kinerja Individu bersama'], pengaturan: ['Pengaturan', 'Kop dokumen, laporan perjalanan dinas, dan Google Drive'], pesan: ['Pesan & Saran', 'Masukan pegawai untuk pengembangan SAKTI'] };
+  const CARI_R = { dashboard: 'mCari', pengguna: 'cari', rk: 'rkaCari', pesan: 'psCari' };
   const tutupSb = () => { $('sb').classList.remove('buka'); $('sbLatar').classList.remove('on'); };
   $('hamb').onclick = () => { $('sb').classList.add('buka'); $('sbLatar').classList.add('on'); };
   $('sbTutup').onclick = tutupSb; $('sbLatar').onclick = tutupSb;
   $('tbCari').oninput = () => { const r = location.hash.slice(1) || 'dashboard', id = CARI_R[r]; if (!id || !$(id)) return; $(id).value = $('tbCari').value; $(id).dispatchEvent(new Event('input')); };
   function route() { let r = location.hash.slice(1); if (!ROUTES.includes(r)) r = 'dashboard'; ROUTES.forEach(x => $('v-' + x).hidden = x !== r); document.querySelectorAll('nav.tab a').forEach(a => a.classList.toggle('aktif', a.dataset.r === r));
-    $('tbJudul').textContent = JUDUL_R[r][0]; $('tbSub').textContent = JUDUL_R[r][1]; $('tbCariBox').style.visibility = CARI_R[r] ? '' : 'hidden'; $('tbCari').value = CARI_R[r] && $(CARI_R[r]) ? $(CARI_R[r]).value : ''; tutupSb(); window.scrollTo(0, 0); if (r === 'dashboard') muatRekap(); if (r === 'bidang') { bdUbah = -1; renderBidang(); } if (r === 'rk') muatRkA(); }
+    $('tbJudul').textContent = JUDUL_R[r][0]; $('tbSub').textContent = JUDUL_R[r][1]; $('tbCariBox').style.visibility = CARI_R[r] ? '' : 'hidden'; $('tbCari').value = CARI_R[r] && $(CARI_R[r]) ? $(CARI_R[r]).value : ''; tutupSb(); window.scrollTo(0, 0); if (r === 'dashboard') muatRekap(); if (r === 'bidang') { bdUbah = -1; renderBidang(); } if (r === 'rk') muatRkA(); if (r === 'pesan') muatPesan(true); }
+
+  /* ---------- Pesan & Saran dari pegawai ---------- */
+  let pesan = [], psPilih = null, psSaring = 'aktif', psMuat = false;
+  const KAT_IK = { 'Saran fitur': '💡', 'Laporan masalah': '🐞', 'Pertanyaan': '❓', 'Lainnya': '💬' };
+  const ST_LBL = { baru: 'Baru', dibaca: 'Dibaca', diproses: 'Diproses', selesai: 'Selesai' };
+  const pengirim = s => daftar.find(p => p.id === s.user_id) || { nama: 'Pegawai', unit: '' };
+  const wktu = t => { if (!t) return ''; const d = new Date(t), b = new Date(now.getFullYear(), now.getMonth(), now.getDate()); const sel = Math.floor((b - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+    return (sel <= 0 ? 'Hari ini' : sel === 1 ? 'Kemarin' : S.tglSedang(S.ymd(d))) + ', ' + S.pad(d.getHours()) + '.' + S.pad(d.getMinutes()); };
+  function badgePesan() { const n = pesan.filter(s => s.status === 'baru').length;
+    $('psBadge').hidden = !n; $('psBadge').textContent = n; $('tbLoncengN').hidden = !n; $('tbLoncengN').textContent = n > 9 ? '9+' : n; }
+  async function muatPesan(render) {
+    try { pesan = (S.cek(await S.client().from('saran').select('*').order('dibuat', { ascending: false })) || []).sort((a, b) => String(b.dibuat || '').localeCompare(String(a.dibuat || ''))); psMuat = true; }
+    catch (x) { pesan = []; if (render) $('psList').innerHTML = `<div class="kosong" style="color:#b42318">${S.esc(/saran|relation|schema/i.test(x.message) ? 'Tabel pesan belum ada: jalankan setup.sql terbaru di Supabase (SQL Editor), lalu muat ulang.' : x.message)}</div>`; badgePesan(); return; }
+    badgePesan(); if (render) renderPesan();
+  }
+  function renderPesan() {
+    const n = s => pesan.filter(x => x.status === s).length;
+    $('psRingkas').innerHTML = [['📥', '#fef3c7', 'Pesan baru', n('baru')], ['⏳', '#ede9fe', 'Dibaca / diproses', n('dibaca') + n('diproses')], ['✅', '#dcfce7', 'Selesai', n('selesai')], ['🐞', '#fee2e2', 'Laporan masalah', pesan.filter(x => x.kategori === 'Laporan masalah' && x.status !== 'selesai').length]]
+      .map(([ik, bg, l, v]) => `<div class="d-kartu kpi" style="padding:14px 16px;display:flex;align-items:center;gap:12px"><span class="kpi-ik" style="background:${bg};font-size:20px">${ik}</span><div><b style="display:block;font-size:24px">${v}</b><span style="font-size:12.5px;color:var(--teks2)">${l}</span></div></div>`).join('');
+    const q = $('psCari').value.trim().toLowerCase(), k = $('psKat').value;
+    const rows = pesan.filter(s => (!psSaring || (psSaring === 'aktif' ? s.status !== 'selesai' : s.status === psSaring)) && (!k || s.kategori === k) && (!q || [pengirim(s).nama, s.judul, s.isi].join(' ').toLowerCase().includes(q)));
+    $('psList').innerHTML = rows.length ? rows.map(s => { const p = pengirim(s); return `<div class="ps-it${s.status === 'baru' ? ' baru' : ''}${s.id === psPilih ? ' aktif' : ''}" data-id="${S.esc(s.id)}"><span class="av" style="background:${warnaAv(p.nama)}">${S.esc(inisial(p.nama))}</span><div class="tx"><b>${S.esc(p.nama)}</b><div class="j">${S.esc(s.judul || (s.isi || '').slice(0, 60))}</div><div class="c">${S.esc((s.isi || '').replace(/\s+/g, ' ').slice(0, 90))}</div>
+      <div class="m"><span class="sa-kat-chip">${KAT_IK[s.kategori] || '💬'} ${S.esc(s.kategori)}</span><span class="st-chip st-${S.esc(s.status)}">${ST_LBL[s.status] || S.esc(s.status)}</span>${s.gambar ? '<span>📎</span>' : ''}<span>${S.esc(wktu(s.dibuat))}</span></div></div></div>`; }).join('')
+      : `<div class="kosong">${pesan.length ? 'Tidak ada pesan yang cocok.' : 'Belum ada pesan dari pegawai.<br>Pegawai dapat mengirim saran lewat menu <b>Saran Pengembang</b>.'}</div>`;
+    renderDetailPesan();
+  }
+  function renderDetailPesan() {
+    const s = pesan.find(x => x.id === psPilih); const el = $('psDetail');
+    if (!s) { el.innerHTML = '<div class="kosong" style="padding:60px 16px">Pilih pesan di sebelah kiri untuk membaca dan membalas.</div>'; return; }
+    const p = pengirim(s);
+    el.innerHTML = `<div class="ps-kep"><span class="av" style="background:${warnaAv(p.nama)}">${S.esc(inisial(p.nama))}</span><div class="nm"><b>${S.esc(p.nama)}</b><small>${S.esc([p.jabatan, p.unit].filter(Boolean).join(' · ') || '—')} · ${S.esc(wktu(s.dibuat))}</small></div>
+      <span class="sa-kat-chip">${KAT_IK[s.kategori] || '💬'} ${S.esc(s.kategori)}</span>
+      <select id="psStatus" aria-label="Status">${Object.entries(ST_LBL).map(([v, l]) => `<option value="${v}"${v === s.status ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+      ${s.judul ? `<h3>${S.esc(s.judul)}</h3>` : '<div style="height:14px"></div>'}<div class="ps-isi">${S.esc(s.isi)}</div>
+      ${s.gambar ? `<img class="ps-img" src="${S.esc(s.gambar)}" alt="Tangkapan layar dari pegawai" id="psImg">` : ''}
+      ${s.balasan ? `<div class="ps-balas-lama"><b>💬 Balasan Anda · ${S.esc(wktu(s.dibalas))}</b>${S.esc(s.balasan)}</div>` : ''}
+      <div class="ps-form"><label for="psBalas">${s.balasan ? 'Perbarui balasan' : 'Balas ke ' + S.esc(p.nama.split(' ')[0])}</label>
+        <textarea id="psBalas" placeholder="Tulis balasan… (pegawai melihatnya di menu Saran Pengembang)">${S.esc(s.balasan || '')}</textarea>
+        <div class="aksi"><button class="btn utama" type="button" id="psKirimSelesai">✓ Kirim &amp; tandai selesai</button><button class="btn" type="button" id="psKirimProses">Kirim, masih diproses</button><button class="btn bahaya" type="button" id="psHapus" style="margin-left:auto">Hapus pesan</button></div></div>`;
+    if ($('psImg')) $('psImg').onclick = () => { $('psViewer').querySelector('img').src = s.gambar; $('psViewer').classList.add('on'); };
+    $('psStatus').onchange = () => ubahPesan(s, { status: $('psStatus').value }, 'Status diperbarui');
+    const kirim = st => { const t = $('psBalas').value.trim(); if (!t) { S.toast('Tulis balasan terlebih dahulu'); $('psBalas').focus(); return; } ubahPesan(s, { balasan: t, dibalas: new Date().toISOString(), status: st }, 'Balasan terkirim ke ' + p.nama); };
+    $('psKirimSelesai').onclick = () => kirim('selesai'); $('psKirimProses').onclick = () => kirim('diproses');
+    $('psHapus').onclick = async () => { if (!confirm('Hapus pesan dari ' + p.nama + '? Tindakan ini tidak bisa dibatalkan.')) return;
+      try { S.cek(await S.client().from('saran').delete().eq('id', s.id)); pesan = pesan.filter(x => x.id !== s.id); psPilih = null; badgePesan(); renderPesan(); S.toast('Pesan dihapus'); } catch (x) { S.toast(x.message); } };
+  }
+  async function ubahPesan(s, v, info) {
+    try { await S.proses('Menyimpan…', async () => S.cek(await S.client().from('saran').update(v).eq('id', s.id))); Object.assign(s, v); badgePesan(); renderPesan(); if (info) S.toast(info, 2200); }
+    catch (x) { S.toast(x.message, 5000); }
+  }
+  $('psList').addEventListener('click', async e => { const it = e.target.closest('[data-id]'); if (!it) return; psPilih = it.dataset.id; const s = pesan.find(x => x.id === psPilih);
+    renderPesan(); if (window.innerWidth <= 1100) $('psDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (s && s.status === 'baru') { try { S.cek(await S.client().from('saran').update({ status: 'dibaca' }).eq('id', s.id)); s.status = 'dibaca'; badgePesan(); renderPesan(); } catch (x) { } } });
+  $('psSeg').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if (!b) return; psSaring = b.dataset.s; $('psSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); renderPesan(); });
+  $('psCari').oninput = renderPesan; $('psKat').onchange = renderPesan;
+  $('psViewer').onclick = () => $('psViewer').classList.remove('on');
 
   function hapus(p) {
     $('kYa').textContent = 'Ya, hapus permanen';
@@ -962,7 +1064,7 @@
   S.mulai({ admin: true }).then(async ({ uid, pegawai }) => { isiDlUnit();
     sayaId = uid; $('hdrSub').textContent = 'Admin · ' + (S.config.NAMA_INSTANSI || 'BPS Kota Kendari'); $('sbNama').textContent = pegawai.nama; $('sbAv').textContent = $('tbAv').textContent = inisial(pegawai.nama); $('tbAv').title = pegawai.nama;
     try { await muat(); } catch (x) { S.toast(x.message, 6000); }
-    muatKop(); muatSD(); muatDrive(); route(); window.addEventListener('hashchange', route);
+    muatKop(); muatSD(); muatDrive(); route(); window.addEventListener('hashchange', route); if (location.hash.slice(1) !== 'pesan') muatPesan(false);
   });
 })();
 </script>
