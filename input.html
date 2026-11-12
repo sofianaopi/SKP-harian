@@ -67,6 +67,11 @@
   .rk-bar .rk-teks { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rk-bar .rk-ubah { color: var(--hijau); font-weight: 700; font-size: 12.5px; flex-shrink: 0; }
   .rk-bar.kosong { border-style: dashed; color: #54656f; }
+  .rk-bar .rk-teks small { display: block; font-size: 11.5px; color: #667781; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+  .rk-bar.oto { border-color: #25d366; background: #f0fdf4; box-shadow: 0 0 0 2px rgba(37,211,102,.18); }
+  .rk-bar.oto .rk-ubah { color: #128c4b; } .rk-bar .rk-lbl { display: inline-block; font-size: 10.5px; font-weight: 700; color: #fff; background: #25a55f; border-radius: 4px; padding: 0 5px; margin-right: 5px; vertical-align: 1px; }
+  .rk-saran { display: flex; align-items: center; gap: 8px; width: calc(100% - 4px); margin: -3px 2px 7px; padding: 6px 10px; border: 1px dashed #e8a33d; background: #fffaf0; border-radius: 10px; font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; color: #6b4a00; }
+  .rk-saran span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .rk-saran b.pakai { flex-shrink: 0; color: #b26a00; }
   .e-rk { display: block; width: 100%; text-align: left; font: inherit; font-size: 14px; padding: 10px; border: 1px solid #d1d7db; border-radius: 8px; background: #fff; cursor: pointer; line-height: 1.35; color: var(--teks); }
   #bidang { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
   .bd { flex-shrink: 0; border: 0; background: rgba(0,128,105,.1); color: var(--hijau-tua); font: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
@@ -137,7 +142,8 @@
 <div id="bawah">
   <div id="banner"><span id="bannerTeks"></span><button id="bannerX">Hari ini</button></div>
   <div id="bidang" role="tablist" aria-label="Bidang"></div>
-  <button type="button" id="rkBar" class="rk-bar" hidden><span class="rk-ik">🎯</span><span id="rkTeks" class="rk-teks"></span><span class="rk-ubah">Ubah</span></button>
+  <button type="button" id="rkBar" class="rk-bar" hidden><span class="rk-ik">🎯</span><span id="rkTeks" class="rk-teks"></span><span class="rk-ubah" id="rkUbah">Ubah</span></button>
+  <button type="button" id="rkSaran" class="rk-saran" hidden><span id="rkSaranTeks"></span><b class="pakai">Pakai</b></button>
   <div id="pratinjau"></div>
   <div class="bar">
     <div class="kolom">
@@ -203,24 +209,61 @@
   function renderChips() {
     const bd = $('bidang'); bd.innerHTML = '';
     S.BIDANG.forEach(n => { const b = document.createElement('button'); b.className = 'bd' + (pilihBidang === n ? ' on' : ''); b.textContent = n; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', pilihBidang === n);
-      b.onclick = () => { pilihBidang = n; simpanPref(); renderChips(); }; bd.appendChild(b); });
+      b.onclick = () => { pilihBidang = n; simpanPref(); if (rkManual === undefined) cocokkanRk(); renderChips(); }; bd.appendChild(b); });
     renderRkBar();
     setTimeout(() => { const ob = bd.querySelector('.on'); ob && ob.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }, 0);
   }
 
   const rkById = id => rhkList.find(r => r.id === id);
   const rkAktif = () => { const r = pilihBidang && rkById(rkPerBidang[pilihBidang]); return r && (!r.bidang || r.bidang === pilihBidang) ? r : null; };
-  function renderRkBar() {
-    const bar = $('rkBar'); bar.hidden = !pilihBidang; if (!pilihBidang) return;
-    const r = rkAktif(); const n = rhkList.filter(x => x.bidang === pilihBidang).length;
-    bar.classList.toggle('kosong', !r);
-    $('rkTeks').textContent = r ? (rhkList.indexOf(r) + 1) + '. ' + r.nama : (n ? 'Pilih RK untuk kegiatan ini (' + n + ' RK di bidang ' + pilihBidang + ')' : rhkList.length ? 'Belum ada RK untuk bidang ' + pilihBidang + ' — ketuk untuk memilih dari bidang lain' : 'Belum ada RK — tambahkan di menu RK & IKI');
-    bar.title = r ? r.nama + (r.indikator ? '\nIKI: ' + r.indikator : '') : '';
+  /* RK otomatis: saat mengetik, uraian dicocokkan dengan RK & IKI (kata kunci + riwayat kegiatan) */
+  let rkOto = null, rkSaran = null, rkManual;   // rkManual: undefined = belum dipilih manual; null = manual tanpa RK; id = manual
+  const rkTerpakai = () => rkManual !== undefined ? (rkById(rkManual) || null) : rkOto ? rkOto.r : rkAktif();
+  function cocokkanRk() {
+    rkOto = null; rkSaran = null;
+    const t = ta.value.trim();
+    if (rkManual === undefined && t.length >= 4 && rhkList.length) {
+      const h = S.cocokRk(t, rhkList, { bidang: pilihBidang, riwayat: kegiatan });
+      const a = h[0], b = h[1];
+      if (a) {
+        const yakin = a.skor >= 6 && (a.kata.length >= 2 || a.riwayat >= 0.5) && (!b || b.skor < a.skor * 0.85);
+        if (yakin && (!pilihBidang || a.r.bidang === pilihBidang || !a.r.bidang)) rkOto = a;
+        else if (a.skor >= 3.5) rkSaran = a;
+      }
+    }
+    renderRkBar();
   }
+  let tundaCocok = null;
+  const jadwalCocok = () => { clearTimeout(tundaCocok); tundaCocok = setTimeout(cocokkanRk, 280); };
+  const noRk = r => (rhkList.indexOf(r) + 1) + '. ';
+  function renderRkBar() {
+    const bar = $('rkBar'), sar = $('rkSaran');
+    const r = rkTerpakai(); const oto = !!(rkOto && rkManual === undefined && r === rkOto.r);
+    bar.hidden = !pilihBidang && !oto;
+    if (!bar.hidden) {
+      const n = rhkList.filter(x => x.bidang === pilihBidang).length;
+      bar.classList.toggle('kosong', !r); bar.classList.toggle('oto', oto);
+      $('rkTeks').innerHTML = r ? (oto ? '<span class="rk-lbl">OTOMATIS</span>' : '') + '<b>' + noRk(r) + '</b>' + S.esc(r.nama) + (r.indikator ? '<small>IKI: ' + S.esc(r.indikator) + '</small>' : '')
+        : S.esc(n ? 'Pilih RK untuk kegiatan ini (' + n + ' RK di bidang ' + pilihBidang + ')' : rhkList.length ? 'Belum ada RK untuk bidang ' + pilihBidang + ' — ketuk untuk memilih dari bidang lain' : 'Belum ada RK — tambahkan di menu RK & IKI');
+      $('rkUbah').textContent = oto ? 'Bukan? Ubah' : 'Ubah';
+      bar.title = r ? r.nama + (r.indikator ? '\nIKI: ' + r.indikator : '') : '';
+    }
+    const s = rkSaran && rkManual === undefined && rkSaran.r !== r ? rkSaran.r : null;
+    sar.hidden = !s;
+    if (s) $('rkSaranTeks').innerHTML = '💡 Cocok dengan RK ' + (s.bidang && s.bidang !== pilihBidang ? 'bidang <b>' + S.esc(s.bidang) + '</b>: ' : '') + '<b>' + noRk(s) + '</b>' + S.esc(s.nama) + (s.indikator ? ' · IKI: ' + S.esc(s.indikator) : '');
+  }
+  $('rkSaran').onclick = () => {
+    const s = rkSaran && rkSaran.r; if (!s) return;
+    if (s.bidang && s.bidang !== pilihBidang && S.BIDANG.includes(s.bidang)) { pilihBidang = s.bidang; simpanPref(); }
+    rkManual = s.id; rkSaran = null; renderChips(); S.toast('RK ' + noRk(s) + 'dipasangkan', 1500);
+  };
   $('rkBar').onclick = () => {
     if (!rhkList.length) { location.href = 'index.html#rk'; return; }
-    SKPPilihRK.buka({ rhkList, bidang: pilihBidang, terpilih: rkPerBidang[pilihBidang], judul: 'RK untuk kegiatan bidang ' + pilihBidang,
-      onPilih: r => { if (r) rkPerBidang[pilihBidang] = r.id; else delete rkPerBidang[pilihBidang]; simpanPref(); renderRkBar(); } });
+    const kini = rkTerpakai();
+    SKPPilihRK.buka({ rhkList, bidang: pilihBidang, terpilih: kini ? kini.id : null, judul: 'RK untuk kegiatan bidang ' + pilihBidang,
+      onPilih: r => { rkManual = r ? r.id : null;
+        if (!r || !r.bidang || r.bidang === pilihBidang) { if (r) rkPerBidang[pilihBidang] = r.id; else delete rkPerBidang[pilihBidang]; simpanPref(); }
+        renderRkBar(); } });
   };
 
   const centang = '<svg viewBox="0 0 16 11"><path d="M11.07.65 4.98 7.3 2.4 4.73 1.33 5.8l3.68 3.68L12.14 1.7zM14.6.65 8.5 7.3l-.78-.78-1.06 1.07 1.87 1.87L15.67 1.7z"/></svg>';
@@ -269,7 +312,7 @@
   /* Input */
   const ta = $('teks');
   const autosize = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; };
-  ta.addEventListener('input', autosize);
+  ta.addEventListener('input', autosize); ta.addEventListener('input', jadwalCocok);
   ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer:fine)').matches) { e.preventDefault(); kirim(); } });
   $('kirim').onclick = kirim;
   $('btnLampir').onclick = () => $('fileGaleri').click();
@@ -294,9 +337,9 @@
       const now = new Date();
       const fotoIds = [];
       for (const f of lampiran) { const id = 'f' + S.uid(); await S.put('foto', { id, data: f.data, w: f.w, h: f.h }); fotoIds.push(id); fotoCache.set(id, Promise.resolve({ id, data: f.data })); }
-      const k = { id: 'k' + S.uid(), ...(tglAkhir ? { tanggalAkhir: tglAkhir } : {}), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang, jenisId: null, rhkId: rkAktif() ? rkAktif().id : null, jumlah: 1, fotoIds, dibuat: Date.now() };
+      const k = { id: 'k' + S.uid(), ...(tglAkhir ? { tanggalAkhir: tglAkhir } : {}), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang, jenisId: null, rhkId: (rkTerpakai() || {}).id || null, jumlah: 1, fotoIds, dibuat: Date.now() };
       await S.put('kegiatan', k);
-      kegiatan.push(k); ta.value = ''; autosize(); lampiran = []; renderPratinjau();
+      kegiatan.push(k); ta.value = ''; autosize(); lampiran = []; renderPratinjau(); clearTimeout(tundaCocok); rkOto = null; rkSaran = null; rkManual = undefined; renderRkBar();
       $('chat').scrollTop = $('chat').scrollHeight; renderChat(); $('chat').scrollTop = $('chat').scrollHeight; renderSub();
       if (navigator.vibrate) try { navigator.vibrate(15); } catch (e) { }
     } catch (e) {

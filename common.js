@@ -332,6 +332,41 @@
   function tglPanjang(s) { const d = parseYmd(s); return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
   function tglSedang(s) { const d = parseYmd(s); return d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
   /* "2–4 November 2026", "30 Oktober – 2 November 2026", atau satu tanggal */
+  /* ---------- Pencocokan otomatis uraian kegiatan → RK & IKI ----------
+     Kata dasar sederhana (awalan/akhiran bahasa Indonesia dipangkas) + bobot kata langka (IDF)
+     + riwayat: kegiatan lama yang mirip dan sudah ber-RK menjadi petunjuk kuat. */
+  const KATA_ABAI = new Set('yang dan di ke dari untuk dengan pada dalam oleh serta atau ini itu sebagai bagi para secara terkait tentang terhadap hari tanggal kota kendari bps kegiatan melakukan dilakukan telah sudah akan juga hal agar guna tahun bulan minggu pekan sesuai dalam rangka kab provinsi badan pusat statistik the of'.split(' '));
+  function kataDasar(w) {
+    if (w.length <= 4 || /\d/.test(w)) return w;
+    let s = w;
+    if (s.endsWith('nya') && s.length > 6) s = s.slice(0, -3);
+    if (s.length > 6 && /(kan|an)$/.test(s)) s = s.replace(/(kan|an)$/, '');
+    else if (s.length > 6 && s.endsWith('i') && !/[aiueo]i$/.test(s.slice(-2)) ) s = s.slice(0, -1);
+    const P = [['meny', 's'], ['peny', 's'], ['meng', ''], ['peng', ''], ['mem', ''], ['pem', ''], ['men', ''], ['pen', ''], ['ber', ''], ['ter', ''], ['per', ''], ['me', ''], ['pe', ''], ['di', ''], ['ke', ''], ['se', '']];
+    for (const [p, g] of P) if (s.startsWith(p) && s.length - p.length >= 4) { s = g + s.slice(p.length); break; }
+    return s;
+  }
+  const tokenRk = t => [...new Set(String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').filter(w => w.length > 1 && !KATA_ABAI.has(w) && !/^(i|ii|iii|iv|\d+)$/.test(w)).map(kataDasar).filter(w => w.length > 1 && !KATA_ABAI.has(w)))];
+  function cocokRk(teks, rhkList, opsi) {
+    opsi = opsi || {}; const q = tokenRk(teks); if (!q.length || !rhkList || !rhkList.length) return [];
+    const dok = rhkList.map(r => ({ r, nama: new Set(tokenRk(r.nama)), iki: new Set(tokenRk(r.indikator)) }));
+    const df = new Map(); dok.forEach(d => new Set([...d.nama, ...d.iki]).forEach(t => df.set(t, (df.get(t) || 0) + 1)));
+    const N = dok.length, idf = t => Math.log(1 + N / (df.get(t) || 0.5));
+    // riwayat: kegiatan lama (punya RK) yang kalimatnya mirip
+    const hist = new Map();
+    (opsi.riwayat || []).forEach(k => { if (!k.rhkId) return; const K = tokenRk(k.gabung || k.teks); if (!K.length) return;
+      const sama = q.filter(t => K.includes(t)).length; if (sama < 2) return;
+      const sim = sama / Math.min(q.length, K.length); if (sim > (hist.get(k.rhkId) || 0)) hist.set(k.rhkId, sim); });
+    const hasil = dok.map(d => {
+      let s = 0; const kena = [];
+      q.forEach(t => { const di = d.nama.has(t) || d.iki.has(t); if (!di) return; const w = idf(t); s += w; if (d.iki.has(t)) s += w * 0.35; kena.push(t); });
+      const h = hist.get(d.r.id) || 0; if (h >= 0.5) s += 2.6 * h;
+      if (opsi.bidang && d.r.bidang === opsi.bidang) s *= 1.2;
+      return { r: d.r, skor: s, kata: kena, riwayat: h };
+    }).filter(x => x.skor > 0).sort((a, b) => b.skor - a.skor);
+    return hasil;
+  }
+
   /* RK & IKI: kelompokkan baris (bidang + nama RK sama) → satu RK berisi beberapa IKI */
   const kunciRkTeks = s => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
   function kelompokRk(list) {
@@ -418,7 +453,7 @@
   }
 
   const api = {
-    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
+    BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, cocokRk, tokenRk, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
     mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
