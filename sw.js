@@ -1,5 +1,5 @@
 /* Service worker: membuat aplikasi tetap terbuka walau sinyal hilang */
-const CACHE = 'sakti-v48';
+const CACHE = 'sakti-v50';
 const FILES = ['./', 'index.html', 'input.html', 'admin.html', 'config.js', 'common.js', 'template-bukti-dukung.docx', 'excel.js', 'vendor/xlsx.full.min.js', 'template/Template_Input_Kegiatan_SKP_Harian.xlsx', 'template/Template_Daftar_Pegawai_SKP_Harian.xlsx', 'template/Template_RK_IKI_SKP_Harian.xlsx', 'rkpicker.js', 'dinas.js', 'template-laporan-dinas.docx', 'docx.js', 'manifest-input.json', 'manifest-dashboard.json',
   'icons/input-192.png', 'icons/input-512.png', 'icons/dashboard-192.png', 'icons/dashboard-512.png', 'icons/maskable-192.png', 'icons/maskable-512.png', 'img/login-sakti.jpg', 'img/logo-bps.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting())); });
