@@ -380,6 +380,201 @@ create policy saran_kirim on public.saran for insert to authenticated
 create policy saran_admin_ubah on public.saran for update to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy saran_hapus on public.saran for delete to authenticated using (public.is_admin() or (user_id = auth.uid() and status = 'baru'));
 
+-- ---------- KUIS BerAKHLAK (permainan langsung ala Kahoot: admin memandu, pegawai menjawab dari HP) ----------
+create table if not exists public.kuis_bank (   -- soal tambahan buatan admin
+  id uuid primary key default gen_random_uuid(),
+  teks text not null,
+  pilihan jsonb not null,          -- 4 pilihan jawaban (teks)
+  benar int not null check (benar between 0 and 3),
+  aktif boolean not null default true,
+  dibuat timestamptz not null default now()
+);
+create table if not exists public.kuis_sesi (
+  id uuid primary key default gen_random_uuid(),
+  pin text not null,
+  judul text not null default 'Kuis BerAKHLAK',
+  soal jsonb not null,             -- [{t: soal, p: [4 pilihan], b: indeks benar, d: detik}]
+  status text not null default 'lobi' check (status in ('lobi', 'soal', 'hasil', 'selesai')),
+  no int not null default -1,      -- indeks soal yang sedang berjalan
+  mulai timestamptz,               -- waktu server saat soal dibuka
+  dibuat timestamptz not null default now(),
+  dibuat_oleh uuid default auth.uid()
+);
+create index if not exists kuis_sesi_pin on public.kuis_sesi(pin) where status <> 'selesai';
+create table if not exists public.kuis_peserta (
+  sesi_id uuid not null references public.kuis_sesi(id) on delete cascade,
+  user_id uuid not null references public.pegawai(id) on delete cascade,
+  nama text not null,
+  unit text,
+  skor int not null default 0,
+  beruntun int not null default 0,
+  gabung timestamptz not null default now(),
+  primary key (sesi_id, user_id)
+);
+create table if not exists public.kuis_jawaban (
+  sesi_id uuid not null references public.kuis_sesi(id) on delete cascade,
+  user_id uuid not null,
+  no int not null,
+  pilih int not null,
+  benar boolean not null,
+  poin int not null default 0,
+  ms int not null default 0,
+  waktu timestamptz not null default now(),
+  primary key (sesi_id, user_id, no)
+);
+alter table public.kuis_bank enable row level security;
+alter table public.kuis_sesi enable row level security;
+alter table public.kuis_peserta enable row level security;
+alter table public.kuis_jawaban enable row level security;
+drop policy if exists kuis_bank_admin on public.kuis_bank;
+drop policy if exists kuis_sesi_admin on public.kuis_sesi;
+drop policy if exists kuis_peserta_baca on public.kuis_peserta;
+drop policy if exists kuis_peserta_admin on public.kuis_peserta;
+drop policy if exists kuis_jawaban_baca on public.kuis_jawaban;
+-- kunci jawaban hanya dapat dibaca admin; pegawai mengakses kuis lewat fungsi di bawah (soal tanpa kunci jawaban)
+create policy kuis_bank_admin on public.kuis_bank for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy kuis_sesi_admin on public.kuis_sesi for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy kuis_peserta_baca on public.kuis_peserta for select to authenticated using (user_id = auth.uid() or public.is_admin());
+create policy kuis_peserta_admin on public.kuis_peserta for delete to authenticated using (public.is_admin());
+create policy kuis_jawaban_baca on public.kuis_jawaban for select to authenticated using (user_id = auth.uid() or public.is_admin());
+
+create or replace function public.kuis_buat(p_judul text, p_soal jsonb) returns json
+language plpgsql security definer set search_path = public as $$
+declare v_pin text; v_id uuid; i int := 0;
+begin
+  if not public.is_admin() then raise exception 'Hanya admin yang dapat membuat kuis'; end if;
+  if jsonb_typeof(p_soal) <> 'array' or jsonb_array_length(p_soal) = 0 then raise exception 'Soal kuis kosong'; end if;
+  loop
+    v_pin := lpad((floor(random() * 900000) + 100000)::int::text, 6, '0'); i := i + 1;
+    exit when not exists (select 1 from public.kuis_sesi where pin = v_pin and status <> 'selesai') or i > 20;
+  end loop;
+  insert into public.kuis_sesi (pin, judul, soal) values (v_pin, coalesce(nullif(trim(p_judul), ''), 'Kuis BerAKHLAK'), p_soal) returning id into v_id;
+  return json_build_object('id', v_id, 'pin', v_pin);
+end $$;
+
+-- kuis yang sedang berlangsung (untuk banner di aplikasi pegawai)
+create or replace function public.kuis_aktif() returns json
+language sql stable security definer set search_path = public as $$
+  select case when public.is_pegawai() then (
+    select json_build_object('id', s.id, 'pin', s.pin, 'judul', s.judul, 'status', s.status,
+                             'ikut', exists (select 1 from public.kuis_peserta p where p.sesi_id = s.id and p.user_id = auth.uid()))
+      from public.kuis_sesi s where s.status <> 'selesai' and s.dibuat > now() - interval '12 hours'
+     order by s.dibuat desc limit 1) end;
+$$;
+
+create or replace function public.kuis_gabung(p_pin text) returns json
+language plpgsql security definer set search_path = public as $$
+declare s public.kuis_sesi; pg public.pegawai;
+begin
+  select * into pg from public.pegawai where id = auth.uid() and aktif;
+  if pg.id is null then raise exception 'Akun tidak aktif'; end if;
+  select * into s from public.kuis_sesi where pin = trim(p_pin) and status <> 'selesai' order by dibuat desc limit 1;
+  if s.id is null then raise exception 'PIN kuis tidak ditemukan atau kuis sudah selesai'; end if;
+  insert into public.kuis_peserta (sesi_id, user_id, nama, unit) values (s.id, pg.id, pg.nama, pg.unit) on conflict do nothing;
+  return json_build_object('id', s.id, 'judul', s.judul);
+end $$;
+
+create or replace function public.kuis_keadaan(p_sesi uuid) returns json
+language plpgsql stable security definer set search_path = public as $$
+declare s public.kuis_sesi; me public.kuis_peserta; j public.kuis_jawaban; q jsonb; v_rank int; v_n int; buka boolean;
+begin
+  select * into s from public.kuis_sesi where id = p_sesi;
+  select * into me from public.kuis_peserta where sesi_id = p_sesi and user_id = auth.uid();
+  if s.id is null or me.user_id is null then raise exception 'Anda belum bergabung di kuis ini'; end if;
+  q := case when s.no >= 0 then s.soal -> s.no end;
+  select * into j from public.kuis_jawaban where sesi_id = p_sesi and user_id = auth.uid() and no = s.no;
+  select count(*) into v_n from public.kuis_peserta where sesi_id = p_sesi;
+  select count(*) + 1 into v_rank from public.kuis_peserta where sesi_id = p_sesi and (skor > me.skor or (skor = me.skor and gabung < me.gabung));
+  buka := s.status in ('hasil', 'selesai');
+  return json_build_object(
+    'status', s.status, 'judul', s.judul, 'no', s.no, 'total', jsonb_array_length(s.soal), 'peserta', v_n,
+    'sisa_ms', case when s.status = 'soal' then greatest(0, ((q->>'d')::numeric * 1000 - extract(epoch from clock_timestamp() - s.mulai) * 1000))::int end,
+    'durasi', (q->>'d')::int,
+    'soal', case when s.status in ('soal', 'hasil') then jsonb_build_object('t', q->'t', 'p', q->'p') end,
+    'benar', case when buka and q is not null then (q->>'b')::int end,
+    'jawab', case when j.no is not null then json_build_object('pilih', j.pilih, 'benar', case when buka then j.benar end, 'poin', case when buka then j.poin end) end,
+    'skor', case when s.status = 'soal' then me.skor - coalesce(j.poin, 0) else me.skor end,
+    'peringkat', v_rank, 'beruntun', case when buka then me.beruntun end,
+    'top', case when buka then (select json_agg(t) from (select nama, unit, skor from public.kuis_peserta where sesi_id = p_sesi order by skor desc, gabung limit 5) t) end);
+end $$;
+
+create or replace function public.kuis_jawab(p_sesi uuid, p_no int, p_pilih int) returns json
+language plpgsql security definer set search_path = public as $$
+declare s public.kuis_sesi; me public.kuis_peserta; q jsonb; v_ms int; v_benar boolean; v_poin int; v_brt int;
+begin
+  select * into s from public.kuis_sesi where id = p_sesi for update;
+  select * into me from public.kuis_peserta where sesi_id = p_sesi and user_id = auth.uid() for update;
+  if s.id is null or me.user_id is null then raise exception 'Anda belum bergabung di kuis ini'; end if;
+  if s.status <> 'soal' or s.no <> p_no then raise exception 'Waktu menjawab soal ini sudah berakhir'; end if;
+  if exists (select 1 from public.kuis_jawaban where sesi_id = p_sesi and user_id = auth.uid() and no = p_no) then return json_build_object('ok', true); end if;
+  q := s.soal -> s.no;
+  v_ms := (extract(epoch from clock_timestamp() - s.mulai) * 1000)::int;
+  if v_ms > (q->>'d')::int * 1000 + 1500 then raise exception 'Waktu habis'; end if;
+  v_benar := p_pilih = (q->>'b')::int;
+  v_brt := case when v_benar then me.beruntun + 1 else 0 end;
+  -- poin ala Kahoot: 1000 bila menjawab seketika, turun hingga 500 di detik terakhir; bonus beruntun +50 per soal (maks. 250)
+  v_poin := case when v_benar then round(1000 * (1 - least(1, greatest(0, v_ms) / ((q->>'d')::numeric * 1000)) / 2))::int + least(v_brt - 1, 5) * 50 else 0 end;
+  insert into public.kuis_jawaban (sesi_id, user_id, no, pilih, benar, poin, ms) values (p_sesi, auth.uid(), p_no, p_pilih, v_benar, v_poin, greatest(v_ms, 0));
+  update public.kuis_peserta set skor = skor + v_poin, beruntun = v_brt where sesi_id = p_sesi and user_id = auth.uid();
+  return json_build_object('ok', true);
+end $$;
+
+-- kendali admin: 'mulai' / 'lanjut' (soal berikutnya), 'tampil' (tampilkan jawaban & papan skor), 'akhiri'
+create or replace function public.kuis_host(p_sesi uuid, p_aksi text) returns void
+language plpgsql security definer set search_path = public as $$
+declare s public.kuis_sesi;
+begin
+  if not public.is_admin() then raise exception 'Hanya admin'; end if;
+  select * into s from public.kuis_sesi where id = p_sesi for update;
+  if s.id is null then raise exception 'Kuis tidak ditemukan'; end if;
+  if p_aksi in ('mulai', 'lanjut') and s.status in ('lobi', 'hasil') then
+    if s.no + 1 >= jsonb_array_length(s.soal) then update public.kuis_sesi set status = 'selesai' where id = p_sesi;
+    else update public.kuis_sesi set status = 'soal', no = s.no + 1, mulai = clock_timestamp() where id = p_sesi; end if;
+  elsif p_aksi = 'tampil' and s.status = 'soal' then
+    update public.kuis_sesi set status = 'hasil' where id = p_sesi;
+    update public.kuis_peserta p set beruntun = 0 where p.sesi_id = p_sesi
+       and not exists (select 1 from public.kuis_jawaban j where j.sesi_id = p_sesi and j.user_id = p.user_id and j.no = s.no and j.benar);
+  elsif p_aksi = 'akhiri' then
+    update public.kuis_sesi set status = 'selesai' where id = p_sesi;
+  end if;
+end $$;
+
+-- layar admin: keadaan kuis, peserta, sebaran jawaban, papan skor
+create or replace function public.kuis_layar(p_sesi uuid) returns json
+language plpgsql stable security definer set search_path = public as $$
+declare s public.kuis_sesi; q jsonb;
+begin
+  if not public.is_admin() then raise exception 'Hanya admin'; end if;
+  select * into s from public.kuis_sesi where id = p_sesi;
+  if s.id is null then raise exception 'Kuis tidak ditemukan'; end if;
+  q := case when s.no >= 0 then s.soal -> s.no end;
+  return json_build_object('id', s.id, 'pin', s.pin, 'judul', s.judul, 'status', s.status, 'no', s.no, 'total', jsonb_array_length(s.soal), 'soal', q,
+    'sisa_ms', case when s.status = 'soal' then greatest(0, ((q->>'d')::numeric * 1000 - extract(epoch from clock_timestamp() - s.mulai) * 1000))::int end,
+    'dijawab', (select count(*) from public.kuis_jawaban where sesi_id = p_sesi and no = s.no),
+    'sebaran', (select json_agg(coalesce((select count(*) from public.kuis_jawaban where sesi_id = p_sesi and no = s.no and pilih = g), 0) order by g) from generate_series(0, 3) g),
+    'peserta', coalesce((select json_agg(t) from (
+        select p.user_id, p.nama, p.unit, p.beruntun,
+               p.skor - case when s.status = 'soal' then coalesce(j.poin, 0) else 0 end as skor,
+               j.no is not null as jawab, coalesce(j.poin, 0) as poin, coalesce(j.benar, false) as benar
+          from public.kuis_peserta p left join public.kuis_jawaban j on j.sesi_id = p.sesi_id and j.user_id = p.user_id and j.no = s.no
+         where p.sesi_id = p_sesi order by 5 desc, p.gabung) t), '[]'));
+end $$;
+
+revoke execute on function public.kuis_buat(text, jsonb) from public, anon;
+revoke execute on function public.kuis_aktif() from public, anon;
+revoke execute on function public.kuis_gabung(text) from public, anon;
+revoke execute on function public.kuis_keadaan(uuid) from public, anon;
+revoke execute on function public.kuis_jawab(uuid, int, int) from public, anon;
+revoke execute on function public.kuis_host(uuid, text) from public, anon;
+revoke execute on function public.kuis_layar(uuid) from public, anon;
+grant execute on function public.kuis_buat(text, jsonb) to authenticated;
+grant execute on function public.kuis_aktif() to authenticated;
+grant execute on function public.kuis_gabung(text) to authenticated;
+grant execute on function public.kuis_keadaan(uuid) to authenticated;
+grant execute on function public.kuis_jawab(uuid, int, int) to authenticated;
+grant execute on function public.kuis_host(uuid, text) to authenticated;
+grant execute on function public.kuis_layar(uuid) to authenticated;
+
 -- ---------- PENYIMPANAN FOTO BUKTI ----------
 insert into storage.buckets (id, name, public) values ('bukti', 'bukti', false) on conflict (id) do nothing;
 drop policy if exists bukti_milik_sendiri on storage.objects;
