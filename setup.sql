@@ -360,7 +360,7 @@ create policy arsip_baca on public.kegiatan_arsip for select to authenticated us
 
 -- ringkasan arsip: pegawai hanya membaca miliknya (diisi lewat fungsi arsipkan_kegiatan)
 drop policy if exists ringkas_baca on public.kegiatan_ringkas;
-create policy ringkas_baca on public.kegiatan_ringkas for select to authenticated using (user_id = auth.uid());
+create policy ringkas_baca on public.kegiatan_ringkas for select to authenticated using (user_id = auth.uid() or public.is_pimpinan());
 
 -- pengaturan kantor: semua pegawai membaca, hanya admin yang mengubah
 drop policy if exists pengaturan_baca on public.pengaturan;
