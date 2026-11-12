@@ -182,7 +182,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   nav.sisi a.menu { color: rgba(255,255,255,.86); font-weight: 500; transition: background .15s; }
   nav.sisi a.menu.aktif { box-shadow: 0 4px 14px rgba(0,0,0,.15); font-weight: 700; }
   nav.sisi .menu-grup { color: rgba(255,255,255,.55); }
-  .akun { display: flex; align-items: center; gap: 10px; margin: auto 12px 10px; padding: 10px; background: rgba(255,255,255,.08); }
+  .akun { display: flex; align-items: center; gap: 10px; margin: auto 12px 16px; padding: 10px; background: rgba(255,255,255,.08); }
   .akun .av { background: #fff; color: #1F4E79; } .akun .u { flex: 1; min-width: 0; } .akun .u b { font-size: 13px; } .akun .u small { display: block; font-size: 11.5px; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .akun button { margin: 0; width: 34px; height: 34px; padding: 0; display: grid; place-items: center; border-radius: 9px; background: rgba(255,255,255,.08); }
   .akun button svg { width: 17px; height: 17px; fill: none; }
@@ -293,6 +293,10 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   .sa-balas b { display: block; font-size: 12px; color: #166534; margin-bottom: 3px; } .sa-balas div { white-space: pre-wrap; }
   .sa-hapus { margin-left: auto; border: 0; background: none; color: #b42318; font-size: 12px; cursor: pointer; text-decoration: underline; font: inherit; font-size: 12px; }
   @media (max-width: 980px) { .saran-grid { grid-template-columns: 1fr; } }
+  nav.sisi a.menu.menu-catat { background: rgba(37,211,102,.16); color: #fff; font-weight: 700; box-shadow: inset 0 0 0 1px rgba(37,211,102,.45); }
+  nav.sisi a.menu.menu-catat svg { color: #4ade80; } nav.sisi a.menu.menu-catat:hover { background: rgba(37,211,102,.26); }
+  .d-baris3.satu { grid-template-columns: 1fr; }
+  .pb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; } .pb-grid .top { margin-bottom: 0; } .pb-grid > div:not(.top) { grid-column: 1 / -1; }
   [hidden] { display: none !important; }
   .daftar-baru time { flex-shrink: 0; }
   @media (max-width: 1100px) { .grid4 { grid-template-columns: repeat(2, 1fr); } .grid2 { grid-template-columns: 1fr; } }
@@ -322,7 +326,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   <nav class="sisi" aria-label="Menu utama">
     <div class="brand"><img src="icons/dashboard-192.png?v=2" alt=""><div>SAKTI<small>BPS Kota Kendari</small></div></div>
     <a class="menu" href="#dashboard" data-r="dashboard"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a>
-    <a class="menu" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
+    <a class="menu menu-catat" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
     <a class="menu" href="#rekap" data-r="rekap"><svg viewBox="0 0 24 24"><path d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-2 14-4-4 1.4-1.4 2.6 2.6 6.6-6.6L19 9l-8 8z"/></svg>Rekap Kegiatan</a>
     <a class="menu" href="#rk" data-r="rk"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-14a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2z"/></svg>RK &amp; IKI</a>
     <a class="menu" href="#upload" data-r="upload"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Upload Dokumen</a>
@@ -332,12 +336,11 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     <div class="menu-grup">Bantuan</div>
     <a class="menu" href="#saran" data-r="saran"><svg viewBox="0 0 24 24"><path d="M9 21h6v-1H9v1zm3-20a7 7 0 0 0-4 12.74V16a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 1zm2.85 11.1-.85.6V15h-4v-2.3l-.85-.6A5 5 0 1 1 14.85 12.1z"/></svg>Saran Pengembang<span class="sb-badge" id="saranBadge" hidden></span></a>
     <div class="akun" id="akunBox"></div>
-    <a class="catat-btn" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
+
   </nav>
 
   <div class="isi-utama">
   <div class="topbar"><div class="tb-judul"><h1 id="tbJudul">Dashboard</h1><p id="tbSub">Ringkasan kerja harian</p></div>
-    <a class="tb-catat" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
     <a class="av" id="tbAv" href="#profil" title="Profil">?</a></div>
   <main>
     <!-- DASHBOARD -->
@@ -354,16 +357,9 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
         <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Kegiatan Terbaru</h3><p>Catatan terakhir Anda</p></div><span class="live" id="dLiveTag">Hari ini</span></div>
           <div id="dLive"></div><a class="lnk" href="#rekap">Lihat semua kegiatan →</a></div>
       </div>
-      <div class="d-baris3">
-        <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Aksi Cepat</h3><p>Menu yang sering dipakai</p></div></div>
-          <div class="qa">
-            <a class="qhijau" href="input.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 8v6M9 11h6"/></svg><b>Catat Kegiatan</b><small>Semudah chat WhatsApp</small></a>
-            <a class="q1" href="#rekap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><b>Rekap &amp; RK</b><small>Rapikan &amp; pasangkan RK</small></a>
-            <a class="q3" href="#upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg><b>Upload Dokumen</b><small>Bukti Dukung &amp; Drive</small></a>
-            <a class="q4" href="#dinas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><b>Perjalanan Dinas</b><small>Laporan lapangan</small></a>
-          </div></div>
+      <div class="d-baris3 satu">
         <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Kegiatan per Bidang</h3><p id="perBidangSub">Calon dokumen Bukti Dukung</p></div><a class="lnk" style="width:auto;margin:0;padding:0" href="#upload">Upload ›</a></div>
-          <div id="perBidang"></div></div>
+          <div id="perBidang" class="pb-grid"></div></div>
       </div>
       <div class="d-kartu d-pad" style="margin-bottom:20px"><div class="d-kep"><div><h3>Perlu Perhatian</h3><p>Rapikan agar dokumen Bukti Dukung lengkap</p></div><span id="dPendJml"></span></div>
         <div class="pend" id="dPend"></div></div>
@@ -648,8 +644,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     // per bidang
     const perB = bds.map(b => ({ b, ks: ks.filter(k => k.bidang === b) })).sort((a, b) => b.ks.length - a.ks.length);
     $('perBidangSub').textContent = 'Calon dokumen Bukti Dukung ' + S.namaBulan(ym);
-    $('perBidang').innerHTML = perB.length ? perB.slice(0, 4).map((x, i) => `<div class="top"><span class="av" style="background:${warnaAv(x.b)}">${S.esc(x.b.slice(0, 2).toUpperCase())}<span class="rk">${i + 1}</span></span><div class="nm"><b>${S.esc(x.b)}</b><small>${new Set(x.ks.map(k => k.tanggal)).size} hari · ${new Set(x.ks.map(k => k.rhkId).filter(id => rhkById(id))).size} RK · ${x.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)} foto</small></div><div class="nil"><b>${x.ks.length}</b><small>kegiatan</small></div></div>`).join('')
-      + (perB.length > 4 ? `<div style="font-size:12.5px;color:var(--teks2);text-align:center">+ ${perB.length - 4} bidang lain</div>` : '')
+    $('perBidang').innerHTML = perB.length ? perB.map((x, i) => `<div class="top"><span class="av" style="background:${warnaAv(x.b)}">${S.esc(x.b.slice(0, 2).toUpperCase())}<span class="rk">${i + 1}</span></span><div class="nm"><b>${S.esc(x.b)}</b><small>${new Set(x.ks.map(k => k.tanggal)).size} hari · ${new Set(x.ks.map(k => k.rhkId).filter(id => rhkById(id))).size} RK · ${x.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)} foto</small></div><div class="nil"><b>${x.ks.length}</b><small>kegiatan</small></div></div>`).join('')
       : '<div class="kosong" style="padding:24px 8px">Belum ada kegiatan pada bulan ini.</div>';
     // perlu perhatian
     const hkKosong = hk.filter(d => !K.isi.has(d)).length;
