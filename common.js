@@ -311,20 +311,26 @@
     await muatBidang();
     const el = document.getElementById('skp-login'); if (el) el.hidden = true;
     c.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') location.reload(); });
-    if (saya.peran !== 'admin' && !/kuis\.html/i.test(location.pathname)) { ajakKuis(); setInterval(ajakKuis, 45000); }
+    if (saya.peran !== 'admin' && !/kuis\.html/i.test(location.pathname)) { ajakKuis(); setInterval(ajakKuis, 20000); document.addEventListener('visibilitychange', () => { if (!document.hidden) ajakKuis(); }); }
     return { uid, pegawai: saya };
   }
-  /* Ajakan ikut Kuis BerAKHLAK yang sedang berlangsung (dipandu admin) */
+  /* Menu Kuis BerAKHLAK: tampil di menu setiap pengguna selama ada kuis yang berlangsung */
   async function ajakKuis() {
+    if (!document.getElementById('skp-kuis-css')) { const st = document.createElement('style'); st.id = 'skp-kuis-css'; st.textContent = `[data-kuis-menu][hidden]{display:none!important}
+      .skp-live{display:inline-flex;align-items:center;gap:4px;margin-left:auto;background:#e21b3c;color:#fff;font-size:10px;font-weight:800;letter-spacing:.04em;border-radius:99px;padding:2px 7px;line-height:1.4}
+      .skp-live.titik{padding:0;width:9px;height:9px;flex:0 0 auto;background:#ff4d6d;box-shadow:0 0 0 3px rgba(255,77,109,.3);animation:skpLive 1.2s ease-in-out infinite}.skp-live.titik::before{display:none}nav.sisi a.menu-kuis{white-space:nowrap}
+      .skp-live::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff;animation:skpLive 1.2s ease-in-out infinite}@keyframes skpLive{50%{opacity:.2}}
+      nav.sisi a.menu-kuis{background:linear-gradient(135deg,#46178f,#7b2ff7)!important;color:#fff!important;font-weight:700}
+      .bawah-nav a.kuis{color:#7b2ff7!important;font-weight:700;position:relative}.bawah-nav a.kuis::after,.ikon-kuis::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:#e21b3c;box-shadow:0 0 0 2px #fff;animation:skpLive 1.2s ease-in-out infinite}
+      .ikon-kuis{position:relative}.ikon-kuis::after{top:4px;right:4px}body.kuis-on .bawah-nav a[data-r=profil]{display:none}`; document.head.appendChild(st); }
     let k = null; try { const r = await client().rpc('kuis_aktif'); k = r.error ? null : r.data; } catch (e) { }
-    let el = document.getElementById('skp-kuis'); const tutup = (() => { try { return sessionStorage.getItem('sakti-kuis-tutup'); } catch (e) { return null; } })();
-    if (!k || (tutup === k.pin && !k.ikut)) { if (el) el.remove(); return; }
-    if (!document.getElementById('skp-kuis-css')) { const st = document.createElement('style'); st.id = 'skp-kuis-css'; st.textContent = `#skp-kuis{position:fixed;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top));z-index:1002;display:flex;align-items:center;gap:10px;width:min(440px,calc(100vw - 24px));box-sizing:border-box;background:linear-gradient(135deg,#46178f,#7b2ff7);color:#fff;border-radius:16px;padding:10px 10px 10px 14px;box-shadow:0 10px 28px rgba(70,23,143,.4);font-family:inherit;animation:skpKz .5s cubic-bezier(.3,1.5,.6,1)}
-      #skp-kuis .ik{font-size:24px}#skp-kuis .tx{flex:1;font-size:13px;line-height:1.3;min-width:0}#skp-kuis .tx b{display:block;font-size:14.5px}#skp-kuis a{background:#fff;color:#46178f;font-weight:800;text-decoration:none;border-radius:10px;padding:9px 14px;font-size:14px;white-space:nowrap}
-      #skp-kuis button{background:none;border:0;color:#fff;opacity:.8;font-size:20px;cursor:pointer;padding:0 4px}@keyframes skpKz{from{transform:translate(-50%,-30px);opacity:0}}`; document.head.appendChild(st); }
-    if (!el) { el = document.createElement('div'); el.id = 'skp-kuis'; document.body.appendChild(el); }
-    el.innerHTML = `<span class="ik">🎮</span><span class="tx"><b>${esc(k.judul)}</b>${k.ikut ? 'Anda sedang bermain' : 'Sedang berlangsung · PIN ' + esc(k.pin)}</span><a href="kuis.html${k.ikut ? '' : '?pin=' + encodeURIComponent(k.pin)}">${k.ikut ? 'Kembali' : 'Ikut'} ›</a><button type="button" aria-label="Tutup">×</button>`;
-    el.querySelector('button').onclick = () => { try { sessionStorage.setItem('sakti-kuis-tutup', k.pin); } catch (e) { } el.remove(); };
+    const el = document.querySelectorAll('[data-kuis-menu]');
+    document.body.classList.toggle('kuis-on', !!k);
+    if (!k) { el.forEach(x => x.hidden = true); return; }
+    const href = 'kuis.html' + (k.ikut ? '' : '?pin=' + encodeURIComponent(k.pin));
+    el.forEach(x => { x.hidden = false; x.href = href; x.title = k.ikut ? 'Kembali ke kuis' : 'Ikut ' + k.judul + ' (PIN ' + k.pin + ')'; });
+    let sudah = null; try { sudah = sessionStorage.getItem('sakti-kuis-info'); sessionStorage.setItem('sakti-kuis-info', k.pin); } catch (e) { }
+    if (!k.ikut && sudah !== k.pin && el.length) toast('🎮 ' + k.judul + ' sedang berlangsung. Buka menu Kuis untuk ikut bermain.', 6000);
   }
   async function token() { const { data } = await client().auth.getSession(); if (!data.session) throw new Error('Sesi berakhir, silakan masuk lagi.'); return data.session.access_token; }
   /* Kirim perintah ke Google Apps Script (penyimpan dokumen ke Google Drive) */
@@ -466,6 +472,7 @@
     L.push(Object.assign({ t: 'BerAKHLAK terdiri dari berapa nilai dasar ASN?', k: 'umum' }, pilih('7 nilai', ['5 nilai', '6 nilai', '8 nilai'])));
     L.push(Object.assign({ t: 'Employer branding ASN yang diluncurkan bersama core values BerAKHLAK adalah…', k: 'umum' }, pilih('Bangga Melayani Bangsa', ['Melayani dengan Hati', 'ASN Berintegritas', 'Kerja Cerdas, Kerja Ikhlas'])));
     L.push(Object.assign({ t: 'Implementasi core values BerAKHLAK diatur dalam…', k: 'umum' }, pilih('SE Menteri PANRB No. 20 Tahun 2021', ['PP No. 11 Tahun 2017', 'UU No. 5 Tahun 2014', 'Perpres No. 81 Tahun 2010'])));
+    L.forEach((q, i) => q.id = 'm' + i);   // id tetap: urutan pembuatan soal selalu sama
     return L;
   }
   function susunKuis(n, durasi, tambahan, hanyaTambahan) {   // pilih n soal acak, variasi jenis, tiap soal {t, p[4], b, d}
@@ -476,6 +483,13 @@
     for (const q of pool) { if (out.length >= n) break; const k = q.k; if (k !== 'tambahan' && (hit[k] || 0) >= Math.ceil(n / 3)) continue; hit[k] = (hit[k] || 0) + 1; out.push(q); }
     for (const q of pool) { if (out.length >= n) break; if (!out.includes(q)) out.push(q); }
     return acak(out).map(q => ({ t: q.t, p: q.p, b: q.b, d: durasi }));
+  }
+  /* Nama sapaan: lewati gelar depan; nama depan pendek khas Sulawesi (La, Wa, Ni, …) digabung dengan kata berikutnya */
+  function namaPanggil(n) {
+    const w = String(n || '').replace(/,.*$/, '').trim().split(/\s+/).filter(x => x && !/^(dr|ir|drs|dra|prof|h|hj|apt|ns)\.?$/i.test(x));
+    if (!w.length) return '';
+    if (/^(la|wa)$/i.test(w[0]) && /^ode$/i.test(w[1] || '') && w[2]) return w.slice(0, 3).join(' ');
+    return w[0].replace(/\.$/, '').length <= 2 && w[1] ? w[0] + ' ' + w[1] : w[0];
   }
   function nilaiHariIni(d) {   // berganti setiap hari, berurutan B-A-K-H-L-A-K; panduan perilaku bergilir tiap putaran
     d = d || new Date(); const hari = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
@@ -531,7 +545,7 @@
 
   const api = {
     BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, cocokRk, tokenRk, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
-    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, soalBerakhlak, susunKuis, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
+    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, soalBerakhlak, susunKuis, namaPanggil, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
     list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakRk: ids => proses('Menghapus ' + ids.length + ' RK…', () => db.hapusBanyakRk(ids), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),

@@ -381,6 +381,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     <div class="brand"><img src="icons/dashboard-192.png?v=2" alt=""><div>SAKTI<small>BPS Kota Kendari</small></div></div>
     <a class="menu" href="#dashboard" data-r="dashboard"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a>
     <a class="menu menu-catat" href="input.html"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat Kegiatan</a>
+    <a class="menu menu-kuis" href="kuis.html" data-kuis-menu hidden title="Kuis BerAKHLAK sedang berlangsung"><svg viewBox="0 0 24 24"><path d="M21 6H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5zm3-3a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5z"/></svg>Kuis BerAKHLAK<span class="skp-live titik" aria-label="sedang berlangsung"></span></a>
     <a class="menu" href="#rekap" data-r="rekap"><svg viewBox="0 0 24 24"><path d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-2 14-4-4 1.4-1.4 2.6 2.6 6.6-6.6L19 9l-8 8z"/></svg>Rekap Kegiatan</a>
     <a class="menu" href="#rk" data-r="rk"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-14a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2z"/></svg>RK &amp; IKI</a>
     <a class="menu" href="#upload" data-r="upload"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Upload Dokumen</a>
@@ -621,6 +622,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
 <nav class="bawah-nav" aria-label="Menu">
   <a href="#dashboard" data-r="dashboard"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a>
   <a href="input.html" class="catat"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>Catat</a>
+  <a href="kuis.html" class="kuis" data-kuis-menu hidden><svg viewBox="0 0 24 24"><path d="M21 6H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5zm3-3a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5z"/></svg>Kuis</a>
   <a href="#rekap" data-r="rekap"><svg viewBox="0 0 24 24"><path d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-2 14-4-4 1.4-1.4 2.6 2.6 6.6-6.6L19 9l-8 8z"/></svg>Rekap</a>
   <a href="#analisis" data-r="analisis" class="pim-only"><svg viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-5h2v13H7zm4-5h2v18h-2zm4 8h2v10h-2zm4-4h2v14h-2z"/></svg>Analisis</a>
   <a href="#pegawai" data-r="pegawai" class="pim-only"><svg viewBox="0 0 24 24"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13zm8 0c-.3 0-.6 0-1 .1a4.2 4.2 0 0 1 2 3.4V19h6v-2.5c0-2.3-4.7-3.5-7-3.5z"/></svg>Pegawai</a>
@@ -742,7 +744,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     $('dNilai').innerHTML = S.bannerNilaiHariIni();
     const pimD = saya.peran === 'pimpinan'; $('dashPeg').hidden = pimD; $('dashPim').hidden = !pimD; if (pimD) return PIM.dashboard();
     const K = statBulan(ym), L = statBulan(ymGeser(ym, -1)), ks = K.ks; const jam = now.getHours();
-    $('sapa').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (profil.nama ? ', ' + profil.nama.split(/[ ,]/)[0] : '');
+    $('sapa').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (profil.nama ? ', ' + S.namaPanggil(profil.nama) : '');
     $('sapaSub').textContent = 'Kerja harian ' + S.namaBulan(ym) + (profil.jabatan ? ' · ' + profil.jabatan : ''); $('dTgl').textContent = S.tglPanjang(S.ymd(now));
     const [y, m] = ym.split('-').map(Number); const nHari = new Date(y, m, 0).getDate(); const hariIni = S.ymd(now);
     const hk = hariKerjaS(ym), hkIsi = hk.filter(d => K.isi.has(d)).length, pctHk = hk.length ? Math.round(hkIsi / hk.length * 100) : 0;
@@ -1606,7 +1608,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     let pdData = null;
     async function dashboard() {
       const v = ym > HARI_INI.slice(0, 7) ? HARI_INI.slice(0, 7) : ym;
-      const jam = now.getHours(); $('pdSalam').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (saya.nama ? ', ' + saya.nama.split(/[ ,]/).filter(w => !/^(dr|ir|drs|dra|prof|h|hj)\.?$/i.test(w))[0] : '');
+      const jam = now.getHours(); $('pdSalam').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (saya.nama ? ', ' + S.namaPanggil(saya.nama) : '');
       $('pdSubBln').textContent = '· ' + S.namaBulan(v); $('pdTgl').textContent = S.tglPanjang(HARI_INI);
       if (!pdData) $('pdHero').innerHTML = '<div class="d-tile" style="grid-column:1/-1"><small>Memuat data pegawai…</small></div>';
       let data; try { await muatDasar(); data = await ambil(rentangBln(ymG(v, -2)).dari, rentangBln(v).sampai); } catch (x) { salah(x); return; }

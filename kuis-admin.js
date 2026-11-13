@@ -50,15 +50,39 @@
   .kz-ops div svg { width: 16px; height: 16px; flex: 0 0 auto; } .kz-ops div.salah { opacity: .45; } .kz-ops div b { margin-left: auto; }
   .kz-soalitem .kz-alat { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; } .kz-soalitem .kz-alat button { border: 1px solid #d7e0ea; background: #fff; border-radius: 9px; padding: 6px 10px; font: inherit; font-size: 12.5px; cursor: pointer; }
   .kz-form { border: 2px dashed #c9b6ef; border-radius: 16px; padding: 16px; margin-top: 14px; background: #fcfaff; }
-  .kz-form .opsi { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .kz-form .opsi label { display: flex; align-items: center; gap: 8px; border-radius: 11px; padding: 6px 8px 6px 10px; color: #fff; }
-  .kz-form .opsi label svg { width: 20px; height: 20px; flex: 0 0 auto; } .kz-form .opsi input[type=text] { flex: 1; min-width: 0; border: 0; border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 14px; }
+  .kz-form .opsi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  .kz-form .opsi label { display: flex; align-items: center; gap: 8px; min-width: 0; box-sizing: border-box; border-radius: 11px; padding: 6px 10px; color: #fff; }
+  .kz-form .opsi label svg { width: 20px; height: 20px; flex: 0 0 auto; } .kz-form .opsi input[type=text] { flex: 1; min-width: 0; border: 0; border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 14px; color: #1d2733; background: #fff; caret-color: #46178f; }
+  .kz-form .opsi input[type=text]::placeholder { color: #8a94a3; } .kz-form textarea.kz-in { color: #1d2733; background: #fff; resize: vertical; }
   .kz-form .opsi input[type=radio] { width: 20px; height: 20px; accent-color: #fff; flex: 0 0 auto; margin: 0; }
   .kz-form .ket { font-size: 12.5px; color: var(--teks2); margin-top: 8px; }
   .kz-form .tb { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
   .kz-kosong { text-align: center; color: var(--teks2); font-size: 13.5px; padding: 22px 10px; }
+  .kz-jml { display: inline-block; margin-left: 8px; background: #f1eafe; color: #46178f; border-radius: 99px; padding: 2px 10px; font-size: 12.5px; font-weight: 800; vertical-align: 2px; }
+  .kz-alat-pilih { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding: 12px; background: #f8f6fd; border-radius: 14px; }
+  .kz-n { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: var(--teks); margin-right: 4px; }
+  .kz-step { display: inline-flex; align-items: center; border: 1px solid #d7e0ea; border-radius: 10px; background: #fff; overflow: hidden; }
+  .kz-step button { border: 0; background: #fff; width: 36px; height: 38px; font-size: 18px; font-weight: 800; cursor: pointer; color: #46178f; } .kz-step input { width: 52px; border: 0; text-align: center; font: inherit; font-size: 15px; font-weight: 800; color: #1d2733; background: #fff; -moz-appearance: textfield; }
+  .kz-step input::-webkit-outer-spin-button, .kz-step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .kz-sbtn { border: 1px solid #d7e0ea; background: #fff; border-radius: 10px; padding: 9px 13px; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; color: var(--teks); } .kz-sbtn.ung { background: #46178f; border-color: #46178f; color: #fff; }
+  .kz-tab-baris { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .kz-tabs { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; } .kz-tabs button { border: 0; background: #f1f4f8; border-radius: 99px; padding: 8px 13px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--teks2); }
+  .kz-tabs button span { background: rgba(0,0,0,.07); border-radius: 99px; padding: 1px 7px; margin-left: 3px; font-size: 12px; } .kz-tabs button.on { background: #46178f; color: #fff; } .kz-tabs button.on span { background: rgba(255,255,255,.2); }
+  .kz-cari { max-width: 240px; color: #1d2733; background: #fff; }
+  .kz-daftar { margin-top: 12px; max-height: 560px; overflow: auto; border: 1px solid #edf1f5; border-radius: 14px; }
+  .kz-q { display: flex; gap: 12px; align-items: flex-start; padding: 13px 14px; border-bottom: 1px solid #f0f3f7; cursor: pointer; transition: background .15s; } .kz-q:last-child { border-bottom: 0; }
+  .kz-q:hover { background: #fbf9ff; } .kz-q.on { background: #f6f1ff; }
+  .kz-cek { width: 24px; height: 24px; border-radius: 7px; border: 2px solid #c4b5e6; display: grid; place-items: center; font-weight: 900; font-size: 15px; color: #fff; flex: 0 0 auto; margin-top: 1px; background: #fff; }
+  .kz-q.on .kz-cek { background: #46178f; border-color: #46178f; }
+  .kz-q .tx { flex: 1; min-width: 0; } .kz-q .tx > b { display: block; font-size: 14px; line-height: 1.4; font-weight: 700; }
+  .kz-pil { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; } .kz-pil span { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--teks2); }
+  .kz-pil span.ya { color: #15803d; font-weight: 700; } .kz-pil i { width: 15px; height: 15px; border-radius: 4px; display: grid; place-items: center; flex: 0 0 auto; } .kz-pil i svg { width: 9px; height: 9px; }
+  .kz-ka { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: 0 0 auto; }
+  .kz-tagk { font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 3px 9px; background: #eef2f7; color: #475569; white-space: nowrap; } .kz-tagk.buat { background: #fff1e6; color: #c2410c; }
+  .kz-ed { display: flex; gap: 4px; } .kz-ed button { border: 1px solid #d7e0ea; background: #fff; border-radius: 8px; padding: 4px 8px; font: inherit; font-size: 12px; cursor: pointer; }
+  @media (max-width: 560px) { .kz-q { flex-wrap: wrap; } .kz-ka { flex-direction: row; width: 100%; justify-content: flex-end; align-items: center; } .kz-cari { max-width: none; width: 100%; } .kz-n { width: 100%; justify-content: space-between; } .kz-alat-pilih .kz-sbtn { flex: 1; } }
   @media (max-width: 860px) { .kz-grid { grid-template-columns: 1fr; } }
-  @media (max-width: 560px) { .kz-ops, .kz-form .opsi { grid-template-columns: 1fr; } .kz-hero { padding: 22px 20px; } .kz-main { width: 100%; } .kz-rw { flex-wrap: wrap; } .kz-rw .aksi { width: 100%; justify-content: flex-end; } }
+  @media (max-width: 560px) { .kz-ops, .kz-form .opsi { grid-template-columns: minmax(0, 1fr); } .kz-form { padding: 12px; } .kz-hero { padding: 22px 20px; } .kz-main { width: 100%; } .kz-rw { flex-wrap: wrap; } .kz-rw .aksi { width: 100%; justify-content: flex-end; } }
 
   /* ---------- Layar pemandu (layar penuh) ---------- */
   .kz-layar { position: fixed; inset: 0; z-index: 9000; background: #46178f; color: #fff; display: flex; flex-direction: column; overflow: hidden; font-family: inherit; }
@@ -137,56 +161,99 @@
   `;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
-  /* ---------- Pengaturan & data ---------- */
-  let set = { judul: 'Kuis BerAKHLAK', n: 10, d: 20, sumber: 'semua' };
+  /* ---------- Pengaturan & pilihan soal ---------- */
+  let set = { judul: 'Kuis BerAKHLAK', d: 20, acak: true, nAcak: 10 };
   try { Object.assign(set, JSON.parse(localStorage.getItem('sakti-kuis-set') || '{}')); } catch (e) { }
   const simpanSet = () => { try { localStorage.setItem('sakti-kuis-set', JSON.stringify(set)); } catch (e) { } };
-  let bank = [], riwayat = [], ubah = null, dibangun = false;
-  const ACAK_BANK = S.soalBerakhlak().length;
+  let pilih = null; try { const x = JSON.parse(localStorage.getItem('sakti-kuis-pilih') || 'null'); if (Array.isArray(x)) pilih = new Set(x); } catch (e) { }
+  const simpanPilih = () => { try { localStorage.setItem('sakti-kuis-pilih', JSON.stringify([...pilih])); } catch (e) { } };
+  let bank = [], riwayat = [], ubah = null, dibangun = false, tab = 'semua', cari = '', baruId = null, bankSiap = false;
+  const MATERI = S.soalBerakhlak();
+  const semua = () => bank.map(q => ({ id: 'b:' + q.id, t: q.teks, p: q.pilihan, b: q.benar, k: 'buat', jenis: 'buat', asli: q })).concat(MATERI.map(q => ({ ...q, jenis: 'materi' })));
+  const KAT = { perilaku: 'Perilaku', makna: 'Makna', bukan: 'Bukan perilaku', huruf: 'Huruf', urutan: 'Urutan', umum: 'Umum', buat: 'Buatan sendiri' };
+  const norm = x => String(x || '').toLowerCase();
 
   function bangun() {
     const sec = $('v-kuis'); if (!sec || dibangun) return; dibangun = true;
     const dek = [[6, 12, 0], [80, 8, 1], [88, 60, 2], [62, 70, 3], [40, -10, 2]].map(([x, y, b]) => `<i style="left:${x}%;top:${y}%">${BENTUK[b]}</i>`).join('');
     sec.innerHTML = `
-    <div class="kz-hero"><div class="dekor">${dek}</div><div><span class="kz-tag">🎮 Kuis langsung</span><h2>Kuis BerAKHLAK</h2><p>Tampilkan layar kuis di proyektor. Pegawai bergabung dari HP dengan memindai kode QR atau memasukkan PIN. Semakin cepat menjawab benar, semakin besar poinnya, dan papan juara diperbarui langsung setelah setiap soal.</p></div>
+    <div class="kz-hero"><div class="dekor">${dek}</div><div><span class="kz-tag">🎮 Kuis langsung</span><h2>Kuis BerAKHLAK</h2><p>Pilih soal, lalu tampilkan layar kuis di proyektor. Saat kuis dimulai, menu <b>Kuis BerAKHLAK</b> muncul di aplikasi setiap pegawai. Semakin cepat menjawab benar, semakin besar poinnya, dan papan juara diperbarui setiap selesai satu soal.</p></div>
       <button class="kz-main" type="button" id="kzMulai">▶ Mulai Kuis</button></div>
     <div class="kz-grid">
-      <div class="d-kartu kz-kartu"><h3>Pengaturan permainan</h3><p class="kz-sub">Soal diacak setiap kali kuis dimulai.</p>
+      <div class="d-kartu kz-kartu"><h3>Pengaturan permainan</h3><p class="kz-sub">Soal yang dimainkan adalah soal yang dicentang pada daftar <b>Pilih soal</b>.</p>
         <label class="kz-lbl" for="kzJudul">Judul kuis</label><input class="kz-in" id="kzJudul" maxlength="60">
-        <span class="kz-lbl">Jumlah soal</span><div class="kz-chipset" data-set="n">${[5, 10, 15, 20].map(v => `<button type="button" data-v="${v}">${v}</button>`).join('')}</div>
-        <span class="kz-lbl">Waktu menjawab</span><div class="kz-chipset" data-set="d">${[10, 20, 30, 45].map(v => `<button type="button" data-v="${v}">${v} detik</button>`).join('')}</div>
-        <span class="kz-lbl">Sumber soal</span><div class="kz-chipset" data-set="sumber"><button type="button" data-v="semua">Materi BerAKHLAK + soal tambahan</button><button type="button" data-v="tambahan">Soal tambahan saja</button></div>
-        <p class="kz-info" id="kzInfo"></p>
-        <details class="kz-contoh"><summary>Lihat contoh soal otomatis</summary><ol id="kzContoh"></ol></details></div>
+        <span class="kz-lbl">Waktu menjawab per soal</span><div class="kz-chipset" data-set="d">${[10, 20, 30, 45, 60].map(v => `<button type="button" data-v="${v}">${v} detik</button>`).join('')}</div>
+        <span class="kz-lbl">Urutan soal</span><div class="kz-chipset" data-set="acak"><button type="button" data-v="1">Diacak</button><button type="button" data-v="0">Sesuai daftar</button></div>
+        <p class="kz-info" id="kzInfo"></p></div>
       <div class="d-kartu kz-kartu"><h3>Juara kuis</h3><p class="kz-sub">Riwayat permainan beserta tiga besar pemenangnya.</p><div id="kzRiwayat"><div class="kz-kosong">Memuat…</div></div></div>
     </div>
-    <div class="d-kartu kz-kartu" style="margin-bottom:22px"><div class="kz-bank-kep"><div><h3>Soal tambahan</h3><p class="kz-sub" style="margin:0">Buat soal sendiri, misalnya tentang budaya kerja kantor. Soal tambahan ikut diacak bersama materi BerAKHLAK.</p></div><button class="kz-tbtn" type="button" id="kzTambah">+ Tambah soal</button></div>
-      <div id="kzForm"></div><div id="kzBank"></div></div>`;
+    <div class="d-kartu kz-kartu" style="margin-bottom:22px" id="kzPilihKartu">
+      <div class="kz-bank-kep"><div><h3>Pilih soal <span class="kz-jml" id="kzJmlPilih">0 dipilih</span></h3><p class="kz-sub" style="margin:0">Centang soal yang ingin dimainkan, atau tentukan jumlahnya lalu tekan <b>Pilih acak</b>. Anda juga bisa membuat soal sendiri.</p></div><button class="kz-tbtn" type="button" id="kzTambah">+ Buat soal sendiri</button></div>
+      <div id="kzForm"></div>
+      <div class="kz-alat-pilih"><label class="kz-n">Jumlah soal <span class="kz-step"><button type="button" data-n="-1" aria-label="Kurangi">−</button><input id="kzN" type="number" min="1" max="100" inputmode="numeric"><button type="button" data-n="1" aria-label="Tambah">+</button></span></label>
+        <button class="kz-sbtn ung" type="button" id="kzAcak">🎲 Pilih acak</button><button class="kz-sbtn" type="button" id="kzSemua">Centang semua yang tampil</button><button class="kz-sbtn" type="button" id="kzKosong">Kosongkan</button></div>
+      <div class="kz-tab-baris"><div class="kz-tabs" id="kzTabs"></div><input class="kz-in kz-cari" id="kzCari" type="search" placeholder="Cari soal…" aria-label="Cari soal"></div>
+      <div class="kz-daftar" id="kzDaftar"></div></div>`;
     $('kzJudul').value = set.judul; $('kzJudul').oninput = () => { set.judul = $('kzJudul').value; simpanSet(); };
-    sec.querySelectorAll('.kz-chipset').forEach(g => g.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const k = g.dataset.set; set[k] = k === 'sumber' ? b.dataset.v : Number(b.dataset.v); simpanSet(); tandai(); }));
+    $('kzN').value = set.nAcak; $('kzN').onchange = () => { set.nAcak = Math.max(1, Math.min(100, Number($('kzN').value) || 10)); $('kzN').value = set.nAcak; simpanSet(); };
+    sec.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { $('kzN').value = Math.max(1, Math.min(100, (Number($('kzN').value) || 0) + Number(b.dataset.n))); $('kzN').onchange(); });
+    sec.querySelectorAll('.kz-chipset').forEach(g => g.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const k = g.dataset.set; set[k] = k === 'acak' ? b.dataset.v === '1' : Number(b.dataset.v); simpanSet(); tandai(); }));
     $('kzMulai').onclick = mulaiBaru;
     $('kzTambah').onclick = () => { ubah = { id: null, teks: '', pilihan: ['', '', '', ''], benar: 0 }; formSoal(); };
-    $('kzContoh').innerHTML = S.soalBerakhlak().slice().sort(() => Math.random() - .5).slice(0, 12).map(q => `<li>${esc(q.t)}<small>✓ ${esc(q.p[q.b])}</small></li>`).join('');
-    $('kzBank').addEventListener('click', aksiBank); $('kzRiwayat').addEventListener('click', aksiRiwayat);
+    $('kzAcak').onclick = () => { acakPilih(set.nAcak); tab = 'terpilih'; daftar(); S.toast(pilih.size + ' soal dipilih secara acak'); };
+    $('kzSemua').onclick = () => { tampil().forEach(q => pilih.add(q.id)); simpanPilih(); daftar(); };
+    $('kzKosong').onclick = () => { pilih.clear(); simpanPilih(); daftar(); };
+    $('kzTabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; daftar(); });
+    let tunda; $('kzCari').oninput = () => { clearTimeout(tunda); tunda = setTimeout(() => { cari = norm($('kzCari').value.trim()); daftar(); }, 150); };
+    $('kzDaftar').addEventListener('click', aksiDaftar);
+    $('kzRiwayat').addEventListener('click', aksiRiwayat);
     tandai();
   }
+  function acakPilih(n) {   // pilih n soal acak dengan jenis yang bervariasi
+    const kel = {}; semua().forEach(q => (kel[q.k] = kel[q.k] || []).push(q));
+    Object.values(kel).forEach(a => a.sort(() => Math.random() - .5));
+    const urut = Object.keys(kel).sort(() => Math.random() - .5); pilih = new Set();
+    while (pilih.size < n && urut.some(k => kel[k].length)) urut.forEach(k => { if (pilih.size < n && kel[k].length) pilih.add(kel[k].shift().id); });
+    simpanPilih();
+  }
+  const dipilih = () => semua().filter(q => pilih && pilih.has(q.id));
   function tandai() {
-    document.querySelectorAll('#v-kuis .kz-chipset').forEach(g => g.querySelectorAll('button').forEach(b => b.classList.toggle('on', String(set[g.dataset.set]) === b.dataset.v)));
-    const nb = bank.filter(b => b.aktif).length, tersedia = set.sumber === 'tambahan' ? nb : nb + ACAK_BANK;
-    $('kzInfo').innerHTML = `<b>${set.sumber === 'tambahan' ? '' : ACAK_BANK + ' soal otomatis dari materi BerAKHLAK · '}${nb} soal tambahan</b><br>Kuis berisi ${Math.min(set.n, tersedia)} soal, masing-masing ${set.d} detik (± ${Math.max(1, Math.round(Math.min(set.n, tersedia) * (set.d + 15) / 60))} menit).`;
+    document.querySelectorAll('#v-kuis .kz-chipset').forEach(g => g.querySelectorAll('button').forEach(b => b.classList.toggle('on', g.dataset.set === 'acak' ? (b.dataset.v === '1') === !!set.acak : String(set[g.dataset.set]) === b.dataset.v)));
+    const n = dipilih().length, nb = dipilih().filter(q => q.jenis === 'buat').length;
+    $('kzInfo').innerHTML = n ? `<b>${n} soal dipilih</b>${nb ? ` (${nb} buatan sendiri)` : ''} · ${set.d} detik per soal<br>Perkiraan lama permainan ± ${Math.max(1, Math.round(n * (set.d + 15) / 60))} menit.` : '<b>Belum ada soal dipilih.</b> Centang soal pada daftar di bawah atau tekan Pilih acak.';
+    const j = $('kzJmlPilih'); if (j) j.textContent = n + ' dipilih';
+  }
+  function tampil() {
+    return semua().filter(q => (tab === 'semua' || (tab === 'buat' && q.jenis === 'buat') || (tab === 'materi' && q.jenis === 'materi') || (tab === 'terpilih' && pilih.has(q.id)))
+      && (!cari || norm(q.t + ' ' + q.p.join(' ')).includes(cari)));
+  }
+  function daftar() {
+    if (!$('kzDaftar')) return; const all = semua();
+    const hit = { semua: all.length, buat: bank.length, materi: MATERI.length, terpilih: all.filter(q => pilih.has(q.id)).length };
+    $('kzTabs').innerHTML = [['semua', 'Semua'], ['terpilih', 'Terpilih'], ['buat', 'Buatan sendiri'], ['materi', 'Materi BerAKHLAK']].map(([k, l]) => `<button type="button" data-tab="${k}" class="${tab === k ? 'on' : ''}">${l} <span>${hit[k]}</span></button>`).join('');
+    const L = tampil(), urutPilih = [...pilih];
+    $('kzDaftar').innerHTML = L.length ? L.map((q, i) => { const on = pilih.has(q.id);
+      return `<div class="kz-q${on ? ' on' : ''}" data-q="${esc(q.id)}"><span class="kz-cek" role="checkbox" aria-checked="${on}" tabindex="0">${on ? '✓' : ''}</span><div class="tx"><b>${esc(q.t)}</b>
+        <div class="kz-pil">${q.p.map((p, j) => `<span class="${j === q.b ? 'ya' : ''}"><i style="background:${WARNA[j]}">${BENTUK[j]}</i>${esc(p)}</span>`).join('')}</div></div>
+        <div class="kz-ka"><span class="kz-tagk ${q.jenis}">${KAT[q.k] || q.k}</span>${q.jenis === 'buat' ? `<span class="kz-ed"><button type="button" data-b="ubah" data-id="${q.asli.id}">Ubah</button><button type="button" data-b="hapus" data-id="${q.asli.id}">Hapus</button></span>` : ''}</div></div>`; }).join('')
+      : `<div class="kz-kosong">${tab === 'buat' && !cari ? 'Belum ada soal buatan sendiri. Tekan <b>+ Buat soal sendiri</b>.' : tab === 'terpilih' && !cari ? 'Belum ada soal yang dipilih.' : 'Tidak ada soal yang cocok.'}</div>`;
+    tandai();
+  }
+  function aksiDaftar(e) {
+    const b = e.target.closest('[data-b]'); if (b) return aksiBank(b);
+    const r = e.target.closest('.kz-q'); if (!r) return; const id = r.dataset.q;
+    pilih.has(id) ? pilih.delete(id) : pilih.add(id); simpanPilih();
+    r.classList.toggle('on', pilih.has(id)); const c2 = r.querySelector('.kz-cek'); c2.textContent = pilih.has(id) ? '✓' : ''; c2.setAttribute('aria-checked', pilih.has(id));
+    if (tab === 'terpilih') daftar(); else { const t = $('kzTabs').querySelector('[data-tab=terpilih] span'); if (t) t.textContent = dipilih().length; tandai(); }
   }
 
   async function render() { bangun(); await Promise.all([muatBank(), muatRiwayat()]); }
   async function muatBank() {
-    try { bank = (S.cek(await c().from('kuis_bank').select('*')) || []).sort((a, b) => String(a.dibuat).localeCompare(String(b.dibuat))); }
-    catch (x) { bank = []; $('kzBank').innerHTML = `<div class="kz-kosong">${/kuis_bank|schema|relation/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : esc(x.message)}</div>`; tandai(); return; }
-    renderBank(); tandai();
-  }
-  function renderBank() {
-    $('kzBank').innerHTML = bank.length ? bank.map((q, i) => `<div class="kz-soalitem${q.aktif ? '' : ' mati'}"><div class="q"><b>${i + 1}.</b><span>${esc(q.teks)}</span></div>
-      <div class="kz-ops">${q.pilihan.map((p, j) => `<div class="${j === q.benar ? '' : 'salah'}" style="background:${WARNA[j]}">${BENTUK[j]}${esc(p)}${j === q.benar ? '<b>✓</b>' : ''}</div>`).join('')}</div>
-      <div class="kz-alat"><button type="button" data-b="aktif" data-id="${q.id}">${q.aktif ? 'Nonaktifkan' : 'Aktifkan'}</button><button type="button" data-b="ubah" data-id="${q.id}">Ubah</button><button type="button" data-b="hapus" data-id="${q.id}">Hapus</button></div></div>`).join('')
-      : '<div class="kz-kosong">Belum ada soal tambahan. Kuis tetap bisa dimainkan dengan soal otomatis dari materi BerAKHLAK.</div>';
+    try { bank = (S.cek(await c().from('kuis_bank').select('*')) || []).sort((a, b) => String(b.dibuat).localeCompare(String(a.dibuat))); }
+    catch (x) { bank = []; if (/kuis_bank|schema|relation/i.test(x.message)) S.toast('Database belum diperbarui: jalankan setup.sql terbaru di Supabase.', 6000); }
+    const ada = new Set(semua().map(q => q.id));
+    if (!pilih) { pilih = new Set(); acakPilih(set.nAcak); } else { [...pilih].forEach(id => { if (!ada.has(id)) pilih.delete(id); }); }
+    if (baruId) { pilih.add('b:' + baruId); baruId = null; } simpanPilih(); bankSiap = true; daftar();
   }
   function formSoal() {
     const q = ubah; if (!q) { $('kzForm').innerHTML = ''; return; }
@@ -198,19 +265,19 @@
     $('kzSimpan').onclick = async () => {
       const teks = $('kzT').value.trim(), pilihan = [...document.querySelectorAll('#kzForm [data-o]')].map(x => x.value.trim()), benar = Number((document.querySelector('#kzForm [name=kzB]:checked') || {}).value || 0);
       if (!teks) return S.toast('Pertanyaan belum diisi'); if (pilihan.some(p => !p)) return S.toast('Keempat pilihan jawaban harus diisi'); if (new Set(pilihan.map(p => p.toLowerCase())).size < 4) return S.toast('Pilihan jawaban tidak boleh sama');
+      let idBaru = null;
       try {
         if (q.id) S.cek(await c().from('kuis_bank').update({ teks, pilihan, benar }).eq('id', q.id), 'Gagal menyimpan soal');
-        else S.cek(await c().from('kuis_bank').insert({ id: uuid(), teks, pilihan, benar, aktif: true, dibuat: new Date().toISOString() }), 'Gagal menyimpan soal');
-        ubah = null; formSoal(); S.toast('Soal disimpan'); await muatBank();
+        else S.cek(await c().from('kuis_bank').insert({ id: idBaru = uuid(), teks, pilihan, benar, aktif: true, dibuat: new Date().toISOString() }), 'Gagal menyimpan soal');
+        const baru = !q.id; ubah = null; formSoal(); S.toast('Soal disimpan'); if (baru) baruId = idBaru; await muatBank();
       } catch (x) { S.toast(x.message, 5000); }
     };
   }
-  async function aksiBank(e) {
-    const b = e.target.closest('[data-b]'); if (!b) return; const q = bank.find(x => x.id === b.dataset.id); if (!q) return;
+  async function aksiBank(b) {
+    const q = bank.find(x => x.id === b.dataset.id); if (!q) return;
     try {
       if (b.dataset.b === 'ubah') { ubah = { id: q.id, teks: q.teks, pilihan: q.pilihan.slice(), benar: q.benar }; formSoal(); $('kzForm').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-      if (b.dataset.b === 'aktif') S.cek(await c().from('kuis_bank').update({ aktif: !q.aktif }).eq('id', q.id));
-      if (b.dataset.b === 'hapus') { if (!confirm('Hapus soal ini?')) return; S.cek(await c().from('kuis_bank').delete().eq('id', q.id)); }
+      if (b.dataset.b === 'hapus') { if (!confirm('Hapus soal ini?')) return; S.cek(await c().from('kuis_bank').delete().eq('id', q.id)); pilih.delete('b:' + q.id); }
       await muatBank();
     } catch (x) { S.toast(x.message, 5000); }
   }
@@ -234,8 +301,12 @@
     try { S.cek(await c().from('kuis_sesi').delete().eq('id', id)); S.toast('Riwayat kuis dihapus'); await muatRiwayat(); } catch (x) { S.toast(x.message, 5000); }
   }
   async function mulaiBaru() {
-    const tamb = bank.filter(b => b.aktif); const soal = S.susunKuis(set.n, set.d, tamb, set.sumber === 'tambahan');
-    if (!soal.length) return S.toast('Belum ada soal tambahan yang aktif. Pilih sumber "Materi BerAKHLAK + soal tambahan".', 5000);
+    if (!bankSiap) return S.toast('Daftar soal masih dimuat…');
+    let L = dipilih(); if (!L.length) { $('kzPilihKartu').scrollIntoView({ behavior: 'smooth' }); return S.toast('Pilih minimal satu soal terlebih dahulu', 4000); }
+    const segar = new Map(S.soalBerakhlak().map(q => [q.id, q]));   // urutan pilihan jawaban diacak ulang setiap permainan
+    L = L.map(q => q.jenis === 'materi' && segar.get(q.id) ? segar.get(q.id) : q);
+    if (set.acak) L = L.map(q => [Math.random(), q]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+    const soal = L.map(q => ({ t: q.t, p: q.p, b: q.b, d: set.d }));
     try { const r = await S.proses('Menyiapkan kuis…', async () => S.cek(await c().rpc('kuis_buat', { p_judul: (set.judul || '').trim() || 'Kuis BerAKHLAK', p_soal: soal }), 'Gagal membuat kuis')); buka(r.id); }
     catch (x) { S.toast(/kuis_buat|function|schema/i.test(x.message) ? 'Database belum diperbarui: jalankan setup.sql terbaru di Supabase.' : x.message, 6000); }
   }
