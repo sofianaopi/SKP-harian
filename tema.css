@@ -1,0 +1,156 @@
+/* =====================================================================
+   SAKTI — token desain & komponen bersama (lihat DESIGN.md)
+   Dimuat SETELAH <style> tiap halaman: menimpa nilai lama dengan token.
+   ===================================================================== */
+@font-face {
+  font-family: "Plus Jakarta Sans"; font-style: normal; font-display: swap; font-weight: 200 800;
+  src: url("fonts/plus-jakarta-sans.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+:root {
+  /* netral */
+  --n-0: #FFFFFF; --n-25: #F6F8FB; --n-50: #EEF2F6; --n-100: #E2E7EE; --n-200: #CBD3DD; --n-500: #6B7686; --n-600: #556274; --n-800: #1F2A37; --n-900: #0F1722;
+  /* primer (biru BPS) & aksen tunggal (hijau Catat) */
+  --biru-50: #EAF2FB; --biru-100: #D3E5F7; --biru-600: #155EA8; --biru-700: #0F4C8A; --biru-900: #0B2F55;
+  --hijau-50: #E6F5EF; --hijau-600: #087F5B; --hijau-700: #066A4C;
+  /* semantik */
+  --sukses: #166534; --sukses-bg: #E8F6EE; --peringatan: #B45309; --peringatan-bg: #FEF3E2; --bahaya: #B42318; --bahaya-bg: #FDEDEC;
+  /* data (grafik & penanda bidang) */
+  --data-1: #155EA8; --data-2: #0A8F6A; --data-3: #D9772B; --data-4: #7A5AC8; --data-5: #C2417A; --data-6: #2E9BB8;
+  /* tipografi */
+  --font: "Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --t-xs: 12px; --t-sm: 13px; --t-ui: 14px; --t-body: 16px; --t-h4: 17px; --t-h3: 20px; --t-h2: 26px; --t-angka: 32px;
+  /* jarak, bentuk, kedalaman */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px;
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-full: 999px;
+  --sh-1: 0 1px 2px rgba(15, 23, 34, .05); --sh-2: 0 12px 32px rgba(15, 23, 34, .16);
+  --fokus: 0 0 0 3px rgba(21, 94, 168, .28);
+}
+/* nama lama → token (halaman dashboard & admin) */
+:root:not(.hal-chat) {
+  --navy: var(--biru-700); --navy2: var(--biru-900); --biru: var(--biru-600); --biru-muda: var(--biru-50);
+  --bg: var(--n-25); --kartu: var(--n-0); --teks: var(--n-800); --teks2: var(--n-600); --garis: var(--n-100);
+  --hijau: var(--hijau-600); --merah: var(--bahaya);
+}
+/* halaman Catat Kegiatan (gaya obrolan) */
+:root.hal-chat { --hijau: var(--hijau-600); --hijau-tua: var(--hijau-700); --kirim: var(--hijau-600); --teks: var(--n-900); --abu: var(--n-600); }
+
+/* ---------- dasar ---------- */
+html body { font-family: var(--font); color: var(--n-800); -webkit-font-smoothing: antialiased; }
+:root:not(.hal-chat) body { font-size: var(--t-ui); line-height: 1.45; background: var(--n-25); }
+button, input, select, textarea { font-family: inherit; }
+h1, h2, h3, h4 { letter-spacing: -.01em; }
+a { color: var(--biru-600); }
+:is(a, button, [tabindex]):focus-visible:not(#skp-login *) { outline: none; box-shadow: var(--fokus); }
+::placeholder { color: var(--n-500); opacity: 1; }
+.num, table td.num, .angka, b.angka { font-variant-numeric: tabular-nums; }
+
+/* ---------- tombol ---------- */
+.btn { min-height: 40px; padding: 8px 16px; border-radius: var(--r-md); border: 1px solid var(--n-200); background: var(--n-0); color: var(--n-800); font-size: var(--t-ui); font-weight: 600; box-shadow: none; transition: background .15s, border-color .15s; }
+.btn:hover { background: var(--n-50); }
+.btn:focus-visible { box-shadow: var(--fokus); }
+.btn.utama, .btn.primer { background: var(--biru-600); border-color: var(--biru-600); color: #fff; }
+.btn.utama:hover, .btn.primer:hover { background: var(--biru-700); border-color: var(--biru-700); }
+.btn.bahaya { color: var(--bahaya); }
+.btn.kecil { min-height: 32px; padding: 4px 10px; font-size: var(--t-sm); border-radius: var(--r-sm); }
+.btn:disabled { opacity: .5; }
+
+/* ---------- input ---------- */
+:root:not(.hal-chat) :is(input[type=text], input[type=search], input[type=number], input[type=date], input[type=email], input[type=password], input[type=tel], input[type=url], input:not([type]), select, textarea):not(#skp-login *) {
+  border-color: var(--n-200); border-radius: var(--r-md); color: var(--n-800); background-color: var(--n-0);
+}
+:root:not(.hal-chat) :is(input, select, textarea):focus:not(#skp-login *) { outline: none; border-color: var(--biru-600); box-shadow: var(--fokus); }
+
+/* bilah alat (cari & saring): pilihan panjang tidak boleh melebar keluar layar */
+.alat select { max-width: 100%; min-width: 0; }
+
+/* ---------- kartu ---------- */
+.kartu, .d-kartu, .stat { background: var(--n-0); border: 1px solid var(--n-100); border-radius: var(--r-lg); box-shadow: var(--sh-1); }
+.d-kartu h3, .kartu h3 { font-size: var(--t-h4); font-weight: 700; }
+.d-kep p, .kartu > p { color: var(--n-600); }
+
+/* ---------- kotak sapaan (hero) ---------- */
+.d-hero { background: var(--biru-900) !important; border-radius: var(--r-lg); box-shadow: none; }
+.d-hero::before, .d-hero::after { opacity: .5; }
+.d-hero h2 { font-size: var(--t-h2); font-weight: 700; color: #fff; letter-spacing: -.02em; }
+.d-hero .d-sub { color: rgba(255, 255, 255, .78); opacity: 1; }
+.d-tile { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .12); border-radius: var(--r-md); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.d-tile .t-ik { background: rgba(255, 255, 255, .12); border-radius: var(--r-sm); }
+.d-tile b { font-variant-numeric: tabular-nums; }
+.d-btn-kaca { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
+/* ---------- KPI: satu warna ikon & bar ---------- */
+.kpi-ik { background: var(--biru-50) !important; color: var(--biru-600) !important; border-radius: var(--r-md) !important; width: 40px !important; height: 40px !important; }
+.kpi-ik svg { width: 20px; height: 20px; }
+.kpi b.angka { font-size: var(--t-angka); font-weight: 800; letter-spacing: -.02em; color: var(--n-900); }
+.kpi .k-lbl { font-size: var(--t-ui); font-weight: 700; color: var(--n-800); }
+.kpi .k-sub, .kpi .k-kaki span, .kpi .k-prog span { color: var(--n-600); }
+.bar-p { background: var(--n-50) !important; height: 6px; }
+.kpi .bar-p i { background: var(--biru-600) !important; }
+
+/* ---------- badge & pill ---------- */
+.badge { border-radius: var(--r-full); font-size: var(--t-xs); font-weight: 600; padding: 2px 9px; }
+.pill-merah { color: var(--bahaya); background: var(--bahaya-bg); }
+.pill-hijau { color: var(--sukses); background: var(--sukses-bg); }
+
+/* ---------- tabel ---------- */
+table.t { font-size: var(--t-ui); }
+table.t th { font-size: var(--t-xs); font-weight: 600; color: var(--n-600); background: var(--n-25); border-bottom-color: var(--n-100); letter-spacing: .04em; }
+table.t td { border-bottom-color: var(--n-100); }
+table.t tr:hover td { background: var(--n-25); }
+
+/* ---------- navigasi ---------- */
+nav.sisi { background: var(--biru-900) !important; }
+nav.sisi a.menu { color: rgba(255, 255, 255, .78); font-size: var(--t-ui); font-weight: 500; border-radius: var(--r-md); }
+nav.sisi a.menu:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+nav.sisi a.menu.aktif, nav.sisi a.aktif { background: var(--n-0) !important; color: var(--biru-700) !important; font-weight: 700; box-shadow: none; }
+nav.sisi a.menu-catat:not(.aktif) { background: var(--hijau-600) !important; border: 0 !important; color: #fff !important; font-weight: 600; }
+nav.sisi a.menu-catat:not(.aktif):hover { background: var(--hijau-700) !important; }
+nav.sisi .menu-grup, nav.sisi .sb-grup { color: rgba(255, 255, 255, .55); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.topbar { background: var(--n-0) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border-bottom: 1px solid var(--n-100); }
+.topbar h1, .tb-judul h1 { font-size: var(--t-h3); font-weight: 700; color: var(--n-900); }
+.topbar p, .tb-judul p { color: var(--n-600); }
+.bawah-nav { border-top: 1px solid var(--n-100); }
+.bawah-nav a { color: var(--n-600); font-weight: 500; position: relative; }
+.bawah-nav a.aktif { color: var(--biru-600) !important; font-weight: 700; }
+.bawah-nav a.aktif::before { content: ""; position: absolute; top: 0; left: 22%; right: 22%; height: 3px; border-radius: 0 0 3px 3px; background: var(--biru-600); }
+.bawah-nav a.catat { color: var(--hijau-600) !important; }
+
+/* ---------- toast & lapisan ---------- */
+#skp-toast { background: var(--n-900) !important; color: #fff !important; border-radius: var(--r-md) !important; box-shadow: var(--sh-2) !important; font-family: var(--font); }
+.modal > div, .modal .isi, .sheet { border-radius: var(--r-lg); }
+
+/* ---------- banner halaman Saran ---------- */
+.saran-hero { background: var(--biru-900) !important; border-radius: var(--r-lg) !important; box-shadow: none !important; }
+.saran-hero h2 svg.g { width: 22px; height: 22px; vertical-align: -4px; margin-right: 4px; }
+
+/* ---------- banner nilai BerAKHLAK ---------- */
+.bkb { border-radius: var(--r-lg) !important; box-shadow: var(--sh-1) !important; border-color: var(--n-100) !important; }
+.bkb-h { border-radius: var(--r-md) !important; box-shadow: none !important; }
+.bkb-n { color: var(--n-900) !important; } .bkb-n span { color: var(--n-800) !important; } .bkb-p { color: var(--n-600) !important; }
+
+/* ---------- HP ---------- */
+@media (max-width: 760px) {
+  :root:not(.hal-chat) :is(input[type=text], input[type=search], input[type=number], input[type=date], input[type=password], input:not([type]), select, textarea):not(#skp-login *) { font-size: var(--t-body); }
+  .alat > input, .alat > select { flex: 1 1 100%; }
+  .btn { min-height: 44px; }
+  .btn.kecil { min-height: 34px; }
+  .d-hero h2 { font-size: 22px; }
+  .kpi b.angka { font-size: 26px; }
+}
+
+/* ---------- admin: sidebar & menu ---------- */
+.sb { background: var(--biru-900) !important; }
+:root:not(.hal-chat) body .lay, :root:not(.hal-chat) .isi-utama { background: var(--n-25); }
+.sb nav.tab a { color: rgba(255, 255, 255, .78); border-radius: var(--r-md); font-size: var(--t-ui); }
+.sb nav.tab a:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.sb nav.tab a.aktif { background: var(--n-0) !important; color: var(--biru-700) !important; box-shadow: none !important; }
+.sb .sb-grup { color: rgba(255, 255, 255, .55); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.sb-badge { background: var(--bahaya) !important; }
+.pg-nav button.aktif { background: var(--biru-600) !important; border-color: var(--biru-600) !important; }
+
+/* ---------- ikon garis (satu set, gaya Lucide) ---------- */
+svg.g { fill: none !important; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+nav.sisi svg.g, .bawah-nav svg.g { width: 20px; height: 20px; }
+svg.g.i16 { width: 16px; height: 16px; vertical-align: -3px; flex: 0 0 auto; }
+.btn svg.g.i16 { vertical-align: 0; }
