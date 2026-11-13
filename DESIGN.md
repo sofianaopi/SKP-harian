@@ -92,3 +92,26 @@ Skala 4: `--s-1` 4 · `--s-2` 8 · `--s-3` 12 · `--s-4` 16 · `--s-5` 20 · `--
 - Emoji tidak dipakai sebagai ikon di tombol dan menu. Pengecualian: layar kuis dan medali juara.
 - Foto: hanya foto bukti kegiatan, sudut `--r-md`.
 - Logo: logo SAKTI/BPS di sidebar dan layar masuk; ilustrasi tidak dipakai.
+
+## 7. Gerak (animasi)
+
+Gerak hanya untuk memberi arti: menunjukkan apa yang baru muncul, apa yang berubah, dan bahwa tombol sudah ditekan. Tidak ada animasi dekoratif yang berulang terus.
+
+| Token | Nilai | Peran |
+|---|---|---|
+| `--dur-1` | 120 ms | Tekan tombol, ikon menu bawah |
+| `--dur-2` | 200 ms | Hover, warna, modal muncul |
+| `--dur-3` | 320 ms | Halaman & kartu masuk |
+| `--dur-4` | 700 ms | Bar kemajuan terisi, angka KPI menghitung naik |
+| `--ease` | `cubic-bezier(.2,.8,.2,1)` | Gerak masuk (cepat lalu melambat) |
+| `--ease-io` | `cubic-bezier(.4,0,.2,1)` | Perubahan warna/keadaan |
+
+- **Pindah halaman:** bagian yang dibuka naik 8 px sambil memudar masuk.
+- **Kartu:** muncul bertahap, jeda 50 ms antar kartu, maks. 200 ms.
+- **Bar kemajuan:** terisi dari kiri.
+- **Angka KPI:** menghitung naik ±0,7 detik, tetapi tidak dihitung ulang kalau nilainya sama dengan tampilan sebelumnya.
+- **Tombol:** mengecil ke 97% saat ditekan. Kartu yang bisa diklik naik 2 px saat disorot (hanya perangkat dengan mouse).
+- **Modal & menu ⋮:** muncul dengan geser dan memudar.
+- **Baris tabel tidak dianimasikan**, supaya tidak berkedip saat mengetik di kolom cari.
+- **Aksesibilitas:** bila perangkat diatur "kurangi gerakan" (`prefers-reduced-motion`), semua animasi mati dan angka langsung tampil final.
+- Layar kuis punya gerak permainan sendiri (podium, konfeti) dan hanya berlaku di sana.

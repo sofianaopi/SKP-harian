@@ -439,6 +439,28 @@
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); return true;
   }
+  /* Angka KPI menghitung naik saat tampil (≈0,7 detik). Mati bila perangkat diatur "kurangi gerakan". */
+  const HITUNG = '.kpi b.angka, .d-tile > b, .stat .angka', hitungLalu = new Map();
+  function hitungNaik(el) {
+    const tn = [...el.childNodes].find(n => n.nodeType === 3 && /\d/.test(n.nodeValue)); if (!tn || el._hitung === tn.nodeValue) return;
+    const m = tn.nodeValue.match(/^(\D*?)(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d+))?(.*)$/s); if (!m) return;
+    const akhir = Number(m[2].replace(/\./g, '') + (m[3] ? '.' + m[3] : '')), des = m[3] ? m[3].length : 0, ribuan = m[2].includes('.') || akhir >= 1000;
+    const kartu = el.closest('.kpi, .d-tile, .stat'), kunci = (kartu ? kartu.className + '|' + ((kartu.querySelector('.k-lbl, .t-kep, .lbl, small') || {}).textContent || '') : '');
+    if (!isFinite(akhir) || akhir === 0 || hitungLalu.get(kunci) === tn.nodeValue) { el._hitung = tn.nodeValue; return; }   // nilai sama dengan tampilan sebelumnya: tidak dihitung ulang
+    hitungLalu.set(kunci, tn.nodeValue);
+    const tulis = v => m[1] + v.toLocaleString('id-ID', { minimumFractionDigits: des, maximumFractionDigits: des, useGrouping: ribuan }) + m[4];
+    const t0 = performance.now(), dur = 700, sel = tulis(akhir);
+    const f = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); tn.nodeValue = k < 1 ? tulis(des ? Math.round(akhir * e * 10 ** des) / 10 ** des : Math.round(akhir * e)) : sel; el._hitung = tn.nodeValue; if (k < 1) requestAnimationFrame(f); };
+    el._hitung = tulis(0); tn.nodeValue = el._hitung; requestAnimationFrame(f);
+  }
+  function pasangHitung() {
+    if (!window.MutationObserver || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    let jadwal = 0; const jalan = () => { jadwal = 0; document.querySelectorAll(HITUNG).forEach(el => { if (el.offsetParent !== null) hitungNaik(el); }); };
+    new MutationObserver(() => { if (!jadwal) jadwal = requestAnimationFrame(jalan); }).observe(document.body, { childList: true, subtree: true });
+    jadwal = requestAnimationFrame(jalan);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasangHitung); else pasangHitung();
+
   function toast(msg, ms = 2800) {
     let t = document.getElementById('skp-toast'); if (!t) { t = document.createElement('div'); t.id = 'skp-toast'; document.body.appendChild(t); }
     t.textContent = msg; t.className = 'show'; clearTimeout(t._h); t._h = setTimeout(() => t.className = '', ms);
