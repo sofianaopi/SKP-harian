@@ -472,6 +472,48 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tandaiGulir); else tandaiGulir();
 
+  /* ===== Gerak interaktif: tombol beriak & memantul saat ditekan, halaman bergeser sesuai arah menu ===== */
+  const GERAK_MATI = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const TOMBOL = '.btn, .qa button, .seg button, .pm-seg button, .p-btn, .kz-tbtn, .kz-sbtn, .kz-chipset button, .kz-main, .bulan button, .d-btn-kaca, .pg-nav button, .bawah-nav a, nav.sisi a.menu, .sb nav.tab a, #kirim, .bd, .chip, #skp-login button[type=submit], .pm-panah, .lnk, .kz-tabs button, .sr-tipe button, .rk-pilih';
+  function pasangGerak() {
+    // riak (ripple) dari titik sentuh
+    document.addEventListener('pointerdown', e => {
+      if (GERAK_MATI() || e.button > 0) return;
+      const el = e.target.closest(TOMBOL); if (!el || el.disabled || el.tagName === 'INPUT') return;
+      const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, s = document.createElement('span');
+      s.className = 'skp-riak'; s.setAttribute('aria-hidden', 'true');
+      s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+      el.classList.add('skp-riak-host'); el.appendChild(s); setTimeout(() => s.remove(), 650);
+    }, { passive: true });
+    // pantulan pegas saat dilepas (kecuali tombol yang memang tetap "tertekan" karena terpilih)
+    document.addEventListener('click', e => {
+      if (GERAK_MATI()) return;
+      const el = e.target.closest(TOMBOL); if (!el || el.disabled || el.matches('.on, .aktif, [aria-pressed=true]')) return;
+      el.classList.remove('skp-pantul'); void el.offsetWidth; el.classList.add('skp-pantul');
+      setTimeout(() => el.classList.remove('skp-pantul'), 450);
+    }, true);
+    // arah pergeseran halaman: maju bila menu tujuan berada di bawah/kanan menu asal
+    const rute = () => (location.hash.slice(1).split('/')[0] || 'dashboard');
+    let lalu = rute();
+    window.addEventListener('hashchange', () => {
+      const r = rute(), L = [...document.querySelectorAll('nav.sisi a[data-r], .sb nav.tab a[data-r]')].map(a => a.dataset.r);
+      const a = L.indexOf(lalu === 'lihat' ? 'pegawai' : lalu), b = L.indexOf(r === 'lihat' ? 'pegawai' : r);
+      document.documentElement.dataset.arah = r === 'lihat' ? 'maju' : lalu === 'lihat' ? 'mundur' : (a < 0 || b < 0 || b >= a) ? 'maju' : 'mundur';
+      lalu = r;
+      setTimeout(() => document.querySelectorAll('.topbar h1, .tb-judul h1').forEach(h => { h.classList.remove('skp-judul'); void h.offsetWidth; h.classList.add('skp-judul'); }), 0);
+    });
+    // penanda menu bawah (HP) yang meluncur ke menu aktif
+    const nav = document.querySelector('.bawah-nav');
+    if (nav) {
+      const pil = document.createElement('span'); pil.className = 'skp-nav-pil'; pil.setAttribute('aria-hidden', 'true'); nav.appendChild(pil);
+      const geser = () => { const a = nav.querySelector('a.aktif'); if (!a || !a.offsetParent) { pil.style.opacity = '0'; return; } const n = nav.getBoundingClientRect(), r = a.getBoundingClientRect(), w = Math.min(36, r.width * .5);
+        pil.style.opacity = '1'; pil.style.width = w + 'px'; pil.style.transform = `translateX(${r.left - n.left + (r.width - w) / 2}px)`; };
+      new MutationObserver(() => requestAnimationFrame(geser)).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+      window.addEventListener('resize', geser); setTimeout(geser, 300);
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasangGerak); else pasangGerak();
+
   function toast(msg, ms = 2800) {
     let t = document.getElementById('skp-toast'); if (!t) { t = document.createElement('div'); t.id = 'skp-toast'; document.body.appendChild(t); }
     t.textContent = msg; t.className = 'show'; clearTimeout(t._h); t._h = setTimeout(() => t.className = '', ms);

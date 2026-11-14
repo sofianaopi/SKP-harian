@@ -114,11 +114,12 @@ Gerak hanya untuk memberi arti: menunjukkan apa yang baru muncul, apa yang berub
 | `--ease` | `cubic-bezier(.2,.8,.2,1)` | Gerak masuk (cepat lalu melambat) |
 | `--ease-io` | `cubic-bezier(.4,0,.2,1)` | Perubahan warna/keadaan |
 
-- **Pindah halaman:** bagian yang dibuka naik 8 px sambil memudar masuk.
+- **Pindah halaman:** halaman bergeser 32 px sesuai arah menu (0,42 detik). Menu di bawah/kanan masuk dari kanan, kembali ke menu sebelumnya masuk dari kiri, buka detail pegawai = maju. Judul topbar ikut naik pelan. Saat aplikasi pertama dibuka, halaman naik 8 px sambil memudar.
 - **Kartu:** muncul bertahap, jeda 50 ms antar kartu, maks. 200 ms.
 - **Bar kemajuan:** terisi dari kiri.
 - **Angka KPI:** menghitung naik ±0,7 detik, tetapi tidak dihitung ulang kalau nilainya sama dengan tampilan sebelumnya.
-- **Tombol:** turun 2 px saat ditekan, seperti tuts yang benar-benar ditekan.
+- **Tombol:** turun 2 px saat ditekan, seperti tuts. Riak (ripple) melebar dari titik sentuh: putih di tombol berwarna, warna teks di tombol putih. Saat dilepas, tombol memantul seperti pegas (0,42 detik, sedikit melewati ukuran asli lalu kembali). Tombol yang memang terpilih (tertekan) tidak memantul.
+- **Menu bawah HP:** penanda biru meluncur ke menu yang dipilih, ikonnya ikut memantul.
 - **Modal & menu ⋮:** muncul dengan geser dan memudar.
 - **Baris tabel tidak dianimasikan**, supaya tidak berkedip saat mengetik di kolom cari.
 - **Aksesibilitas:** bila perangkat diatur "kurangi gerakan" (`prefers-reduced-motion`), semua animasi mati dan angka langsung tampil final.
