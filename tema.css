@@ -9,10 +9,10 @@
 }
 :root {
   /* netral */
-  --n-0: #FFFFFF; --n-25: #F6F8FB; --n-50: #EEF2F6; --n-100: #E2E7EE; --n-200: #CBD3DD; --n-500: #6B7686; --n-600: #556274; --n-800: #1F2A37; --n-900: #0F1722;
+  --n-0: #FFFFFF; --n-25: #F6F8FB; --n-50: #EEF2F6; --n-100: #E2E7EE; --n-200: #CBD3DD; --n-300: #B3BDCA; --n-500: #6B7686; --n-600: #556274; --n-800: #1F2A37; --n-900: #0F1722;
   /* primer (biru BPS) & aksen tunggal (hijau Catat) */
-  --biru-50: #EAF2FB; --biru-100: #D3E5F7; --biru-600: #155EA8; --biru-700: #0F4C8A; --biru-900: #0B2F55;
-  --hijau-50: #E6F5EF; --hijau-600: #087F5B; --hijau-700: #066A4C;
+  --biru-50: #EAF2FB; --biru-100: #D3E5F7; --biru-500: #2470BD; --biru-600: #155EA8; --biru-700: #0F4C8A; --biru-800: #0A3B6B; --biru-900: #0B2F55;
+  --hijau-50: #E6F5EF; --hijau-500: #0E9469; --hijau-600: #087F5B; --hijau-700: #066A4C; --hijau-800: #04503A;
   /* semantik */
   --sukses: #166534; --sukses-bg: #E8F6EE; --peringatan: #B45309; --peringatan-bg: #FEF3E2; --bahaya: #B42318; --bahaya-bg: #FDEDEC;
   /* data (grafik & penanda bidang) */
@@ -185,10 +185,10 @@ svg.g.i16 { width: 16px; height: 16px; vertical-align: -3px; flex: 0 0 auto; }
 
 /* tombol & item yang bisa diklik: tanggap saat ditekan */
 .btn, .kz-tbtn, .kz-sbtn, .d-btn-kaca, .p-btn, .qa > *, .seg button, .kz-chipset button, .kz-tabs button { transition: background-color var(--dur-2) var(--ease-io), border-color var(--dur-2) var(--ease-io), color var(--dur-2) var(--ease-io), box-shadow var(--dur-2) var(--ease-io), transform var(--dur-1) var(--ease-io); }
-.btn:active:not(:disabled), .kz-tbtn:active, .kz-sbtn:active, .p-btn:active, .qa > *:active, .seg button:active { transform: scale(.97); }
+
 .d-kartu, .kartu, .top, a.top, .akt { transition: border-color var(--dur-2) var(--ease-io), box-shadow var(--dur-2) var(--ease-io), transform var(--dur-2) var(--ease-io); }
 @media (hover: hover) {
-  .qa > *:hover, a.top:hover, .pm-panah:hover, a.kartu:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15, 23, 34, .08); }
+  a.top:hover, a.kartu:hover { border-color: var(--n-200); }
 }
 
 /* navigasi */
@@ -214,3 +214,160 @@ table.t tr td { transition: background-color var(--dur-1) var(--ease-io); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
 }
+
+
+/* =====================================================================
+   KEDALAMAN = BISA DIKLIK (DESIGN.md §5)
+   Tombol & kontrol timbul seperti tuts kalkulator; kolom isian tampak
+   cekung; kartu isi tetap datar. Ditekan → turun 2 px. Terpilih → tertekan.
+   ===================================================================== */
+:root {
+  --tuts-putih: linear-gradient(180deg, #FFFFFF 0%, #F3F5F8 100%);
+  --tuts-biru: linear-gradient(180deg, var(--biru-500) 0%, var(--biru-600) 100%);
+  --tuts-hijau: linear-gradient(180deg, var(--hijau-500) 0%, var(--hijau-600) 100%);
+  --kilau: inset 0 1px 0 rgba(255, 255, 255, .9);
+  --kilau-gelap: inset 0 1px 0 rgba(255, 255, 255, .22);
+  --tekan: inset 0 2px 3px rgba(15, 23, 34, .18);
+}
+/* kartu isi datar: hanya garis, tanpa bayangan */
+.kartu, .d-kartu, .stat { box-shadow: none; }
+
+/* --- tombol sekunder (putih) --- */
+.btn, .pm-panah, .kz-sbtn, .pg-nav button, .bulan, .d-hero-aksi .bulan {
+  background: var(--tuts-putih); border: 1px solid var(--n-200);
+  box-shadow: var(--kilau), 0 2px 0 var(--n-300), 0 3px 6px rgba(15, 23, 34, .06);
+}
+.btn { transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io), background-color var(--dur-2) var(--ease-io), filter var(--dur-2) var(--ease-io); }
+.btn:hover:not(:disabled), .pm-panah:hover, .kz-sbtn:hover, .pg-nav button:hover:not(:disabled):not(.aktif) { background: linear-gradient(180deg, #FFFFFF 0%, #EBEFF4 100%); }
+.btn:active:not(:disabled), .pm-panah:active, .kz-sbtn:active, .pg-nav button:active:not(:disabled) { transform: translateY(2px); box-shadow: var(--tekan), 0 0 0 var(--n-300); }
+.btn:focus-visible { box-shadow: var(--kilau), 0 2px 0 var(--n-300), var(--fokus); }
+
+/* --- tombol utama (biru) --- */
+.btn.utama, .btn.primer, .kz-sbtn.ung {
+  background: var(--tuts-biru); border-color: var(--biru-700); color: #fff;
+  box-shadow: var(--kilau-gelap), 0 2px 0 var(--biru-800), 0 3px 8px rgba(11, 47, 85, .25);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .18);
+}
+.btn.utama:hover:not(:disabled), .btn.primer:hover:not(:disabled), .kz-sbtn.ung:hover { background: linear-gradient(180deg, #2B7BCB 0%, #1966B3 100%); border-color: var(--biru-700); }
+.btn.utama:active:not(:disabled), .btn.primer:active:not(:disabled), .kz-sbtn.ung:active { transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .25), 0 0 0 var(--biru-800); }
+.btn.utama:focus-visible { box-shadow: var(--kilau-gelap), 0 2px 0 var(--biru-800), var(--fokus); }
+
+/* --- bahaya & kecil --- */
+.btn.bahaya { color: var(--bahaya); }
+.btn.bahaya:hover:not(:disabled) { background: linear-gradient(180deg, #FFFFFF 0%, var(--bahaya-bg) 100%); border-color: #E7B4AF; }
+.btn.kecil { box-shadow: var(--kilau), 0 1.5px 0 var(--n-300); }
+.btn.kecil.utama { box-shadow: var(--kilau-gelap), 0 1.5px 0 var(--biru-800); }
+.btn.kecil:active:not(:disabled) { transform: translateY(1.5px); box-shadow: var(--tekan); }
+.btn:disabled { box-shadow: none; transform: none; filter: grayscale(.3); }
+
+/* --- tombol pilihan: yang terpilih tampak TERTEKAN --- */
+.seg, .pm-seg { background: var(--n-50); border-radius: var(--r-md); padding: 3px; box-shadow: inset 0 1px 2px rgba(15, 23, 34, .1); gap: 3px; }
+.seg button, .pm-seg button { border: 1px solid transparent; background: transparent; box-shadow: none; border-radius: 8px; color: var(--n-600); }
+.seg button.on, .pm-seg button.on, .pm-seg button.aktif, .pm-seg button[aria-pressed=true] {
+  background: var(--tuts-putih) !important; color: var(--biru-700) !important; border-color: var(--n-200) !important;
+  box-shadow: var(--kilau), 0 1.5px 0 var(--n-300), 0 2px 4px rgba(15, 23, 34, .08) !important;
+}
+.d-hero .seg { background: rgba(0, 0, 0, .22); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .3); }
+.kz-chipset button { background: var(--tuts-putih); box-shadow: var(--kilau), 0 2px 0 var(--n-300); transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io); }
+.kz-chipset button:active { transform: translateY(2px); box-shadow: var(--tekan); }
+.kz-chipset button.on { background: var(--biru-700); border-color: var(--biru-800); color: #fff; transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3); }
+.pg-nav button.aktif { background: var(--biru-700) !important; border-color: var(--biru-800) !important; transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3) !important; }
+
+/* --- kontrol bulan --- */
+.bulan { border-radius: var(--r-md); overflow: hidden; }
+.bulan button:hover:not(:disabled) { background: rgba(15, 23, 34, .05); }
+.bulan button:active:not(:disabled) { box-shadow: var(--tekan); }
+.d-hero .bulan, .d-hero .d-btn-kaca, .d-hero-aksi .bulan {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, .08) 100%); border: 1px solid rgba(255, 255, 255, .22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 2px 0 rgba(0, 0, 0, .35); color: #fff;
+}
+.d-hero .d-btn-kaca:active { transform: translateY(2px); box-shadow: inset 0 2px 3px rgba(0, 0, 0, .35); }
+
+/* --- aksi cepat & tombol tindak lanjut: tuts berwarna --- */
+.qa button { border: 0; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 3px 0 rgba(0, 0, 0, .28), 0 6px 12px rgba(15, 23, 34, .14); transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io), filter var(--dur-2); }
+.qa button::after { display: none; }
+.qa .q1 { background: var(--tuts-biru); } .qa .q2 { background: var(--tuts-hijau); }
+.qa .q3 { background: linear-gradient(180deg, #E58A3F 0%, #D9772B 100%); } .qa .q4 { background: linear-gradient(180deg, #8A6BD6 0%, #7A5AC8 100%); }
+.qa button:hover { transform: none; filter: brightness(1.05); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 3px 0 rgba(0, 0, 0, .28), 0 6px 12px rgba(15, 23, 34, .14); }
+.qa button:active { transform: translateY(3px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .3); }
+.pend .p-btn { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 2px 0 rgba(0, 0, 0, .3); transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io); }
+.pend .p-btn:active { transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3); }
+.kz-tbtn { background: linear-gradient(180deg, #5A24A8 0%, #46178F 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 2px 0 #2E0D63; transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io); }
+.kz-tbtn:active { transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3); }
+.kz-main { box-shadow: inset 0 -3px 0 rgba(70, 23, 143, .15), 0 4px 0 rgba(0, 0, 0, .25) !important; }
+
+/* --- kolom isian cekung --- */
+:root:not(.hal-chat) :is(input[type=text], input[type=search], input[type=number], input[type=date], input[type=email], input[type=password], input[type=tel], input[type=url], input:not([type]), select, textarea):not(#skp-login *):not(.kz-step input) {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 34, .07);
+}
+:root:not(.hal-chat) :is(input, select, textarea):focus:not(#skp-login *) { box-shadow: inset 0 1px 2px rgba(15, 23, 34, .07), var(--fokus); }
+.kz-step { box-shadow: inset 0 1px 2px rgba(15, 23, 34, .07); } .kz-step button:active { box-shadow: var(--tekan); }
+
+/* --- navigasi --- */
+nav.sisi a.menu-catat:not(.aktif) { background: var(--tuts-hijau) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 2px 0 var(--hijau-800); }
+nav.sisi a.menu-catat:not(.aktif):active { transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3); }
+nav.sisi a.menu.aktif, .sb nav.tab a.aktif { box-shadow: inset 0 -2px 0 var(--n-200) !important; }
+nav.sisi a.menu-kuis { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 2px 0 #2E0D63; }
+.bawah-nav a.catat svg.g { box-sizing: content-box; width: 22px; height: 22px; padding: 4px 9px; border-radius: 10px; background: var(--tuts-hijau); color: #fff; stroke: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 2px 0 var(--hijau-800), 0 3px 6px rgba(8, 127, 91, .25); margin-top: -2px; }
+.bawah-nav a.catat:active svg.g { transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3); }
+
+/* --- Catat Kegiatan (halaman obrolan) --- */
+:root.hal-chat #kirim { background: var(--tuts-hijau); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 3px 0 var(--hijau-800), 0 4px 8px rgba(8, 127, 91, .3); transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io); }
+:root.hal-chat #kirim:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .3); }
+:root.hal-chat .chip { box-shadow: inset 0 1px 0 #fff, 0 1.5px 0 #C5CDD3; transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io); }
+:root.hal-chat .chip.on { transform: translateY(1.5px); box-shadow: inset 0 2px 3px rgba(0, 0, 0, .25); }
+
+/* --- layar masuk --- */
+#skp-login button[type=submit] { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 3px 0 #061F3D, 0 6px 14px rgba(11, 47, 85, .3) !important; transition: transform var(--dur-1) var(--ease-io), box-shadow var(--dur-1) var(--ease-io); }
+#skp-login button[type=submit]:active { transform: translateY(3px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .35) !important; }
+
+/* =====================================================================
+   LABEL TANPA HURUF KAPITAL SEMUA — lebih tenang & profesional
+   ===================================================================== */
+table.t th, .pm-tabel th, .sb .sb-grup, nav.sisi .menu-grup, .kz-lbl, .pm-hari > h4, .bkb-lbl, th {
+  text-transform: none !important; letter-spacing: 0 !important;
+}
+table.t th, .pm-tabel th, th { font-size: var(--t-sm) !important; font-weight: 600; color: var(--n-600); }
+nav.sisi .menu-grup, .sb .sb-grup { font-size: var(--t-xs) !important; font-weight: 600 !important; color: rgba(255, 255, 255, .5) !important; }
+.kz-lbl { font-size: var(--t-sm) !important; color: var(--n-800) !important; }
+.bkb-lbl { font-size: var(--t-sm) !important; }
+
+/* =====================================================================
+   PERBAIKAN AUDIT (aksesibilitas & HP) — 14 Nov 2026
+   ===================================================================== */
+/* kontras teks di header Catat */
+:root.hal-chat .judul small { opacity: 1; color: #F0FAF6; }
+:root.hal-chat .rk-saran b.pakai { color: var(--peringatan); }
+/* avatar & penanda: teks putih tebal agar tetap terbaca */
+.av, .bd-ik, #tbAv { font-weight: 700; }
+#tbAv { background-color: #047857; }
+
+/* target ketuk minimal ±40 px untuk tombol ikon (ubah, hapus, foto) */
+.ikon, .ikon.hapus, .sa-hapus, .ld-hapus, .pm-foto, .x, .iki-tambah { min-width: 40px; min-height: 40px; display: inline-grid; place-items: center; border-radius: var(--r-md); }
+.ikon:hover, .sa-hapus:hover, .ld-hapus:hover { background: var(--n-50); }
+
+/* tombol WhatsApp melayang tidak menutupi isi paling bawah */
+@media (max-width: 760px) { :root:not(.hal-chat) main { padding-bottom: 96px !important; } }
+
+/* wilayah gulir bisa difokus keyboard (diberi tabindex oleh common.js) */
+[data-gulir]:focus-visible { box-shadow: var(--fokus); border-radius: var(--r-md); }
+/* teks khusus pembaca layar */
+.sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* banner nilai hari ini: ringkas di HP agar angka KPI cepat terlihat, tetap berwarna */
+@media (max-width: 560px) {
+  .bkb { padding: 10px 12px !important; gap: 12px !important; margin-bottom: 12px !important; align-items: flex-start !important; }
+  .bkb-h { width: 40px !important; height: 40px !important; font-size: 21px !important; }
+  .bkb-n { font-size: 15px !important; line-height: 1.3; }
+  .bkb-n span { display: block; font-weight: 500; font-size: 13.5px; }
+  .bkb-p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+/* Catat (HP 360 px): kolom ketik boleh menyusut agar tombol kirim tidak terdorong keluar layar */
+:root.hal-chat .kolom { min-width: 0; }
+:root.hal-chat .kolom textarea { min-width: 0; width: 100%; }
+:root.hal-chat .bd { min-height: 34px; padding: 6px 14px; }
+/* kotak centang & tautan kecil lebih mudah diketuk */
+:root:not(.hal-chat) input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--biru-600); }
+.lnk { padding: 10px 8px !important; }
+.rk-pilih { min-height: 36px; }

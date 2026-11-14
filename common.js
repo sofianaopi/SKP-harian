@@ -461,6 +461,17 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasangHitung); else pasangHitung();
 
+  /* Wilayah yang bisa digulir (tabel lebar, daftar obrolan) dapat difokus & digulir dengan keyboard */
+  function tandaiGulir() {
+    const tandai = () => document.querySelectorAll('.tabel-wrap, .pm-tabel-wrap, #chat, .kz-daftar').forEach(el => {
+      if (el.hasAttribute('data-gulir')) return; el.setAttribute('data-gulir', ''); if (!el.hasAttribute('tabindex')) el.tabIndex = 0;
+      if (el.tagName !== 'MAIN' && !el.getAttribute('role')) { el.setAttribute('role', 'region'); if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', el.id === 'chat' ? 'Daftar catatan kegiatan' : 'Tabel, dapat digulir ke samping'); }
+    });
+    let j = 0; if (window.MutationObserver) new MutationObserver(() => { if (!j) j = requestAnimationFrame(() => { j = 0; tandai(); }); }).observe(document.body, { childList: true, subtree: true });
+    tandai();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tandaiGulir); else tandaiGulir();
+
   function toast(msg, ms = 2800) {
     let t = document.getElementById('skp-toast'); if (!t) { t = document.createElement('div'); t.id = 'skp-toast'; document.body.appendChild(t); }
     t.textContent = msg; t.className = 'show'; clearTimeout(t._h); t._h = setTimeout(() => t.className = '', ms);
@@ -475,8 +486,8 @@
     { h: 'K', n: 'Kompeten', w: '#7c3aed', m: 'Terus belajar dan mengembangkan kapabilitas', p: ['Meningkatkan kompetensi diri untuk menjawab tantangan yang selalu berubah', 'Membantu orang lain belajar', 'Melaksanakan tugas dengan kualitas terbaik'] },
     { h: 'H', n: 'Harmonis', w: '#db2777', m: 'Saling peduli dan menghargai perbedaan', p: ['Menghargai setiap orang apa pun latar belakangnya', 'Suka menolong orang lain', 'Membangun lingkungan kerja yang kondusif'] },
     { h: 'L', n: 'Loyal', w: '#b91c1c', m: 'Berdedikasi dan mengutamakan kepentingan Bangsa dan Negara', p: ['Memegang teguh ideologi Pancasila, UUD 1945, setia kepada NKRI serta pemerintahan yang sah', 'Menjaga nama baik sesama ASN, pimpinan, instansi, dan negara', 'Menjaga rahasia jabatan dan negara'] },
-    { h: 'A', n: 'Adaptif', w: '#ea580c', m: 'Terus berinovasi dan antusias dalam menggerakkan serta menghadapi perubahan', p: ['Cepat menyesuaikan diri menghadapi perubahan', 'Terus berinovasi dan mengembangkan kreativitas', 'Bertindak proaktif'] },
-    { h: 'K', n: 'Kolaboratif', w: '#059669', m: 'Membangun kerja sama yang sinergis', p: ['Memberi kesempatan kepada berbagai pihak untuk berkontribusi', 'Terbuka dalam bekerja sama untuk menghasilkan nilai tambah', 'Menggerakkan pemanfaatan berbagai sumber daya untuk tujuan bersama'] }];
+    { h: 'A', n: 'Adaptif', w: '#C2410C', m: 'Terus berinovasi dan antusias dalam menggerakkan serta menghadapi perubahan', p: ['Cepat menyesuaikan diri menghadapi perubahan', 'Terus berinovasi dan mengembangkan kreativitas', 'Bertindak proaktif'] },
+    { h: 'K', n: 'Kolaboratif', w: '#047857', m: 'Membangun kerja sama yang sinergis', p: ['Memberi kesempatan kepada berbagai pihak untuk berkontribusi', 'Terbuka dalam bekerja sama untuk menghasilkan nilai tambah', 'Menggerakkan pemanfaatan berbagai sumber daya untuk tujuan bersama'] }];
   /* Bank soal kuis BerAKHLAK — dibuat otomatis dari materi nilai dasar ASN (SE Menteri PANRB No. 20 Tahun 2021) */
   function soalBerakhlak() {
     const B = BERAKHLAK, acak = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };

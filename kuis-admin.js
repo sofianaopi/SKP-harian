@@ -206,6 +206,7 @@
     $('kzTabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; daftar(); });
     let tunda; $('kzCari').oninput = () => { clearTimeout(tunda); tunda = setTimeout(() => { cari = norm($('kzCari').value.trim()); daftar(); }, 150); };
     $('kzDaftar').addEventListener('click', aksiDaftar);
+    $('kzDaftar').addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && e.target.classList.contains('kz-cek')) { e.preventDefault(); e.target.click(); } });
     $('kzRiwayat').addEventListener('click', aksiRiwayat);
     tandai();
   }
@@ -233,7 +234,7 @@
     $('kzTabs').innerHTML = [['semua', 'Semua'], ['terpilih', 'Terpilih'], ['buat', 'Buatan sendiri'], ['materi', 'Materi BerAKHLAK']].map(([k, l]) => `<button type="button" data-tab="${k}" class="${tab === k ? 'on' : ''}">${l} <span>${hit[k]}</span></button>`).join('');
     const L = tampil(), urutPilih = [...pilih];
     $('kzDaftar').innerHTML = L.length ? L.map((q, i) => { const on = pilih.has(q.id);
-      return `<div class="kz-q${on ? ' on' : ''}" data-q="${esc(q.id)}"><span class="kz-cek" role="checkbox" aria-checked="${on}" tabindex="0">${on ? '✓' : ''}</span><div class="tx"><b>${esc(q.t)}</b>
+      return `<div class="kz-q${on ? ' on' : ''}" data-q="${esc(q.id)}"><span class="kz-cek" role="checkbox" aria-checked="${on}" tabindex="0" aria-label="Pilih soal: ${esc(q.t)}">${on ? '✓' : ''}</span><div class="tx"><b>${esc(q.t)}</b>
         <div class="kz-pil">${q.p.map((p, j) => `<span class="${j === q.b ? 'ya' : ''}"><i style="background:${WARNA[j]}">${BENTUK[j]}</i>${esc(p)}</span>`).join('')}</div></div>
         <div class="kz-ka"><span class="kz-tagk ${q.jenis}">${KAT[q.k] || q.k}</span>${q.jenis === 'buat' ? `<span class="kz-ed"><button type="button" data-b="ubah" data-id="${q.asli.id}">Ubah</button><button type="button" data-b="hapus" data-id="${q.asli.id}">Hapus</button></span>` : ''}</div></div>`; }).join('')
       : `<div class="kz-kosong">${tab === 'buat' && !cari ? 'Belum ada soal buatan sendiri. Tekan <b>+ Buat soal sendiri</b>.' : tab === 'terpilih' && !cari ? 'Belum ada soal yang dipilih.' : 'Tidak ada soal yang cocok.'}</div>`;

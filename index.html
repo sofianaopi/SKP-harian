@@ -9,6 +9,14 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   sessionStorage.setItem('sakti-sesi', '1'); } catch (e) { }
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Aplikasi SAKTI BPS Kota Kendari: catat kegiatan harian semudah chat, rekap otomatis, dan dokumen Bukti Dukung SKP siap unggah.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SAKTI · BPS Kota Kendari">
+<meta property="og:title" content="SAKTI – Sahabat Kinerja Terintegrasi">
+<meta property="og:description" content="Aplikasi SAKTI BPS Kota Kendari: catat kegiatan harian semudah chat, rekap otomatis, dan dokumen Bukti Dukung SKP siap unggah.">
+<meta property="og:image" content="img/og-sakti.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <title>SAKTI – Sahabat Kinerja Terintegrasi · BPS Kota Kendari</title>
 <meta name="theme-color" content="#1F4E79">
 <meta name="mobile-web-app-capable" content="yes">
@@ -48,7 +56,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   .bulan button:hover { background: var(--bg); }
   .bulan span { min-width: 140px; text-align: center; font-weight: 600; }
   .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
-  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 16px; } .grid2-profil { grid-template-columns: 1.2fr 1fr; } .grid2 > * { min-width: 0; }
   .kartu { background: var(--kartu); border: 1px solid var(--garis); border-radius: 14px; padding: 16px 18px; }
   .kartu h2 { font-size: 15px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
   .kartu h2 .kanan { margin-left: auto; font-weight: 400; font-size: 13px; }
@@ -268,7 +276,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   .pend .p-n { min-width: 36px; height: 36px; padding: 0 8px; border-radius: 99px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 15px; }
   .pend h4 { margin: 14px 0 4px; font-size: 15.5px; } .pend p { margin: 0 0 14px; font-size: 13px; color: var(--teks2); flex: 1; }
   .pend .p-btn { border: 0; border-radius: 11px; padding: 11px; color: #fff; font-weight: 700; cursor: pointer; font: inherit; font-weight: 700; }
-  .pd1 { background: var(--peringatan-bg); border-color: #fed7aa !important; } .pd1 .p-ik, .pd1 .p-n, .pd1 .p-btn { background: #f97316; }
+  .pd1 { background: var(--peringatan-bg); border-color: #fed7aa !important; } .pd1 .p-ik, .pd1 .p-n, .pd1 .p-btn { background: #C2410C; }
   .pd2 { background: var(--biru-50); border-color: #bfdbfe !important; } .pd2 .p-ik, .pd2 .p-n, .pd2 .p-btn { background: var(--biru-600); }
   .pd3 { background: var(--bahaya-bg); border-color: #fecaca !important; } .pd3 .p-ik, .pd3 .p-n, .pd3 .p-btn { background: var(--bahaya); }
   .pill-merah { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--bahaya); background: var(--bahaya-bg); border-radius: 99px; padding: 5px 12px; } .pill-merah::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--bahaya); }
@@ -314,7 +322,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   .pm-seg { display: inline-flex; background: #e9eef4; border-radius: 11px; padding: 3px; } .pm-seg button { border: 0; background: none; padding: 8px 13px; border-radius: 9px; font-size: 13px; font-weight: 700; color: var(--teks2); cursor: pointer; } .pm-seg button.on { background: #fff; color: var(--navy); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
   .pm-sel { height: 40px; border: 1px solid var(--garis); border-radius: 11px; background: #fff; padding: 0 10px; font-weight: 600; font-size: 13.5px; max-width: 100%; }
   .pm-warn { display: flex; gap: 14px; align-items: flex-start; background: var(--peringatan-bg); border: 1px solid #fed7aa; border-left: 6px solid #f97316; border-radius: 16px; padding: 16px 18px; margin-bottom: 18px; }
-  .pm-warn .ik { width: 42px; height: 42px; border-radius: 12px; background: #f97316; color: #fff; display: grid; place-items: center; font-size: 21px; flex: 0 0 auto; }
+  .pm-warn .ik { width: 42px; height: 42px; border-radius: 12px; background: #C2410C; color: #fff; display: grid; place-items: center; font-size: 21px; flex: 0 0 auto; }
   .pm-warn h4 { margin: 0 0 2px; font-size: 15.5px; color: #9a3412; } .pm-warn p { margin: 0 0 10px; font-size: 13px; color: #7c2d12; }
   .pm-warn .nama { display: flex; flex-wrap: wrap; gap: 8px; }
   .pm-warn .nama a { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #fdba74; border-radius: 99px; padding: 4px 12px 4px 4px; text-decoration: none; color: var(--n-900); font-size: 13px; font-weight: 600; }
@@ -520,7 +528,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     <!-- PROFIL -->
     <section id="v-profil" hidden>
       <div class="kepala"><div style="flex:1"><h1>Profil</h1><p>Lengkapi data diri. Nama dan NIP baru tampil di dokumen Bukti Dukung.</p></div></div>
-      <div class="grid2" style="grid-template-columns:1.2fr 1fr">
+      <div class="grid2 grid2-profil">
         <form class="kartu form" id="formProfil">
           <h2>Data pegawai</h2>
           <label for="pNama">Nama lengkap (dengan gelar)</label><input id="pNama" required>
@@ -665,7 +673,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
 </div></div>
 <div id="viewer"><img alt="Foto bukti"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="vendor/supabase-js-2.119.0.js"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="docx.js"></script>
@@ -685,7 +693,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   const ROUTES = ['dashboard', 'rekap', 'rk', 'upload', 'dinas', 'profil', 'saran', 'analisis', 'pegawai', 'lihat'];
   const R_PIM = ['analisis', 'pegawai', 'lihat'];
   const JUDUL_R = { dashboard: ['Dashboard', 'Ringkasan kerja harian Anda'], rekap: ['Rekap Kegiatan', 'Rapikan uraian, bidang, dan RK'], rk: ['RK & IKI', 'Rencana Kinerja & Indikator Kinerja Individu'], upload: ['Upload Dokumen', 'Dokumen Bukti Dukung SKP & Google Drive'], dinas: ['Perjalanan Dinas', 'Laporan pengawasan / pendataan lapangan'], profil: ['Profil', 'Data diri, kata sandi, dan bantuan'], saran: ['Saran Pengembang', 'Kirim saran, laporan masalah, atau pertanyaan ke admin'], analisis: ['Analisis Pegawai', 'Beban kerja dan keaktifan pengisian seluruh pegawai'], pegawai: ['Pegawai', 'Daftar pegawai beserta kegiatannya'], lihat: ['Kegiatan Pegawai', 'Rincian kegiatan per hari, RK, dan IKI'] };
-  const WARNA_AV = ['#2E75B6', '#059669', '#f97316', '#7c3aed', '#db2777', '#0891b2', '#ca8a04', '#4f46e5'];
+  const WARNA_AV = ['#1D64AE', '#047857', '#C2410C', '#6D28D9', '#BE185D', '#0E7490', '#A16207', '#4338CA'];   // semua ≥4,9:1 dengan teks putih
   const inisial = n => String(n || '?').replace(/,.*$/, '').trim().split(/\s+/).map(w => w.replace(/\.+$/, '')).filter(w => w && !/^(hj|h|dr|ir|drs|dra|prof)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
   const warnaAv = n => { let s = 0; for (const c of String(n || '')) s = (s * 31 + c.charCodeAt(0)) >>> 0; return WARNA_AV[s % WARNA_AV.length]; };
   const current = () => { const r = location.hash.slice(1).split('/')[0]; return ROUTES.includes(r) && (!R_PIM.includes(r) || saya.peran === 'pimpinan') ? r : 'dashboard'; };
@@ -847,7 +855,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     $('rkTbl').innerHTML = tampil.length ? tampil.map((g, i) => {
       const buka = rkBuka.has(g.kunci) || (!!q && !rkTutupCari.has(g.kunci) && !kunciRk(g.nama).includes(q) && g.iki.some(r => kunciRk(r.indikator).includes(q)));   // cocok di IKI → terbuka otomatis
       const adm = g.iki.some(r => r.bersama), nKeg = g.iki.reduce((a, r) => a + jml(r.id), 0);
-      return `<tr class="rk-baris${buka ? ' buka' : ''}" data-grup="${S.esc(g.kunci)}" tabindex="0" aria-expanded="${buka}"><td>${awal + i + 1}</td><td>${g.bidang ? '<b>' + S.esc(g.bidang) + '</b>' : '<span style="color:#b26a00">⚠ belum diisi</span>'}${adm ? '<div class="rk-dari">dari admin</div>' : ''}</td>
+      return `<tr class="rk-baris${buka ? ' buka' : ''}" data-grup="${S.esc(g.kunci)}" tabindex="0"><td>${awal + i + 1}<span class="sr"> ${buka ? '(daftar IKI terbuka, tekan Enter untuk menutup)' : '(tekan Enter untuk melihat IKI)'}</span></td><td>${g.bidang ? '<b>' + S.esc(g.bidang) + '</b>' : '<span style="color:#B45309">⚠ belum diisi</span>'}${adm ? '<div class="rk-dari">dari admin</div>' : ''}</td>
         <td class="rk-teks">${tandai(g.nama, q)}</td><td><span class="rk-jml">${g.iki.length} IKI</span></td><td class="num">${nKeg}</td><td><span class="rk-panah" aria-hidden="true">›</span></td></tr>` +
         (buka ? `<tr class="rk-detail"><td colspan="6"><ul class="iki-list">${g.iki.map((r, n) => `<li data-id="${r.id}"><span class="iki-no">IKI ${n + 1}</span><span class="iki-t">${tandai(r.indikator, q) || '<i style="color:var(--teks2)">(IKI belum diisi)</i>'}</span><span class="iki-k">${jml(r.id)} kegiatan</span><span class="iki-a">${r.bersama ? '<span class="rk-admin" title="RK dari admin — hanya admin yang dapat mengubah"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Admin</span>' : `<button class="ikon" data-ubahrk title="Ubah" aria-label="Ubah">${IK_UBAH}</button><button class="ikon hapus" data-hapusrk title="Hapus" aria-label="Hapus">${IK_HPS}</button>`}</span></li>`).join('')}</ul>
           <button type="button" class="iki-tambah" data-tambahiki="${S.esc(g.kunci)}">+ Tambah IKI untuk RK ini</button></td></tr>` : '');
@@ -1220,7 +1228,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     let html = '';
     if (!grup.length) html = '<div class="kosong">Belum ada kegiatan pada periode ini.<br>Catat lewat menu <a href="input.html">Input</a> dengan memilih bidang.</div>';
     else html = '<div class="tabel-wrap"><table class="t"><thead><tr><th>Bidang</th><th>RK (1 dokumen)</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>' +
-      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${g.rk ? '🎯 ' + S.esc(g.rk.nama.length > 90 ? g.rk.nama.slice(0, 88) + '…' : g.rk.nama) + (g.rks.length > 1 ? ' <span style="color:#2E75B6">(' + g.rks.length + ' IKI)</span>' : '') : '<span style="color:#b26a00">⚠ Tanpa RK — RK & IKI kosong</span>'}<div style="color:var(--teks2);font-size:11.5px;margin-top:3px;word-break:break-all"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg> ${S.esc(namaDok(g, p))}</div>${infoPb(g, p, i)}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button" title="${pbDari(g, p) ? 'Unduh versi perbaikan yang terakhir diunggah' : 'Unduh dokumen untuk diperiksa / diperbaiki di Word'}">⬇ Unduh${pbDari(g, p) ? ' perbaikan' : ''}</button> <button class="btn kecil" data-unggahpb="${i}" type="button" title="Unggah dokumen yang sudah diperbaiki di Word">⬆ Unggah perbaikan</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a" title="Simpan dokumen & foto ke Google Drive lalu hapus kegiatan & foto ini dari aplikasi"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg> Simpan &amp; arsipkan</button>` : ''}</td></tr>`).join('') +
+      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${g.rk ? '🎯 ' + S.esc(g.rk.nama.length > 90 ? g.rk.nama.slice(0, 88) + '…' : g.rk.nama) + (g.rks.length > 1 ? ' <span style="color:#2E75B6">(' + g.rks.length + ' IKI)</span>' : '') : '<span style="color:#B45309">⚠ Tanpa RK — RK & IKI kosong</span>'}<div style="color:var(--teks2);font-size:11.5px;margin-top:3px;word-break:break-all"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg> ${S.esc(namaDok(g, p))}</div>${infoPb(g, p, i)}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button" title="${pbDari(g, p) ? 'Unduh versi perbaikan yang terakhir diunggah' : 'Unduh dokumen untuk diperiksa / diperbaiki di Word'}">⬇ Unduh${pbDari(g, p) ? ' perbaikan' : ''}</button> <button class="btn kecil" data-unggahpb="${i}" type="button" title="Unggah dokumen yang sudah diperbaiki di Word">⬆ Unggah perbaikan</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a" title="Simpan dokumen & foto ke Google Drive lalu hapus kegiatan & foto ini dari aplikasi"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg> Simpan &amp; arsipkan</button>` : ''}</td></tr>`).join('') +
       `</tbody></table></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn utama" type="button" id="btnZip">Unduh semua (${grup.length} dokumen, .zip)</button>${adaDrive() ? `<button class="btn" type="button" id="btnDriveSemua" style="color:#0b6b3a;border-color:#9fd3b5"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg> Simpan semua ke Drive &amp; arsipkan (${grup.length})</button>` : ''}</div>`;
     if (grup.length && adaDrive()) html += `<div style="margin-top:12px;padding:10px 12px;border-radius:10px;background:#fff7e6;border:1px solid #f1d39a;font-size:13px;color:#7a4b00">ℹ️ Setelah disimpan ke Drive, data di <b>Catat Kegiatan</b> akan dihapus. Data tetap dapat diakses melalui link Drive.</div>`;
     if (tanpa) html += `<p style="font-size:13px;color:#8a5300;margin:12px 0 0">⚠ ${tanpa} kegiatan belum memilih bidang sehingga tidak masuk dokumen. Lengkapi lewat ikon pensil di <a href="#dashboard">Dashboard</a>.</p>`;
@@ -1483,7 +1491,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
       const rata = kerja.length ? kerja.reduce((a, d) => a + (isiHari[d] ? isiHari[d].size : 0), 0) / kerja.length : 0;
       const U = st.reduce((a, x) => a + x.n, 0), aktif = st.filter(x => x.n || x.hari).length;
       const kpi = (ik, bg, fg, angka, lbl, sub) => `<div class="d-kartu kpi"><div class="kpi-atas"><span class="kpi-ik" style="background:${bg};color:${fg};font-size:20px">${ik}</span></div><b class="angka">${angka}</b><div class="k-lbl">${lbl}</div><div class="k-sub">${sub}</div></div>`;
-      $('anKpi').innerHTML = kpi('<svg class="g" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>', '#e8f0fa', '#1F4E79', aktif + '<small style="font-size:17px;color:#94a3b8"> / ' + P.length + '</small>', 'Pegawai mengisi', 'pada ' + p.label) +
+      $('anKpi').innerHTML = kpi('<svg class="g" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>', '#e8f0fa', '#1F4E79', aktif + '<small style="font-size:17px;color:var(--n-500)"> / ' + P.length + '</small>', 'Pegawai mengisi', 'pada ' + p.label) +
         kpi('<svg class="g" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>', '#e7f7ee', '#059669', String(Math.round(rata * 10) / 10).replace('.', ','), 'Rata-rata pengisi / hari kerja', 'dari ' + P.length + ' pegawai · ' + kerja.length + ' hari kerja') +
         kpi('<svg class="g" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>', '#fff3e6', '#ea580c', U, 'Kegiatan riil', 'rata-rata ' + (aktif ? String(Math.round(U / aktif * 10) / 10).replace('.', ',') : 0) + ' per pegawai') +
         kpi('<svg class="g" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>', '#fdecec', '#c62828', pas.length, 'Tidak aktif 3 bulan', pas.length ? 'perlu ditindaklanjuti' : 'semua aktif');
@@ -1513,7 +1521,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
       const maks = Math.max(1, ...st.map(x => x.n));
       const th = (id, l, cls) => `<th data-urut="${id}" class="${cls || ''}${k === id ? ' aktif' : ''}">${l}<span class="ar">${k === id ? (a > 0 ? '▲' : '▼') : '↕'}</span></th>`;
       $('anTabel').innerHTML = `<thead><tr><th class="c">No</th>${th('nama', 'Pegawai')}${th('unit', 'Unit')}${th('n', 'Kegiatan riil', 'n')}${th('catatan', 'Catatan', 'n')}${th('rk', 'RK', 'n')}${th('iki', 'IKI', 'n')}${th('hari', 'Hari aktif', 'n')}<th>Beban</th>${th('akhir', 'Terakhir mengisi')}</tr></thead><tbody>` +
-        (rows.length ? rows.map((x, i) => `<tr class="klik" data-lihat="${x.p.id}"><td class="c" style="color:#94a3b8;font-weight:700">${i + 1}</td><td><div class="pm-nama">${av(x.p)}<div><b>${esc(x.p.nama)}</b><small>${esc(x.p.jabatan || '—')}</small></div></div></td><td>${esc(x.p.unit || '—')}</td>
+        (rows.length ? rows.map((x, i) => `<tr class="klik" data-lihat="${x.p.id}"><td class="c" style="color:var(--n-500);font-weight:700">${i + 1}</td><td><div class="pm-nama">${av(x.p)}<div><b>${esc(x.p.nama)}</b><small>${esc(x.p.jabatan || '—')}</small></div></div></td><td>${esc(x.p.unit || '—')}</td>
           <td class="n"><b style="font-size:15px">${x.n}</b></td><td class="n">${x.catatan}</td><td class="n">${x.rkN}</td><td class="n">${x.ikiN}</td><td class="n">${x.hari}</td><td><div class="pm-bar"><i style="width:${Math.round(x.n / maks * 100)}%"></i></div></td>
           <td style="white-space:nowrap">${x.akhir ? esc(S.tglSedang(x.akhir)) : '<span style="color:#b91c1c">belum pernah</span>'}${pasif(x.p.id) ? ' <span class="pm-st pasif">3 bln</span>' : ''}</td></tr>`).join('') : '<tr><td colspan="10"><div class="kosong">Belum ada pegawai.</div></td></tr>') + '</tbody>';
     }
@@ -1656,7 +1664,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
       // teraktif
       const top = list.filter(x => x.n > 0).sort((a, b) => b.n - a.n || b.hari - a.hari || b.catatan - a.catatan).slice(0, 3);
       $('pdTopSub').textContent = 'Kegiatan riil terbanyak di ' + S.namaBulan(v);
-      $('pdTop').innerHTML = top.length ? top.map((x, i) => `<a class="top" href="#lihat/${x.p.id}"><span class="av" style="background:${['#f59e0b', '#94a3b8', '#f97316'][i]}">${esc(inisial(x.p.nama))}<span class="rk">${i + 1}</span></span><div class="nm"><b>${esc(x.p.nama)}</b><small>${esc(x.p.unit || x.p.jabatan || '—')} · ${x.hari} hari terisi</small></div><div class="nil"><b>${fmtA(x.n)}</b><small>kegiatan riil</small></div></a>`).join('')
+      $('pdTop').innerHTML = top.length ? top.map((x, i) => `<a class="top" href="#lihat/${x.p.id}"><span class="av" style="background:${['#9A6B00', '#64748B', '#B4541F'][i]}">${esc(inisial(x.p.nama))}<span class="rk">${i + 1}</span></span><div class="nm"><b>${esc(x.p.nama)}</b><small>${esc(x.p.unit || x.p.jabatan || '—')} · ${x.hari} hari terisi</small></div><div class="nil"><b>${fmtA(x.n)}</b><small>kegiatan riil</small></div></a>`).join('')
         : '<div class="kosong" style="padding:24px 8px">Belum ada kegiatan di bulan ini.</div>';
       // perlu perhatian
       const belumHari = list.filter(x => !x.hariIni).length, belumBulan = list.filter(x => !(x.n || x.hari)).length, total = belumHari + belumBulan + pasN;

@@ -68,6 +68,14 @@ Skala 4: `--s-1` 4 · `--s-2` 8 · `--s-3` 12 · `--s-4` 16 · `--s-5` 20 · `--
 
 ## 5. Komponen
 
+**Prinsip kedalaman: yang timbul berarti bisa diklik.**
+- Tombol dan kontrol tampak timbul seperti tuts kalkulator: gradasi tipis dari atas, kilau 1 px di tepi atas, dan "bibir" 2 px di bawah (`--n-300` untuk tombol putih, `--biru-800` untuk biru, `--hijau-800` untuk hijau).
+- Saat ditekan, tombol turun 2 px dan bibirnya hilang. Pilihan yang sedang aktif (bulan/triwulan, durasi kuis, halaman tabel) tampak **tertekan**.
+- Kolom isian tampak cekung (bayangan dalam 1 px).
+- Kartu isi tetap **datar**, hanya bergaris, supaya tombol mudah dikenali.
+- Label memakai huruf kalimat biasa, bukan kapital semua: kepala tabel, grup menu, label formulir.
+
+
 - **Tombol** tinggi 40 (HP 44), radius `--r-md`, teks 14/600.
   - *Utama* `--biru-600` → hover `--biru-700`.
   - *Sekunder* putih, garis `--n-200`, hover `--n-50`.
@@ -76,10 +84,10 @@ Skala 4: `--s-1` 4 · `--s-2` 8 · `--s-3` 12 · `--s-4` 16 · `--s-5` 20 · `--
   - *Catat* `--hijau-600`.
   - Fokus: cincin `0 0 0 3px rgba(21,94,168,.28)`. Nonaktif: opasitas .5.
 - **Input/select** tinggi 40 (HP 44), garis `--n-200`, radius `--r-md`. Fokus: garis `--biru-600` dan cincin fokus. Placeholder `--n-500`.
-- **Kartu** `--n-0`, garis `--n-100`, `--r-lg`, `--sh-1`.
+- **Kartu** `--n-0`, garis `--n-100`, `--r-lg`, tanpa bayangan.
 - **Kartu KPI** ikon dalam kotak `--biru-50` dengan ikon `--biru-600`, satu warna untuk semua KPI. Tren naik/turun memakai pill sukses/bahaya.
 - **Badge/pill** 12/600, radius penuh, pasangan warna teks + latar semantik.
-- **Tabel** kepala 12/600 kapital `--n-600` di `--n-25`; baris 14; hover `--n-25`. Kolom angka rata kanan.
+- **Tabel** kepala 13/600 huruf biasa `--n-600` di `--n-25`; baris 14; hover `--n-25`. Kolom angka rata kanan.
 - **Navigasi**
   - *Sidebar* `--biru-900`, item 14/500 putih 78%; aktif berlatar putih dengan teks `--biru-700`; "Catat Kegiatan" berlatar `--hijau-600`.
   - *Menu bawah (HP)* putih; yang aktif `--biru-600` dengan garis 3 px di atas.
@@ -110,7 +118,7 @@ Gerak hanya untuk memberi arti: menunjukkan apa yang baru muncul, apa yang berub
 - **Kartu:** muncul bertahap, jeda 50 ms antar kartu, maks. 200 ms.
 - **Bar kemajuan:** terisi dari kiri.
 - **Angka KPI:** menghitung naik ±0,7 detik, tetapi tidak dihitung ulang kalau nilainya sama dengan tampilan sebelumnya.
-- **Tombol:** mengecil ke 97% saat ditekan. Kartu yang bisa diklik naik 2 px saat disorot (hanya perangkat dengan mouse).
+- **Tombol:** turun 2 px saat ditekan, seperti tuts yang benar-benar ditekan.
 - **Modal & menu ⋮:** muncul dengan geser dan memudar.
 - **Baris tabel tidak dianimasikan**, supaya tidak berkedip saat mengetik di kolom cari.
 - **Aksesibilitas:** bila perangkat diatur "kurangi gerakan" (`prefers-reduced-motion`), semua animasi mati dan angka langsung tampil final.
