@@ -389,7 +389,7 @@
 
   /* ---------- Laporan Perjalanan Dinas (pengawasan / pendataan lapangan) ----------
      o: {template, jenis, nomor, tglSt, nama, periode, baris:[{tanggal, uraian, masalah, solusi}],
-         tempatTgl, jabatan, ketua, petugas, fotos:[{data,w,h,ket}]} */
+         tempatTgl, jabatan, ketua, nipKetua, petugas, nipPetugas, fotos:[{data,w,h,ket}]} */
   async function laporanDinas(o) {
     picId = 1;
     const z = await readZip(o.template);
@@ -441,7 +441,8 @@
     b += P(TAB() + R('Mengetahui'), tabsTtd + '<w:keepNext/>');
     b += P(TAB() + R(o.jabatan || '') + TAB() + R('Petugas'), tabsTtd + '<w:keepNext/>');
     for (let i = 0; i < 4; i++) b += P('', tabsTtd + '<w:keepNext/>');
-    b += P(TAB() + R(o.ketua || '') + TAB() + R(o.petugas || ''), tabsTtd);
+    b += P(TAB() + R(o.ketua || '') + TAB() + R(o.petugas || ''), tabsTtd + '<w:keepNext/>');
+    b += P(TAB() + R('NIP. ' + (o.nipKetua || '')) + TAB() + R('NIP. ' + (o.nipPetugas || '')), tabsTtd);
     // Lampiran dokumentasi: 2 foto per baris
     const fotos = o.fotos || [];
     if (fotos.length) {

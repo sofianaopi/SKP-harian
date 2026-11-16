@@ -66,7 +66,9 @@
   const hariBerikut = d => { const t = S.parseYmd(d); t.setDate(t.getDate() + 1); return S.ymd(t); };
   const bersihFile = t => String(t || '').replace(/[\\/:*?"<>|#%\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
   const ketuaTersimpan = () => { try { return JSON.parse(localStorage.getItem('sakti-ketua') || '{}'); } catch (e) { return {}; } };
-  const simpanKetua = (jab, nama) => { try { const m = ketuaTersimpan(); if (jab && nama) { m[jab] = nama; localStorage.setItem('sakti-ketua', JSON.stringify(m)); } } catch (e) { } };
+  const simpanKetua = (jab, nama, nip) => { try { const m = ketuaTersimpan(); if (jab && nama) { m[jab] = nama; localStorage.setItem('sakti-ketua', JSON.stringify(m)); } if (nama && nip) { const n = nipTersimpan(); n[nama] = nip; localStorage.setItem('sakti-ketua-nip', JSON.stringify(n)); } } catch (e) { } };
+  const nipTersimpan = () => { try { return JSON.parse(localStorage.getItem('sakti-ketua-nip') || '{}'); } catch (e) { return {}; } };
+  const nipKetuaDari = nama => nama ? (nipTersimpan()[nama] || (daftar.find(l => l.ketua === nama && l.nipKetua) || {}).nipKetua || '') : '';
 
   async function muat() {
     try { daftar = await S.list('dinas'); dimuat = true; gagalMuat = ''; }
@@ -151,7 +153,8 @@
           <div><label for="ldTglLap">Tanggal laporan</label><input type="date" id="ldTglLap" value="${S.esc(ed.tglLap)}"></div>
           <div><label for="ldJabatan">Mengetahui (jabatan)</label><input id="ldJabatan" value="${S.esc(ed.jabatan)}" placeholder="mis. Ketua Tim Nerwilis"></div>
           <div><label for="ldKetua">Nama yang mengetahui</label><input id="ldKetua" value="${S.esc(ed.ketua)}" list="ldKetuaList" placeholder="mis. Lilis Dinayati"><datalist id="ldKetuaList">${[...new Set(daftar.map(l => l.ketua).concat(Object.values(ketuaTersimpan())).filter(Boolean))].map(n => `<option value="${S.esc(n)}">`).join('')}</datalist></div>
-          <div class="penuh" style="font-size:13px;color:var(--teks2);margin-top:6px">Petugas: <b>${S.esc(C.profil().nama || '—')}</b> (dari Profil)</div>
+          <div><label for="ldNipKetua">NIP yang mengetahui</label><input id="ldNipKetua" inputmode="numeric" value="${S.esc(ed.nipKetua || nipKetuaDari(ed.ketua))}" placeholder="18 digit, mis. 197501012000032001" maxlength="24"></div>
+          <div style="align-self:end;font-size:13px;color:var(--teks2);padding-bottom:10px">Petugas: <b>${S.esc(C.profil().nama || '—')}</b><br>NIP. ${C.profil().nip ? S.esc(C.profil().nip) : '<span class="ld-peringatan">belum diisi — lengkapi di menu Profil</span>'}</div>
         </div>
         <div class="ld-aksi"><button class="btn" type="button" id="ldBatal">Batal</button><button class="btn" type="button" id="ldSimpan">Simpan</button><button class="btn utama" type="button" id="ldSimpanUnduh">Simpan &amp; unduh .docx</button></div>
       </div>`;
@@ -163,6 +166,8 @@
     $('ldGaleri').addEventListener('click', e => { const t = e.target.closest('[data-ft]'); if (!t) return; pilihFoto(t.dataset.ft, t.dataset.k); });
     $('ldBulan').onchange = renderFoto; $('ldSesuai').onchange = renderFoto;
     $('ldKosongFoto').onclick = () => { fotoPilih = []; renderFoto(); };
+    $('ldKetua').addEventListener('change', () => { const n = nipKetuaDari($('ldKetua').value.trim()); if (n && !$('ldNipKetua').value.trim()) $('ldNipKetua').value = n; });
+    $('ldNipKetua').addEventListener('input', () => { $('ldNipKetua').value = $('ldNipKetua').value.replace(/[^\d ]/g, ''); });
     $('ldPeriode').oninput = () => { $('ldPeriode').dataset.manual = '1'; }; $('ldTglLap').oninput = () => { $('ldTglLap').dataset.manual = '1'; };
     $('ldPeriodeAuto').onclick = () => { delete $('ldPeriode').dataset.manual; otomatis(); };
     $('ldBatal').onclick = () => { ed = null; renderDaftar(); window.scrollTo(0, 0); };
@@ -219,7 +224,7 @@
     const i = fotoPilih.findIndex(f => f.id === fid);
     if (i >= 0) fotoPilih.splice(i, 1); else fotoPilih.push({ id: fid, k: kid });
     // isi jabatan "Ketua Tim <bidang>" dari bidang kegiatan foto bila masih kosong
-    if (!$('ldJabatan').value.trim()) { const hit = {}; fotoPilih.forEach(f => { const k = C.kegiatan().find(x => x.id === f.k); if (k && k.bidang) hit[k.bidang] = (hit[k.bidang] || 0) + 1; }); const b = Object.keys(hit).sort((a, c) => hit[c] - hit[a])[0]; if (b) { $('ldJabatan').value = 'Ketua Tim ' + b; if (!$('ldKetua').value.trim()) { const n = ketuaTersimpan()[$('ldJabatan').value]; if (n) $('ldKetua').value = n; } } }
+    if (!$('ldJabatan').value.trim()) { const hit = {}; fotoPilih.forEach(f => { const k = C.kegiatan().find(x => x.id === f.k); if (k && k.bidang) hit[k.bidang] = (hit[k.bidang] || 0) + 1; }); const b = Object.keys(hit).sort((a, c) => hit[c] - hit[a])[0]; if (b) { $('ldJabatan').value = 'Ketua Tim ' + b; if (!$('ldKetua').value.trim()) { const n = ketuaTersimpan()[$('ldJabatan').value]; if (n) { $('ldKetua').value = n; if (!$('ldNipKetua').value.trim()) $('ldNipKetua').value = nipKetuaDari(n); } } } }
     // perbarui nomor urut tanpa memuat ulang gambar
     $('ldGaleri').querySelectorAll('.ld-ft').forEach(el => { const n = fotoPilih.findIndex(f => f.id === el.dataset.ft); el.classList.toggle('on', n >= 0); el.setAttribute('aria-pressed', n >= 0); el.querySelector('.ld-urut').textContent = n >= 0 ? n + 1 : ''; });
     const ada = new Set(C.kegiatan().map(k => k.id)), hilang = fotoPilih.filter(f => f.k && !ada.has(f.k)).length;
@@ -230,7 +235,7 @@
     const j = (document.querySelector('input[name=ldJenis]:checked') || {}).value;
     ed.jenis = j === '_lain' ? ($('ldJenisLain').value.trim() || 'Pengawasan Lapangan') : j;
     ed.nomor = $('ldNomor').value.trim(); ed.tglSt = $('ldTglSt').value; ed.periode = $('ldPeriode').value.trim();
-    ed.tempat = $('ldTempat').value.trim(); ed.tglLap = $('ldTglLap').value; ed.jabatan = $('ldJabatan').value.trim(); ed.ketua = $('ldKetua').value.trim();
+    ed.tempat = $('ldTempat').value.trim(); ed.tglLap = $('ldTglLap').value; ed.jabatan = $('ldJabatan').value.trim(); ed.ketua = $('ldKetua').value.trim(); ed.nipKetua = $('ldNipKetua').value.replace(/\s+/g, '').trim();
     ed.isi = rows.filter(r => r.tanggal || r.uraian.trim() || r.masalah.trim() || r.solusi.trim()).map(({ id, ...r }) => r).sort((a, b) => (a.tanggal || '9').localeCompare(b.tanggal || '9'));
     ed.fotos = fotoPilih.slice();
     return ed;
@@ -241,7 +246,7 @@
     if (l.isi.some(r => !r.tanggal)) { S.toast('Ada baris tabel yang belum diberi tanggal'); return; }
     if (!l.periode) l.periode = periodeDari(l.isi.map(rgTgl));
     try {
-      await S.put('dinas', l); simpanKetua(l.jabatan, l.ketua);
+      await S.put('dinas', l); simpanKetua(l.jabatan, l.ketua, l.nipKetua);
       const i = daftar.findIndex(x => x.id === l.id); if (i >= 0) daftar[i] = l; else daftar.unshift(l);
       S.toast('Laporan disimpan');
       if (lanjutUnduh) await unduh(l);
@@ -269,7 +274,7 @@
       const blob = await DOCX.laporanDinas({ template: await ambilTemplate(), kop: kopD, footer: footerD, jenis: l.jenis, nomor: l.nomor, tglSt: l.tglSt ? S.tglSedang(l.tglSt) : '', nama: p.nama || '',
         periode: l.periode || periodeDari(l.isi.map(rgTgl)),
         baris: l.isi.map(r => ({ tanggal: r.tanggal ? S.rentangTgl(r.tanggal, r.tanggalAkhir) : '', uraian: r.uraian, masalah: r.masalah, solusi: r.solusi })),
-        tempatTgl: [l.tempat, l.tglLap ? S.tglSedang(l.tglLap) : ''].filter(Boolean).join(', '), jabatan: l.jabatan, ketua: l.ketua, petugas: p.nama || '', fotos });
+        tempatTgl: [l.tempat, l.tglLap ? S.tglSedang(l.tglLap) : ''].filter(Boolean).join(', '), jabatan: l.jabatan, ketua: l.ketua, nipKetua: l.nipKetua || '', petugas: p.nama || '', nipPetugas: p.nip || '', fotos });
       sb.selesai();
       const nama = bersihFile('Laporan Perjalanan Dinas ' + l.jenis + '_' + (l.periode || '')).slice(0, 120) + '.docx';
       await S.download(nama, blob);
