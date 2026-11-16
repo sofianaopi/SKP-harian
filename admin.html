@@ -72,6 +72,7 @@
   .bd-daftar { border: 1px solid var(--garis); border-radius: 12px; overflow: hidden; }
   .bd-baris { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--garis); } .bd-baris:first-child { border-top: 0; }
   .bd-baris .no { width: 26px; height: 26px; border-radius: 50%; background: #eaf1fa; color: var(--navy); display: grid; place-items: center; font-size: 12.5px; font-weight: 700; flex: 0 0 auto; }
+  .bd-baris { flex-wrap: wrap; } .bd-ketua { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-items: center; flex: 1 1 280px; min-width: 0; } .bd-ketua select { min-width: 0; width: 100%; padding: 8px 10px; font: inherit; font-size: 13.5px; } .bd-ketua small { grid-column: 2; color: var(--teks2); font-size: 12px; padding-left: 2px; } .bd-ketua .lbl { font-size: 12.5px; color: var(--teks2); white-space: nowrap; }
   .bd-baris .nm { flex: 1; font-weight: 600; min-width: 0; overflow-wrap: anywhere; } .bd-baris .nm input { width: 100%; padding: 7px 9px; border: 1px solid var(--biru-600); border-radius: 8px; font: inherit; font-weight: 600; }
   .bd-baris .aks { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; } .bd-baris .btn { padding: 6px 10px; font-size: 12.5px; }
   .bkartu { background: #fff; border: 1px solid var(--garis); border-radius: 14px; padding: 14px; }
@@ -379,7 +380,7 @@
       <form id="fBidang" class="bd-tambah"><input id="bdNama" maxlength="40" placeholder="Nama bidang baru, mis. Humas" aria-label="Nama bidang baru" required><button class="btn utama" type="submit">+ Tambah bidang</button></form>
       <div id="bdDaftar" class="bd-daftar"></div>
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center">
-        <span style="font-size:12.5px;color:var(--teks2)">Urutan di sini menjadi urutan pilihan bidang pegawai.</span>
+        <span style="font-size:12.5px;color:var(--teks2)">Urutan di sini menjadi urutan pilihan bidang pegawai. <b>Ketua tim</b> yang dipilih muncul sebagai pilihan "Mengetahui" di laporan Surat Tugas, lengkap dengan NIP-nya.</span>
         <button class="btn" type="button" id="bdBawaan">Kembalikan daftar bawaan</button>
       </div>
     </div>
@@ -455,7 +456,7 @@
 
   async function muat() {
     daftar = S.cek(await S.client().from('pegawai').select('*').order('nama'));
-    render();
+    render(); segarkanKetua().catch(() => { });
   }
   function render() {
     $('nTotal').textContent = daftar.length; $('nAktif').textContent = daftar.filter(p => p.aktif).length; $('nAdmin').textContent = daftar.filter(p => p.peran === 'admin').length;
@@ -816,12 +817,25 @@
 
   /* ---------- Menu ---------- */
   /* ---------- Bidang pekerjaan ---------- */
-  let bdUbah = -1;
+  let bdUbah = -1, ketuaTim = {}, ketuaDimuat = false;
+  /* Ketua tim per bidang: disimpan di pengaturan 'ketua_tim' (dibaca semua pegawai untuk laporan Surat Tugas) */
+  const nipBersih = n => String(n || '').replace(/\s+/g, '');
+  async function muatKetua() { try { const m = await S.get('meta', 'ketua_tim'); ketuaTim = (m && m.tim) || {}; } catch (e) { ketuaTim = {}; } ketuaDimuat = true; }
+  const simpanKetua = async () => S.put('meta', { id: 'ketua_tim', tim: ketuaTim });
+  // samakan nama & NIP ketua dengan data pegawai terbaru (mis. setelah NIP diperbaiki)
+  async function segarkanKetua() {
+    if (!ketuaDimuat) await muatKetua(); let ubah = false;
+    Object.entries(ketuaTim).forEach(([b, k]) => { const p = daftar.find(x => x.id === k.id); if (!p) return; const nip = nipBersih(p.nip_baru); if (p.nama !== k.nama || nip !== k.nip) { ketuaTim[b] = { id: p.id, nama: p.nama, nip }; ubah = true; } });
+    if (ubah) await simpanKetua().catch(() => { });
+  }
+  const opsiKetua = b => { const k = ketuaTim[b], L = daftar.filter(p => p.aktif && p.peran !== 'admin').sort((x, y) => x.nama.localeCompare(y.nama));
+    return '<option value="">— belum ditetapkan —</option>' + L.map(p => `<option value="${p.id}"${k && k.id === p.id ? ' selected' : ''}>${S.esc(p.nama)}</option>`).join('') + (k && !L.some(p => p.id === k.id) ? `<option value="${S.esc(k.id)}" selected>${S.esc(k.nama)} (tidak aktif)</option>` : ''); };
   const simpanBidang = async daftar => { await S.put('meta', { id: 'bidang', daftar }); S.BIDANG.splice(0, S.BIDANG.length, ...daftar); isiDlUnit(); };
   function renderBidang() {
     const L = S.BIDANG;
     $('bdDaftar').innerHTML = L.length ? L.map((b, i) => `<div class="bd-baris"><span class="no">${i + 1}</span>
       <div class="nm">${i === bdUbah ? `<input id="bdEdit" value="${S.esc(b)}" maxlength="40" aria-label="Nama bidang">` : S.esc(b)}</div>
+      <div class="bd-ketua"><span class="lbl">Ketua tim</span><select data-bd-ketua="${S.esc(b)}" aria-label="Ketua tim ${S.esc(b)}">${opsiKetua(b)}</select>${ketuaTim[b] && ketuaTim[b].nip ? `<small>NIP. ${S.esc(ketuaTim[b].nip)}</small>` : ketuaTim[b] ? '<small style="color:var(--bahaya)">NIP baru belum diisi</small>' : ''}</div>
       <div class="aks">${i === bdUbah ? `<button class="btn utama" data-bd-simpan="${i}" type="button">Simpan</button><button class="btn" data-bd-batal type="button">Batal</button>`
         : `<button class="btn" data-bd-naik="${i}" type="button" title="Naikkan" aria-label="Naikkan" ${i ? '' : 'disabled'}>↑</button><button class="btn" data-bd-turun="${i}" type="button" title="Turunkan" aria-label="Turunkan" ${i < L.length - 1 ? '' : 'disabled'}>↓</button><button class="btn" data-bd-ubah="${i}" type="button">Ubah nama</button><button class="btn bahaya" data-bd-hapus="${i}" type="button">Hapus</button>`}</div></div>`).join('')
       : '<div style="padding:16px;color:var(--teks2)">Belum ada bidang.</div>';
@@ -836,6 +850,11 @@
     e.preventDefault(); const nm = $('bdNama').value.trim().replace(/\s+/g, ' '); const sal = namaBidangValid(nm, -1); if (sal) { S.toast(sal); return; }
     try { await simpanBidang(S.BIDANG.concat([nm])); $('bdNama').value = ''; renderBidang(); S.toast('Bidang ' + nm + ' ditambahkan'); } catch (x) { S.toast(x.message, 5000); }
   };
+  $('bdDaftar').addEventListener('change', async e => {
+    const sel = e.target.closest('[data-bd-ketua]'); if (!sel) return; const b = sel.dataset.bdKetua, p = daftar.find(x => x.id === sel.value);
+    if (p) ketuaTim[b] = { id: p.id, nama: p.nama, nip: nipBersih(p.nip_baru) }; else delete ketuaTim[b];
+    try { await simpanKetua(); renderBidang(); S.toast(p ? p.nama + ' ditetapkan sebagai Ketua Tim ' + b : 'Ketua Tim ' + b + ' dikosongkan'); } catch (x) { S.toast(x.message, 5000); }
+  });
   $('bdDaftar').addEventListener('click', async e => {
     const t = e.target.closest('button'); if (!t || t.disabled) return; const L = S.BIDANG.slice();
     try {
@@ -850,7 +869,7 @@
         const sal = namaBidangValid(baru, i); if (sal) { S.toast(sal); return; }
         const hasil = await S.proses('Mengganti nama bidang…', async () => {
           const r = await S.client().rpc('admin_ganti_bidang', { p_lama: lama, p_baru: baru });
-          L[i] = baru; await simpanBidang(L); return r;
+          L[i] = baru; await simpanBidang(L); if (ketuaTim[lama]) { ketuaTim[baru] = ketuaTim[lama]; delete ketuaTim[lama]; await simpanKetua(); } return r;
         });
         bdUbah = -1; renderBidang();
         if (hasil.error) S.toast('Nama di daftar sudah diganti, tetapi kegiatan & RK lama masih bernama "' + lama + '". Jalankan setup.sql terbaru di Supabase lalu ganti nama sekali lagi.', 9000);
@@ -858,7 +877,7 @@
       } else if (t.dataset.bdHapus != null) {
         const i = +t.dataset.bdHapus; if (L.length <= 1) { S.toast('Minimal harus ada satu bidang'); return; }
         if (!await konfirmasiYa('Hapus bidang ' + L[i] + '?', 'Bidang ini tidak lagi muncul sebagai pilihan. Kegiatan dan RK lama yang sudah memakai bidang ini tidak terhapus dan tetap bisa dibuat dokumennya.', 'Ya, hapus bidang')) return;
-        const nm = L.splice(i, 1)[0]; await simpanBidang(L); renderBidang(); S.toast('Bidang ' + nm + ' dihapus dari daftar');
+        const nm = L.splice(i, 1)[0]; await simpanBidang(L); if (ketuaTim[nm]) { delete ketuaTim[nm]; await simpanKetua(); } renderBidang(); S.toast('Bidang ' + nm + ' dihapus dari daftar');
       }
     } catch (x) { S.toast(x.message || String(x), 5000); }
   });
@@ -996,7 +1015,7 @@
   $('sbTutup').onclick = tutupSb; $('sbLatar').onclick = tutupSb;
   $('tbCari').oninput = () => { const r = location.hash.slice(1) || 'dashboard', id = CARI_R[r]; if (!id || !$(id)) return; $(id).value = $('tbCari').value; $(id).dispatchEvent(new Event('input')); };
   function route() { let r = location.hash.slice(1); if (!ROUTES.includes(r)) r = 'dashboard'; ROUTES.forEach(x => $('v-' + x).hidden = x !== r); document.querySelectorAll('nav.tab a').forEach(a => a.classList.toggle('aktif', a.dataset.r === r));
-    $('tbJudul').textContent = JUDUL_R[r][0]; $('tbSub').textContent = JUDUL_R[r][1]; $('tbCariBox').style.visibility = CARI_R[r] ? '' : 'hidden'; $('tbCari').value = CARI_R[r] && $(CARI_R[r]) ? $(CARI_R[r]).value : ''; tutupSb(); window.scrollTo(0, 0); if (r === 'dashboard') muatRekap(); if (r === 'bidang') { bdUbah = -1; renderBidang(); } if (r === 'rk') muatRkA(); if (r === 'pesan') muatPesan(true); if (r === 'kuis' && window.KuisAdmin) KuisAdmin.render(); }
+    $('tbJudul').textContent = JUDUL_R[r][0]; $('tbSub').textContent = JUDUL_R[r][1]; $('tbCariBox').style.visibility = CARI_R[r] ? '' : 'hidden'; $('tbCari').value = CARI_R[r] && $(CARI_R[r]) ? $(CARI_R[r]).value : ''; tutupSb(); window.scrollTo(0, 0); if (r === 'dashboard') muatRekap(); if (r === 'bidang') { bdUbah = -1; if (!ketuaDimuat) muatKetua().then(renderBidang); renderBidang(); } if (r === 'rk') muatRkA(); if (r === 'pesan') muatPesan(true); if (r === 'kuis' && window.KuisAdmin) KuisAdmin.render(); }
 
   /* ---------- Pesan & Saran dari pegawai ---------- */
   let pesan = [], psPilih = null, psSaring = 'aktif', psMuat = false;

@@ -13,6 +13,9 @@
   let rows = [];             // baris tabel: {id, tanggal, tanggalAkhir?, uraian, masalah, solusi}
   let fotoPilih = [];        // urutan foto dokumentasi: [{id: fotoId, k: kegiatanId}]
   let templateBuf = null;
+  let ketuaTim = {};         // dari admin (menu Bidang): {bidang: {id, nama, nip}}
+  async function muatKetua() { try { const m = await S.get('meta', 'ketua_tim'); ketuaTim = (m && m.tim) || {}; } catch (e) { ketuaTim = {}; } return ketuaTim; }
+  const timAda = () => Object.keys(ketuaTim).filter(b => ketuaTim[b] && ketuaTim[b].nama);
 
   const CSS = `
   .ld-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.3px;color:#8a5300;background:#fff3db;border:1px solid #f1d39a;border-radius:20px;padding:2px 9px;vertical-align:middle;margin-left:8px}
@@ -46,6 +49,9 @@
   .ld-ft.on{border-color:var(--biru-600)}.ld-ft.on .ld-urut{background:var(--biru-600)}
   .ld-ft .tx{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 5px;font-size:11px;line-height:1.25;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ld-ft:active{transform:scale(.97)}
+  .ld-pejabat{display:flex;align-items:center;gap:12px;border:1px solid var(--garis);border-radius:12px;padding:12px 14px;background:var(--n-25)}
+  .ld-pejabat .av{width:40px;height:40px;border-radius:50%;background:var(--biru-600);color:#fff;display:grid;place-items:center;font-weight:700;flex:0 0 auto}
+  .ld-pejabat b{display:block;font-size:14.5px}.ld-pejabat small{color:var(--teks2);font-size:12.5px}
   .ld-pilihan{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--teks2)}
   @media (max-width:760px){.ld-g,.ld-baris .g3{grid-template-columns:1fr}.ld-keg label{grid-template-columns:22px 1fr}.ld-keg .tg{grid-column:2}.ld-keg .ft{grid-column:2}}`;
 
@@ -151,9 +157,11 @@
         <div class="ld-g">
           <div><label for="ldTempat">Tempat</label><input id="ldTempat" value="${S.esc(ed.tempat || 'Kendari')}"></div>
           <div><label for="ldTglLap">Tanggal laporan</label><input type="date" id="ldTglLap" value="${S.esc(ed.tglLap)}"></div>
-          <div><label for="ldJabatan">Mengetahui (jabatan)</label><input id="ldJabatan" value="${S.esc(ed.jabatan)}" placeholder="mis. Ketua Tim Nerwilis"></div>
-          <div><label for="ldKetua">Nama yang mengetahui</label><input id="ldKetua" value="${S.esc(ed.ketua)}" list="ldKetuaList" placeholder="mis. Lilis Dinayati"><datalist id="ldKetuaList">${[...new Set(daftar.map(l => l.ketua).concat(Object.values(ketuaTersimpan())).filter(Boolean))].map(n => `<option value="${S.esc(n)}">`).join('')}</datalist></div>
-          <div><label for="ldNipKetua">NIP yang mengetahui</label><input id="ldNipKetua" inputmode="numeric" value="${S.esc(ed.nipKetua || nipKetuaDari(ed.ketua))}" placeholder="18 digit, mis. 197501012000032001" maxlength="24"></div>
+          <div class="penuh"><label for="ldTim">Mengetahui</label><select id="ldTim"><option value="">Memuat daftar ketua tim…</option></select></div>
+          <div class="penuh" id="ldPejabat"></div>
+          <div class="ld-manual"><label for="ldJabatan">Jabatan</label><input id="ldJabatan" value="${S.esc(ed.jabatan)}" placeholder="mis. Kepala BPS Kota Kendari"></div>
+          <div class="ld-manual"><label for="ldKetua">Nama</label><input id="ldKetua" value="${S.esc(ed.ketua)}" list="ldKetuaList" placeholder="Nama lengkap"><datalist id="ldKetuaList">${[...new Set(daftar.map(l => l.ketua).concat(Object.values(ketuaTersimpan())).filter(Boolean))].map(n => `<option value="${S.esc(n)}">`).join('')}</datalist></div>
+          <div class="ld-manual"><label for="ldNipKetua">NIP</label><input id="ldNipKetua" inputmode="numeric" value="${S.esc(ed.nipKetua || nipKetuaDari(ed.ketua))}" placeholder="18 digit" maxlength="24"></div>
           <div style="align-self:end;font-size:13px;color:var(--teks2);padding-bottom:10px">Petugas: <b>${S.esc(C.profil().nama || '—')}</b><br>NIP. ${C.profil().nip ? S.esc(C.profil().nip) : '<span class="ld-peringatan">belum diisi — lengkapi di menu Profil</span>'}</div>
         </div>
         <div class="ld-aksi"><button class="btn" type="button" id="ldBatal">Batal</button><button class="btn" type="button" id="ldSimpan">Simpan</button><button class="btn utama" type="button" id="ldSimpanUnduh">Simpan &amp; unduh .docx</button></div>
@@ -166,6 +174,8 @@
     $('ldGaleri').addEventListener('click', e => { const t = e.target.closest('[data-ft]'); if (!t) return; pilihFoto(t.dataset.ft, t.dataset.k); });
     $('ldBulan').onchange = renderFoto; $('ldSesuai').onchange = renderFoto;
     $('ldKosongFoto').onclick = () => { fotoPilih = []; renderFoto(); };
+    $('ldTim').onchange = () => pakaiTim($('ldTim').value, true);
+    muatKetua().then(() => isiTim());
     $('ldKetua').addEventListener('change', () => { const n = nipKetuaDari($('ldKetua').value.trim()); if (n && !$('ldNipKetua').value.trim()) $('ldNipKetua').value = n; });
     $('ldNipKetua').addEventListener('input', () => { $('ldNipKetua').value = $('ldNipKetua').value.replace(/[^\d ]/g, ''); });
     $('ldPeriode').oninput = () => { $('ldPeriode').dataset.manual = '1'; }; $('ldTglLap').oninput = () => { $('ldTglLap').dataset.manual = '1'; };
@@ -224,12 +234,32 @@
     const i = fotoPilih.findIndex(f => f.id === fid);
     if (i >= 0) fotoPilih.splice(i, 1); else fotoPilih.push({ id: fid, k: kid });
     // isi jabatan "Ketua Tim <bidang>" dari bidang kegiatan foto bila masih kosong
-    if (!$('ldJabatan').value.trim()) { const hit = {}; fotoPilih.forEach(f => { const k = C.kegiatan().find(x => x.id === f.k); if (k && k.bidang) hit[k.bidang] = (hit[k.bidang] || 0) + 1; }); const b = Object.keys(hit).sort((a, c) => hit[c] - hit[a])[0]; if (b) { $('ldJabatan').value = 'Ketua Tim ' + b; if (!$('ldKetua').value.trim()) { const n = ketuaTersimpan()[$('ldJabatan').value]; if (n) { $('ldKetua').value = n; if (!$('ldNipKetua').value.trim()) $('ldNipKetua').value = nipKetuaDari(n); } } } }
+    if (!$('ldTim').value && !$('ldJabatan').value.trim()) { const hit = {}; fotoPilih.forEach(f => { const k = C.kegiatan().find(x => x.id === f.k); if (k && k.bidang) hit[k.bidang] = (hit[k.bidang] || 0) + 1; }); const b = Object.keys(hit).sort((a, c) => hit[c] - hit[a])[0]; if (b && ketuaTim[b]) { $('ldTim').value = b; pakaiTim(b); } }
     // perbarui nomor urut tanpa memuat ulang gambar
     $('ldGaleri').querySelectorAll('.ld-ft').forEach(el => { const n = fotoPilih.findIndex(f => f.id === el.dataset.ft); el.classList.toggle('on', n >= 0); el.setAttribute('aria-pressed', n >= 0); el.querySelector('.ld-urut').textContent = n >= 0 ? n + 1 : ''; });
     const ada = new Set(C.kegiatan().map(k => k.id)), hilang = fotoPilih.filter(f => f.k && !ada.has(f.k)).length;
     $('ldJmlFoto').innerHTML = `<b>${fotoPilih.length}</b> foto dipilih${hilang ? ` · <span class="ld-peringatan">⚠ ${hilang} dari kegiatan yang sudah diarsipkan (tidak bisa dilampirkan)</span>` : ''}`;
     $('ldKosongFoto').hidden = !fotoPilih.length;
+  }
+  /* pilihan "Mengetahui": ketua tim yang ditetapkan admin, atau isi manual */
+  function isiTim() {
+    const T = timAda(), sel = $('ldTim'); if (!sel) return;
+    sel.innerHTML = '<option value="">— pilih ketua tim —</option>' + T.map(b => `<option value="${S.esc(b)}">Ketua Tim ${S.esc(b)} — ${S.esc(ketuaTim[b].nama)}</option>`).join('') + '<option value="_manual">Lainnya (isi manual, mis. Kepala BPS)</option>';
+    // laporan yang sudah ada: cocokkan dengan ketua tim bila jabatan & nama sama
+    const jab = $('ldJabatan').value.trim(), nm = $('ldKetua').value.trim();
+    const cocok = T.find(b => jab === 'Ketua Tim ' + b && (!nm || nm === ketuaTim[b].nama));
+    if (cocok) { sel.value = cocok; pakaiTim(cocok); } else if (jab || nm) { sel.value = '_manual'; pakaiTim('_manual'); } else pakaiTim('');
+    if (!T.length) $('ldPejabat').innerHTML = '<span class="ld-peringatan">Admin belum menetapkan ketua tim (menu admin → Bidang). Pilih "Lainnya" untuk mengisi manual.</span>';
+  }
+  function pakaiTim(b, dariPilih) {
+    const manual = b === '_manual';
+    document.querySelectorAll('#ldEditor .ld-manual').forEach(el => el.hidden = !manual);
+    if (manual) { $('ldPejabat').innerHTML = ''; if (dariPilih) $('ldJabatan').focus(); return; }
+    const k = ketuaTim[b];
+    if (!k) { $('ldPejabat').innerHTML = ''; if (dariPilih) { $('ldJabatan').value = ''; $('ldKetua').value = ''; $('ldNipKetua').value = ''; } return; }
+    $('ldJabatan').value = 'Ketua Tim ' + b; $('ldKetua').value = k.nama; $('ldNipKetua').value = k.nip || '';
+    const ini = String(k.nama).replace(/,.*$/, '').split(/\s+/).filter(w => !/^(dr|ir|drs|dra|h|hj)\.?$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    $('ldPejabat').innerHTML = `<div class="ld-pejabat"><span class="av">${S.esc(ini)}</span><div><b>${S.esc(k.nama)}</b><small>Ketua Tim ${S.esc(b)} · ${k.nip ? 'NIP. ' + S.esc(k.nip) : '<span class="ld-peringatan">NIP baru belum diisi admin</span>'}</small></div></div>`;
   }
   function kumpulkan() {
     const j = (document.querySelector('input[name=ldJenis]:checked') || {}).value;
