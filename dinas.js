@@ -1,6 +1,7 @@
 /* SAKTI — Fitur tambahan: Laporan Perjalanan Dinas (pengawasan / pendataan lapangan)
-   Pengguna memilih sendiri kegiatan mana yang merupakan perjalanan dinas, melengkapi
-   permasalahan & solusi, lalu mengunduh laporan Word beserta lampiran foto kegiatan. */
+   Tabel isi laporan disusun per tanggal yang diatur sendiri (tambah baris satu per satu),
+   tidak bergantung pada Catat Kegiatan. Dokumentasi memakai foto yang dipilih dari Catat Kegiatan,
+   tanpa keterangan tanggal di dokumen. */
 (function () {
   'use strict';
   const S = window.SKP;
@@ -9,7 +10,8 @@
   let C = null;              // konteks dari index.html
   let daftar = [], dimuat = false, gagalMuat = '';
   let ed = null;             // laporan yang sedang diedit
-  let pilih = new Map();     // kegiatanId -> baris {kegiatanId, tanggal, uraian, masalah, solusi, fotoIds, bidang}
+  let rows = [];             // baris tabel: {id, tanggal, tanggalAkhir?, uraian, masalah, solusi}
+  let fotoPilih = [];        // urutan foto dokumentasi: [{id: fotoId, k: kegiatanId}]
   let templateBuf = null;
 
   const CSS = `
@@ -31,7 +33,20 @@
   .ld-baris .g3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}
   .ld-hapus{border:0;background:none;color:#b42318;cursor:pointer;font:inherit;font-size:12.5px}
   .ld-aksi{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
-  .ld-peringatan{color:#8a5300;font-size:12.5px}
+.ld-peringatan{color:#B45309;font-size:12.5px}
+  .ld-baris .kp label{margin:0;display:flex;align-items:center;gap:8px;font-weight:600;color:var(--teks)} .ld-baris .kp input[type=date]{width:auto;min-width:160px}
+  .ld-no{width:28px;height:28px;border-radius:8px;background:var(--biru-50);color:var(--biru-700);display:inline-grid;place-items:center;font-weight:800;font-size:13px;flex:0 0 auto}
+  .ld-tambah{margin-top:12px;width:100%;border-style:dashed !important}
+  .ld-galeri{max-height:460px;overflow:auto;border:1px solid var(--garis);border-radius:12px;padding:4px 12px 12px}
+  .ld-galeri h4{margin:12px 0 8px;font-size:13px;color:var(--teks2);font-weight:600}
+  .ld-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+  .ld-ft{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:2px solid transparent;background:var(--n-50);cursor:pointer;padding:0;transition:border-color .15s,transform .12s}
+  .ld-ft img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .25s}.ld-ft img.siap{opacity:1}
+  .ld-ft .ld-urut{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:rgba(15,23,34,.35);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .ld-ft.on{border-color:var(--biru-600)}.ld-ft.on .ld-urut{background:var(--biru-600)}
+  .ld-ft .tx{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 5px;font-size:11px;line-height:1.25;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ld-ft:active{transform:scale(.97)}
+  .ld-pilihan{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--teks2)}
   @media (max-width:760px){.ld-g,.ld-baris .g3{grid-template-columns:1fr}.ld-keg label{grid-template-columns:22px 1fr}.ld-keg .tg{grid-column:2}.ld-keg .ft{grid-column:2}}`;
 
   /* ---------- util ---------- */
@@ -59,15 +74,16 @@
     return daftar;
   }
   /* id kegiatan yang dipakai di laporan dinas (untuk peringatan sebelum diarsipkan) */
-  const kegiatanTerpakai = () => new Set(daftar.flatMap(l => (l.isi || []).map(r => r.kegiatanId).filter(Boolean)));
+  const fotoLaporan = l => l.fotos || (l.isi || []).flatMap(r => (r.fotoIds || []).map(id => ({ id, k: r.kegiatanId })));   // laporan lama: foto per baris kegiatan
+  const kegiatanTerpakai = () => new Set(daftar.flatMap(l => fotoLaporan(l).map(f => f.k).concat((l.isi || []).map(r => r.kegiatanId)).filter(Boolean)));
 
   /* ---------- tampilan daftar ---------- */
   function kerangka() {
     const v = $('v-dinas'); if (v.dataset.siap) return; v.dataset.siap = '1';
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     v.innerHTML = `
-      <div class="kepala"><div style="flex:1"><h1>Laporan Perjalanan Dinas <span class="ld-badge">FITUR TAMBAHAN</span></h1>
-        <p>Buat laporan perjalanan dinas <b>pengawasan</b> atau <b>pendataan lapangan</b> dari kegiatan &amp; foto yang sudah Anda catat. Pilih sendiri kegiatan mana yang termasuk perjalanan dinas.</p></div>
+      <div class="kepala"><div style="flex:1"><h1>Laporan Perjalanan Dinas <span class="ld-badge">Fitur tambahan</span></h1>
+        <p>Buat laporan perjalanan dinas <b>pengawasan</b> atau <b>pendataan lapangan</b>. Isi tabel per tanggal penugasan, lalu pilih foto dokumentasi dari Catat Kegiatan.</p></div>
         <div><button class="btn utama" type="button" id="ldBaru">+ Buat laporan</button></div></div>
       <div id="ldDaftarBox" class="kartu" style="padding:0"></div>
       <div id="ldEditor" hidden></div>`;
@@ -78,12 +94,12 @@
     const box = $('ldDaftarBox'); box.hidden = false; $('ldEditor').hidden = true; $('ldBaru').hidden = false;
     if (gagalMuat) { box.innerHTML = `<div class="kosong" style="color:#b42318">${S.esc(gagalMuat)}</div>`; return; }
     const ada = new Set(C.kegiatan().map(k => k.id));
-    box.innerHTML = daftar.length ? `<div class="tabel-wrap"><table class="t"><thead><tr><th>Jenis</th><th>Nomor Surat Tugas</th><th>Periode penugasan</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>${daftar.map(l => {
-      const nF = l.isi.reduce((a, r) => a + (r.fotoIds || []).length, 0), hilang = l.isi.filter(r => r.kegiatanId && !ada.has(r.kegiatanId)).length;
+    box.innerHTML = daftar.length ? `<div class="tabel-wrap"><table class="t"><thead><tr><th>Jenis</th><th>Nomor Surat Tugas</th><th>Periode penugasan</th><th class="num">Tanggal</th><th class="num">Foto</th><th></th></tr></thead><tbody>${daftar.map(l => {
+      const F = fotoLaporan(l), nF = F.length, hilang = F.filter(f => f.k && !ada.has(f.k)).length;
       return `<tr data-id="${S.esc(l.id)}"><td><b>${S.esc(l.jenis)}</b></td><td>${S.esc(l.nomor || '—')}${l.tglSt ? '<div style="font-size:12px;color:var(--teks2)">' + S.esc(tglPanjang(l.tglSt)) + '</div>' : ''}</td><td>${S.esc(l.periode || '—')}</td><td class="num">${l.isi.length}</td>
-        <td class="num">${nF}${hilang ? `<div class="ld-peringatan" title="Kegiatan sudah diarsipkan ke Drive; fotonya tidak tersedia lagi di aplikasi">⚠ ${hilang} diarsipkan</div>` : ''}</td>
+        <td class="num">${nF}${hilang ? `<div class="ld-peringatan" title="Kegiatan sudah diarsipkan ke Drive; fotonya tidak tersedia lagi di aplikasi">⚠ ${hilang} foto diarsipkan</div>` : ''}</td>
         <td style="text-align:right;white-space:nowrap"><button class="btn kecil utama" type="button" data-ld="unduh">Unduh .docx</button> <button class="btn kecil" type="button" data-ld="ubah">Ubah</button> <button class="btn kecil" type="button" data-ld="hapus" style="color:#b42318">Hapus</button></td></tr>`; }).join('')}</tbody></table></div>`
-      : `<div class="kosong">Belum ada laporan perjalanan dinas.<br>Klik <b>“+ Buat laporan”</b>, pilih kegiatan perjalanan dinas Anda, lalu lengkapi permasalahan &amp; solusinya.</div>`;
+      : `<div class="kosong">Belum ada laporan perjalanan dinas.<br>Klik <b>“+ Buat laporan”</b>, tambahkan tanggal penugasan, lalu pilih foto dokumentasinya.</div>`;
     box.insertAdjacentHTML('beforeend', '<p style="font-size:12.5px;color:var(--teks2);margin:0;padding:12px 16px;border-top:1px solid var(--garis)">💡 Unduh laporan perjalanan dinas <b>sebelum</b> kegiatannya disimpan &amp; diarsipkan ke Google Drive di menu Upload Dokumen — setelah diarsipkan, foto kegiatan tidak ada lagi di aplikasi.</p>');
   }
   async function klikDaftar(e) {
@@ -91,7 +107,7 @@
     if (b.dataset.ld === 'ubah') buka(l);
     else if (b.dataset.ld === 'unduh') unduh(l);
     else if (b.dataset.ld === 'hapus') {
-      if (!await C.konfirmasi('Hapus laporan ini?', 'Laporan ' + l.jenis + (l.periode ? ' (' + l.periode + ')' : '') + ' akan dihapus. Kegiatan dan fotonya tidak ikut terhapus.')) return;
+      if (!await C.konfirmasi('Hapus laporan ini?', 'Laporan ' + l.jenis + (l.periode ? ' (' + l.periode + ')' : '') + ' akan dihapus. Catatan kegiatan dan fotonya tidak ikut terhapus.')) return;
       try { await S.del('dinas', l.id); daftar = daftar.filter(x => x !== l); renderDaftar(); S.toast('Laporan dihapus'); } catch (x) { S.toast(x.message, 5000); }
     }
   }
@@ -99,9 +115,10 @@
   /* ---------- editor ---------- */
   function buka(l) {
     const keg = C.kegiatan();
-    ed = l ? JSON.parse(JSON.stringify(l)) : { id: 'ld_' + S.uid(), jenis: JENIS[0], nomor: '', tglSt: '', periode: '', tempat: 'Kendari', tglLap: '', jabatan: '', ketua: '', isi: [] };
-    pilih = new Map(); (ed.isi || []).forEach(r => pilih.set(r.kegiatanId || ('x' + S.uid()), Object.assign({}, r)));
-    const bulanAwal = (ed.isi[0] && ed.isi[0].tanggal) ? ed.isi[0].tanggal.slice(0, 7) : (keg.length ? keg[keg.length - 1].tanggal.slice(0, 7) : S.ymd(new Date()).slice(0, 7));
+    ed = l ? JSON.parse(JSON.stringify(l)) : { id: 'ld_' + S.uid(), jenis: JENIS[0], nomor: '', tglSt: '', periode: '', tempat: 'Kendari', tglLap: '', jabatan: '', ketua: '', isi: [], fotos: [] };
+    fotoPilih = fotoLaporan(ed).slice();
+    rows = (ed.isi || []).map(r => ({ id: 'b' + S.uid(), tanggal: r.tanggal || '', ...(r.tanggalAkhir && r.tanggalAkhir > r.tanggal ? { tanggalAkhir: r.tanggalAkhir } : {}), uraian: r.uraian || '', masalah: r.masalah || '', solusi: r.solusi || '' }));
+    const bulanAwal = rows[0] && rows[0].tanggal ? rows[0].tanggal.slice(0, 7) : (keg.length ? keg[keg.length - 1].tanggal.slice(0, 7) : S.ymd(new Date()).slice(0, 7));
     $('ldDaftarBox').hidden = true; $('ldBaru').hidden = true; const box = $('ldEditor'); box.hidden = false;
     box.innerHTML = `
       <div class="kartu form" style="margin-bottom:14px">
@@ -114,16 +131,18 @@
         </div>
       </div>
       <div class="kartu form" style="margin-bottom:14px">
-        <div class="ld-langkah"><b>2</b><h2>Pilih kegiatan perjalanan dinas</h2></div>
-        <p style="margin:-4px 0 10px;font-size:13px;color:var(--teks2)">Centang kegiatan yang termasuk perjalanan dinas ini. Foto dari kegiatan terpilih menjadi lampiran dokumentasi.</p>
-        <div class="ld-alat"><input type="month" id="ldBulan" value="${bulanAwal}" aria-label="Bulan"><select id="ldBidang" aria-label="Bidang"><option value="">Semua bidang</option>${S.bidangDari(keg.map(k => k.bidang)).map(b => `<option>${S.esc(b)}</option>`).join('')}</select><input type="search" id="ldCari" placeholder="Cari kegiatan…"><label style="display:flex;align-items:center;gap:6px;margin:0;font-weight:500"><input type="checkbox" id="ldFoto" style="width:auto"> hanya yang berfoto</label></div>
-        <div class="ld-keg" id="ldKeg"></div>
+        <div class="ld-langkah"><b>2</b><h2>Isi tabel laporan</h2></div>
+        <p style="margin:-4px 0 4px;font-size:13px;color:var(--teks2)">Satu baris untuk setiap tanggal penugasan. Tambah baris sebanyak tanggal yang dibutuhkan. Untuk membuat butir (mis. daftar perusahaan), awali baris dengan tanda <b>-</b> .</p>
+        <div id="ldBaris"></div>
+        <button class="btn ld-tambah" type="button" id="ldTambah">+ Tambah tanggal</button>
+        <div class="ld-g" style="margin-top:14px"><div class="penuh"><label for="ldPeriode">Periode penugasan <button type="button" id="ldPeriodeAuto" class="ld-hapus" style="color:var(--biru-600)">↻ isi otomatis dari tanggal di tabel</button></label><input id="ldPeriode" value="${S.esc(ed.periode)}" placeholder="mis. 2, 3 dan 6 Juli 2026"></div></div>
       </div>
       <div class="kartu form" style="margin-bottom:14px">
-        <div class="ld-langkah"><b>3</b><h2>Isi tabel laporan</h2></div>
-        <p style="margin:-4px 0 4px;font-size:13px;color:var(--teks2)">Satu baris per kegiatan. Untuk membuat butir (mis. daftar perusahaan), awali baris dengan tanda <b>-</b> .</p>
-        <div id="ldBaris"></div>
-        <div class="ld-g" style="margin-top:12px"><div class="penuh"><label for="ldPeriode">Periode penugasan <button type="button" id="ldPeriodeAuto" class="ld-hapus" style="color:#2E75B6">↻ isi otomatis dari tanggal kegiatan</button></label><input id="ldPeriode" value="${S.esc(ed.periode)}" placeholder="mis. 2, 3 dan 6 Juli 2026"></div></div>
+        <div class="ld-langkah"><b>3</b><h2>Foto dokumentasi</h2></div>
+        <p style="margin:-4px 0 10px;font-size:13px;color:var(--teks2)">Ketuk foto dari Catat Kegiatan untuk dilampirkan. Nomor pada foto = urutan di laporan. Di dokumen, foto tampil tanpa keterangan tanggal.</p>
+        <div class="ld-alat"><input type="month" id="ldBulan" value="${bulanAwal}" aria-label="Bulan foto"><label style="display:flex;align-items:center;gap:6px;margin:0;font-weight:500"><input type="checkbox" id="ldSesuai" style="width:auto"> hanya tanggal yang ada di tabel</label></div>
+        <div class="ld-galeri" id="ldGaleri"></div>
+        <div class="ld-pilihan"><span id="ldJmlFoto"></span><button type="button" class="ld-hapus" id="ldKosongFoto">Kosongkan pilihan</button></div>
       </div>
       <div class="kartu form">
         <div class="ld-langkah"><b>4</b><h2>Tanda tangan</h2></div>
@@ -136,60 +155,90 @@
         </div>
         <div class="ld-aksi"><button class="btn" type="button" id="ldBatal">Batal</button><button class="btn" type="button" id="ldSimpan">Simpan</button><button class="btn utama" type="button" id="ldSimpanUnduh">Simpan &amp; unduh .docx</button></div>
       </div>`;
-    ['ldBulan', 'ldBidang', 'ldFoto'].forEach(id => $(id).onchange = renderKeg); $('ldCari').oninput = renderKeg;
-    $('ldKeg').addEventListener('change', e => { const c = e.target.closest('input[data-k]'); if (!c) return; centang(c.dataset.k, c.checked); });
-    $('ldBaris').addEventListener('input', e => { const t = e.target.closest('[data-f]'); if (!t) return; const r = pilih.get(t.closest('[data-k]').dataset.k); if (r) r[t.dataset.f] = t.value; });
-    $('ldBaris').addEventListener('click', e => { const b = e.target.closest('[data-lepas]'); if (!b) return; centang(b.dataset.lepas, false); });
-    $('ldPeriode').oninput = () => delete $('ldPeriode').dataset.auto; $('ldTglLap').oninput = () => delete $('ldTglLap').dataset.auto;
-    $('ldPeriodeAuto').onclick = () => { $('ldPeriode').value = periodeDari([...pilih.values()].map(rgTgl)); };
+    if (ed.periode) $('ldPeriode').dataset.manual = '1';
+    if (ed.tglLap) $('ldTglLap').dataset.manual = '1';
+    $('ldTambah').onclick = () => { tambahBaris(); };
+    $('ldBaris').addEventListener('input', e => { const t = e.target.closest('[data-f]'); if (!t) return; const r = rows.find(x => x.id === t.closest('[data-b]').dataset.b); if (!r) return; r[t.dataset.f] = t.value; if (t.dataset.f === 'tanggal' || t.dataset.f === 'tanggalAkhir') { otomatis(); if ($('ldSesuai').checked) renderFoto(); } });
+    $('ldBaris').addEventListener('click', e => { const b = e.target.closest('[data-hapus]'); if (!b) return; rows = rows.filter(x => x.id !== b.dataset.hapus); renderBaris(); otomatis(); if ($('ldSesuai').checked) renderFoto(); });
+    $('ldGaleri').addEventListener('click', e => { const t = e.target.closest('[data-ft]'); if (!t) return; pilihFoto(t.dataset.ft, t.dataset.k); });
+    $('ldBulan').onchange = renderFoto; $('ldSesuai').onchange = renderFoto;
+    $('ldKosongFoto').onclick = () => { fotoPilih = []; renderFoto(); };
+    $('ldPeriode').oninput = () => { $('ldPeriode').dataset.manual = '1'; }; $('ldTglLap').oninput = () => { $('ldTglLap').dataset.manual = '1'; };
+    $('ldPeriodeAuto').onclick = () => { delete $('ldPeriode').dataset.manual; otomatis(); };
     $('ldBatal').onclick = () => { ed = null; renderDaftar(); window.scrollTo(0, 0); };
     $('ldSimpan').onclick = () => simpan(false);
     $('ldSimpanUnduh').onclick = () => simpan(true);
-    renderKeg(); renderBaris(); window.scrollTo(0, 0);
+    if (!rows.length) tambahBaris(true); else renderBaris();
+    renderFoto(); window.scrollTo(0, 0);
   }
-  function renderKeg() {
-    const bl = $('ldBulan').value, bd = $('ldBidang').value, q = $('ldCari').value.trim().toLowerCase(), f = $('ldFoto').checked;
-    const L = C.kegiatan().filter(k => (!bl || k.tanggal.startsWith(bl)) && (!bd || k.bidang === bd) && (!q || (k.teks || '').toLowerCase().includes(q)) && (!f || (k.fotoIds || []).length)).slice().sort((a, b) => (a.tanggal + a.jam).localeCompare(b.tanggal + b.jam));
-    $('ldKeg').innerHTML = L.length ? L.map(k => `<label class="${pilih.has(k.id) ? 'on' : ''}"><input type="checkbox" data-k="${S.esc(k.id)}"${pilih.has(k.id) ? ' checked' : ''}>
-        <span class="tg">${S.esc(S.rentangTgl(k.tanggal, k.tanggalAkhir))}${k.jam ? '<br>' + S.esc(k.jam) : ''}</span><span>${S.esc(k.teks || '(foto bukti)')}${k.bidang ? '<div class="bd">' + S.esc(k.bidang) + '</div>' : ''}</span><span class="ft">${(k.fotoIds || []).length ? '📷 ' + k.fotoIds.length : '—'}</span></label>`).join('')
-      : `<div class="kosong" style="padding:18px">Tidak ada kegiatan${bl ? ' pada ' + S.esc(S.namaBulan(bl)) : ''}. Ganti bulan atau saringan di atas.</div>`;
+  /* baris baru: tanggal = sehari setelah baris terakhir (atau tanggal surat tugas / hari ini) */
+  function tambahBaris(awal) {
+    const akhir = rows.map(r => r.tanggalAkhir || r.tanggal).filter(Boolean).sort().pop();
+    const tgl = akhir ? hariBerikut(akhir) : ($('ldTglSt') && $('ldTglSt').value) || S.ymd(new Date());
+    rows.push({ id: 'b' + S.uid(), tanggal: tgl, uraian: '', masalah: '', solusi: '' });
+    renderBaris(); otomatis();
+    if (!awal) { const el = $('ldBaris').lastElementChild; if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const u = el.querySelector('[data-f=uraian]'); if (u) setTimeout(() => u.focus({ preventScroll: true }), 300); } }
   }
-  function centang(id, on) {
-    if (on && !pilih.has(id)) { const k = C.kegiatan().find(x => x.id === id); if (!k) return;
-      pilih.set(id, { kegiatanId: k.id, tanggal: k.tanggal, ...(k.tanggalAkhir && k.tanggalAkhir > k.tanggal ? { tanggalAkhir: k.tanggalAkhir } : {}), jam: k.jam || '', bidang: k.bidang || '', uraian: k.teks && k.teks !== '(foto bukti)' ? k.teks : '', masalah: '', solusi: '', fotoIds: (k.fotoIds || []).slice() }); }
-    if (!on) pilih.delete(id);
-    // isi otomatis bagian yang masih kosong
-    const rows = [...pilih.values()];
-    if (rows.length) {
-      if (!$('ldPeriode').value.trim() || $('ldPeriode').dataset.auto) { $('ldPeriode').value = periodeDari(rows.map(rgTgl)); $('ldPeriode').dataset.auto = '1'; }
-      if (!$('ldTglLap').value || $('ldTglLap').dataset.auto) { $('ldTglLap').value = hariBerikut(rows.map(r => r.tanggalAkhir || r.tanggal).sort().pop()); $('ldTglLap').dataset.auto = '1'; }
-      if (!$('ldJabatan').value.trim()) { const hit = {}; rows.forEach(r => { if (r.bidang) hit[r.bidang] = (hit[r.bidang] || 0) + 1; }); const b = Object.keys(hit).sort((a, c) => hit[c] - hit[a])[0]; if (b) $('ldJabatan').value = 'Ketua Tim ' + b; }
-      if (!$('ldKetua').value.trim()) { const n = ketuaTersimpan()[$('ldJabatan').value.trim()]; if (n) $('ldKetua').value = n; }
-    }
-    renderKeg(); renderBaris();
+  /* isi otomatis periode, tanggal laporan & pejabat bila belum diubah sendiri */
+  function otomatis() {
+    const tgl = rows.filter(r => r.tanggal);
+    if (!$('ldPeriode').dataset.manual) $('ldPeriode').value = periodeDari(tgl.map(rgTgl));
+    if (!$('ldTglLap').dataset.manual && tgl.length) $('ldTglLap').value = hariBerikut(tgl.map(r => r.tanggalAkhir || r.tanggal).sort().pop());
   }
   const baris = t => Math.min(10, Math.max(3, String(t || '').split('\n').length + Math.floor(String(t || '').length / 45)));
   function renderBaris() {
-    const rows = [...pilih.entries()].sort((a, b) => ((a[1].tanggal || '') + (a[1].jam || '')).localeCompare((b[1].tanggal || '') + (b[1].jam || '')));
-    const ada = new Set(C.kegiatan().map(k => k.id));
-    $('ldBaris').innerHTML = rows.length ? rows.map(([id, r], i) => `<div class="ld-baris" data-k="${S.esc(id)}">
-        <div class="kp"><b>${i + 1}. ${S.esc(r.tanggal ? S.rentangTgl(r.tanggal, r.tanggalAkhir) : '—')}</b><span style="font-size:12.5px;color:var(--teks2)">${(r.fotoIds || []).length ? '📷 ' + r.fotoIds.length + ' foto' : 'tanpa foto'}${r.kegiatanId && !ada.has(r.kegiatanId) ? ' · <span class="ld-peringatan">⚠ kegiatan sudah diarsipkan, foto tidak tersedia</span>' : ''} · <button type="button" class="ld-hapus" data-lepas="${S.esc(id)}">Lepas</button></span></div>
-        <div class="g3"><div><label>Uraian kegiatan</label><textarea data-f="uraian" rows="${baris(r.uraian)}">${S.esc(r.uraian || '')}</textarea></div>
+    $('ldBaris').innerHTML = rows.length ? rows.map((r, i) => `<div class="ld-baris" data-b="${r.id}">
+        <div class="kp"><label><span class="ld-no">${i + 1}</span>Tanggal <input type="date" data-f="tanggal" value="${S.esc(r.tanggal || '')}" aria-label="Tanggal baris ${i + 1}">${r.tanggalAkhir ? ` s.d. <input type="date" data-f="tanggalAkhir" value="${S.esc(r.tanggalAkhir)}" aria-label="Sampai tanggal">` : ''}</label>
+          <button type="button" class="ld-hapus" data-hapus="${r.id}">Hapus baris</button></div>
+        <div class="g3"><div><label>Uraian kegiatan</label><textarea data-f="uraian" rows="${baris(r.uraian)}" placeholder="Apa yang dikerjakan pada tanggal ini…">${S.esc(r.uraian || '')}</textarea></div>
           <div><label>Permasalahan</label><textarea data-f="masalah" rows="${baris(r.masalah)}" placeholder="mis. Tidak ditemukan permasalahan…">${S.esc(r.masalah || '')}</textarea></div>
           <div><label>Solusi</label><textarea data-f="solusi" rows="${baris(r.solusi)}" placeholder="kosong = “-”">${S.esc(r.solusi || '')}</textarea></div></div></div>`).join('')
-      : '<div class="kosong" style="padding:16px">Belum ada kegiatan dipilih. Centang kegiatan pada langkah 2.</div>';
+      : '<div class="kosong" style="padding:16px">Belum ada baris. Tekan <b>+ Tambah tanggal</b>.</div>';
+  }
+  /* galeri foto dari Catat Kegiatan, dikelompokkan per tanggal (hanya untuk memilih) */
+  function renderFoto() {
+    const bl = $('ldBulan').value, sesuai = $('ldSesuai').checked;
+    const hari = new Set(); rows.forEach(r => { if (!r.tanggal) return; const d = S.parseYmd(r.tanggal), b = r.tanggalAkhir || r.tanggal; for (let i = 0; i < 62 && S.ymd(d) <= b; i++) { hari.add(S.ymd(d)); d.setDate(d.getDate() + 1); } });
+    const kena = k => sesuai ? [...hari].some(t => t >= k.tanggal && t <= (k.tanggalAkhir || k.tanggal)) : (!bl || k.tanggal.startsWith(bl) || (k.tanggalAkhir || '').startsWith(bl));
+    const L = C.kegiatan().filter(k => (k.fotoIds || []).length && kena(k)).slice().sort((a, b) => (a.tanggal + (a.jam || '')).localeCompare(b.tanggal + (b.jam || '')));
+    const grup = []; L.forEach(k => { let g = grup.find(x => x.t === k.tanggal); if (!g) grup.push(g = { t: k.tanggal, ks: [] }); g.ks.push(k); });
+    const urut = id => fotoPilih.findIndex(f => f.id === id);
+    $('ldGaleri').innerHTML = grup.length ? grup.map(g => `<h4>${S.esc(S.tglSedang(g.t))}</h4><div class="ld-grid">${g.ks.flatMap(k => k.fotoIds.map(fid => { const n = urut(fid);
+        return `<button type="button" class="ld-ft${n >= 0 ? ' on' : ''}" data-ft="${S.esc(fid)}" data-k="${S.esc(k.id)}" aria-pressed="${n >= 0}" title="${S.esc(k.teks || 'Foto bukti')}"><img alt="${S.esc(k.teks || 'Foto bukti')}" data-src="${S.esc(fid)}"><span class="ld-urut">${n >= 0 ? n + 1 : ''}</span><span class="tx">${S.esc(k.teks || 'Foto bukti')}</span></button>`; })).join('')}</div>`).join('')
+      : `<div class="kosong" style="padding:18px">${sesuai ? (hari.size ? 'Tidak ada foto di Catat Kegiatan pada tanggal-tanggal di tabel.' : 'Isi dulu tanggal di tabel (langkah 2).') : 'Tidak ada foto di Catat Kegiatan pada ' + S.esc(S.namaBulan(bl)) + '. Ganti bulan di atas.'}</div>`;
+    // muat gambar seperlunya (hanya yang terlihat)
+    const muatImg = im => C.ambilFoto(im.dataset.src).then(f => { if (f && f.data) { im.src = f.data; im.classList.add('siap'); } }).catch(() => { });
+    const imgs = $('ldGaleri').querySelectorAll('img[data-src]');
+    if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); muatImg(e.target); } }), { root: $('ldGaleri'), rootMargin: '200px' }); imgs.forEach(im => io.observe(im)); }
+    else imgs.forEach(muatImg);
+    const ada = new Set(C.kegiatan().map(k => k.id)), hilang = fotoPilih.filter(f => f.k && !ada.has(f.k)).length;
+    $('ldJmlFoto').innerHTML = `<b>${fotoPilih.length}</b> foto dipilih${hilang ? ` · <span class="ld-peringatan">⚠ ${hilang} dari kegiatan yang sudah diarsipkan (tidak bisa dilampirkan)</span>` : ''}`;
+    $('ldKosongFoto').hidden = !fotoPilih.length;
+  }
+  function pilihFoto(fid, kid) {
+    const i = fotoPilih.findIndex(f => f.id === fid);
+    if (i >= 0) fotoPilih.splice(i, 1); else fotoPilih.push({ id: fid, k: kid });
+    // isi jabatan "Ketua Tim <bidang>" dari bidang kegiatan foto bila masih kosong
+    if (!$('ldJabatan').value.trim()) { const hit = {}; fotoPilih.forEach(f => { const k = C.kegiatan().find(x => x.id === f.k); if (k && k.bidang) hit[k.bidang] = (hit[k.bidang] || 0) + 1; }); const b = Object.keys(hit).sort((a, c) => hit[c] - hit[a])[0]; if (b) { $('ldJabatan').value = 'Ketua Tim ' + b; if (!$('ldKetua').value.trim()) { const n = ketuaTersimpan()[$('ldJabatan').value]; if (n) $('ldKetua').value = n; } } }
+    // perbarui nomor urut tanpa memuat ulang gambar
+    $('ldGaleri').querySelectorAll('.ld-ft').forEach(el => { const n = fotoPilih.findIndex(f => f.id === el.dataset.ft); el.classList.toggle('on', n >= 0); el.setAttribute('aria-pressed', n >= 0); el.querySelector('.ld-urut').textContent = n >= 0 ? n + 1 : ''; });
+    const ada = new Set(C.kegiatan().map(k => k.id)), hilang = fotoPilih.filter(f => f.k && !ada.has(f.k)).length;
+    $('ldJmlFoto').innerHTML = `<b>${fotoPilih.length}</b> foto dipilih${hilang ? ` · <span class="ld-peringatan">⚠ ${hilang} dari kegiatan yang sudah diarsipkan (tidak bisa dilampirkan)</span>` : ''}`;
+    $('ldKosongFoto').hidden = !fotoPilih.length;
   }
   function kumpulkan() {
     const j = (document.querySelector('input[name=ldJenis]:checked') || {}).value;
     ed.jenis = j === '_lain' ? ($('ldJenisLain').value.trim() || 'Pengawasan Lapangan') : j;
     ed.nomor = $('ldNomor').value.trim(); ed.tglSt = $('ldTglSt').value; ed.periode = $('ldPeriode').value.trim();
     ed.tempat = $('ldTempat').value.trim(); ed.tglLap = $('ldTglLap').value; ed.jabatan = $('ldJabatan').value.trim(); ed.ketua = $('ldKetua').value.trim();
-    ed.isi = [...pilih.values()].sort((a, b) => ((a.tanggal || '') + (a.jam || '')).localeCompare((b.tanggal || '') + (b.jam || '')));
+    ed.isi = rows.filter(r => r.tanggal || r.uraian.trim() || r.masalah.trim() || r.solusi.trim()).map(({ id, ...r }) => r).sort((a, b) => (a.tanggal || '9').localeCompare(b.tanggal || '9'));
+    ed.fotos = fotoPilih.slice();
     return ed;
   }
   async function simpan(lanjutUnduh) {
     const l = kumpulkan();
-    if (!l.isi.length) { S.toast('Pilih minimal satu kegiatan perjalanan dinas (langkah 2)'); return; }
+    if (!l.isi.length) { S.toast('Tambahkan minimal satu tanggal di tabel laporan (langkah 2)'); return; }
+    if (l.isi.some(r => !r.tanggal)) { S.toast('Ada baris tabel yang belum diberi tanggal'); return; }
     if (!l.periode) l.periode = periodeDari(l.isi.map(rgTgl));
     try {
       await S.put('dinas', l); simpanKetua(l.jabatan, l.ketua);
@@ -208,11 +257,11 @@
   async function unduh(l) {
     const sb = S.sibuk('Menyusun laporan perjalanan dinas…');
     try {
-      const fotos = []; let hilang = 0, n = 0; const total = l.isi.reduce((a, r) => a + (r.fotoIds || []).length, 0);
-      for (const r of l.isi) for (const id of (r.fotoIds || [])) {
-        sb.pesan('Mengambil foto ' + (++n) + ' dari ' + total + '…');
-        const f = await C.ambilFoto(id).catch(() => null);
-        if (f && f.data) fotos.push({ data: f.data, w: f.w, h: f.h, ket: S.rentangTgl(r.tanggal, r.tanggalAkhir) }); else hilang++;
+      const fotos = []; let hilang = 0, n = 0; const daftarFoto = fotoLaporan(l);
+      for (const x of daftarFoto) {   // dokumentasi tanpa keterangan tanggal
+        sb.pesan('Mengambil foto ' + (++n) + ' dari ' + daftarFoto.length + '…');
+        const f = await C.ambilFoto(x.id).catch(() => null);
+        if (f && f.data) fotos.push({ data: f.data, w: f.w, h: f.h }); else hilang++;
       }
       sb.pesan('Menyusun dokumen Word…');
       const p = C.profil();
