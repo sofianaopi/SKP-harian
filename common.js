@@ -159,26 +159,26 @@
   #skp-login .lg-chip{display:inline-flex;align-items:center;gap:10px;margin-top:22px;background:rgba(255,255,255,.75);border-radius:999px;padding:7px 16px 7px 7px;box-shadow:inset 0 2px 0 #fff,0 8px 18px -10px rgba(40,80,160,.5);font-weight:800;color:#1C3A75;font-size:14px}
   #skp-login .lg-chip img{width:34px;height:34px}
   #skp-login .lg-hp{position:relative;width:420px;padding:330px 0 0;margin-right:40px}
-  #skp-login .lg-hp::before{content:"";position:absolute;left:34px;right:-40px;top:0;bottom:56px;border-radius:52px;background:linear-gradient(180deg,#FFFFFF,#F4F8FF);
+  #skp-login .lg-hp::before{content:"";position:absolute;left:10px;right:-14px;top:0;bottom:28px;border-radius:52px;background:linear-gradient(180deg,#FFFFFF,#F4F8FF);
     box-shadow:inset 0 3px 0 #fff,inset 0 -6px 0 rgba(120,150,210,.14),0 40px 70px -30px rgba(28,58,117,.45),0 6px 14px rgba(40,80,160,.08)}
-  #skp-login .lg-sapa{position:absolute;left:34px;right:-40px;top:30px;text-align:center;z-index:1}
+  #skp-login .lg-sapa{position:absolute;left:10px;right:-14px;top:30px;text-align:center;z-index:1}
   #skp-login .lg-hati{display:block;width:44px;height:40px;margin:0 auto 6px;filter:drop-shadow(0 6px 8px rgba(226,80,110,.35));animation:lgDenyut 1.6s ease-in-out infinite}
   @keyframes lgDenyut{0%,100%{transform:scale(1)}15%{transform:scale(1.14)}30%{transform:scale(1)}}
   #skp-login .lg-sapa b{position:relative;display:inline-block;font-size:30px;font-weight:900;color:#16275A;letter-spacing:-.5px;padding:0 30px}
   #skp-login .lg-sapa b::before,#skp-login .lg-sapa b::after{content:"";position:absolute;top:50%;width:18px;height:24px;transform:translateY(-50%);background:linear-gradient(#F5B83A,#F5B83A) 0 0/14px 3px no-repeat,linear-gradient(#F5B83A,#F5B83A) 4px 50%/14px 3px no-repeat,linear-gradient(#F5B83A,#F5B83A) 0 100%/14px 3px no-repeat;border-radius:3px}
   #skp-login .lg-sapa b::before{left:0;transform:translateY(-50%) scaleX(-1)}#skp-login .lg-sapa b::after{right:0}
-  #skp-login .lg-duo{position:absolute;left:70px;bottom:auto;top:122px;width:340px;height:auto;z-index:1;filter:drop-shadow(0 12px 16px rgba(28,58,117,.25));transform-origin:50% 100%;animation:lgSapa 900ms cubic-bezier(.34,1.56,.64,1) both}
+  #skp-login .lg-duo{position:absolute;left:46px;bottom:auto;top:122px;width:340px;height:auto;z-index:1;filter:drop-shadow(0 12px 16px rgba(28,58,117,.25));transform-origin:50% 100%;animation:lgSapa 900ms cubic-bezier(.34,1.56,.64,1) both}
   @keyframes lgSapa{from{transform:translateY(40px);opacity:0}}
   #skp-login .lg-tanaman{position:absolute;left:-150px;bottom:20px;width:120px;z-index:0;transform-origin:50% 100%;animation:lgGoyang 6s ease-in-out infinite}
-  #skp-login .lg-bunga{position:absolute;right:-118px;bottom:24px;width:96px;z-index:0;transform-origin:50% 100%;animation:lgGoyang 5s ease-in-out infinite reverse}
+  #skp-login .lg-bunga{position:absolute;right:-104px;bottom:24px;width:96px;z-index:0;transform-origin:50% 100%;animation:lgGoyang 5s ease-in-out infinite reverse}
   @keyframes lgGoyang{50%{transform:rotate(2.5deg)}}
   #skp-login .kartu-login{position:relative;z-index:2;background:#fff;border-radius:40px;width:100%;padding:30px 30px 24px;box-sizing:border-box;
-    box-shadow:inset 0 3px 0 #fff,inset 0 -5px 0 rgba(120,150,210,.14),-14px 0 0 -2px rgba(255,255,255,.85),-14px 0 0 0 rgba(160,185,235,.35),0 34px 60px -26px rgba(28,58,117,.5),0 4px 10px rgba(40,80,160,.06)}
+    box-shadow:inset 0 3px 0 #fff,inset 0 -5px 0 rgba(120,150,210,.14),-8px 0 0 -2px rgba(255,255,255,.85),-8px 0 0 0 rgba(160,185,235,.35),0 34px 60px -26px rgba(28,58,117,.5),0 4px 10px rgba(40,80,160,.06)}
   #skp-login .kartu-login h1,#skp-login .lg-logo,#skp-login .kartu-login>.sub,#skp-login .sambut{display:none}
   #skp-login label{display:block;font-size:12.5px;color:#4D5D7F;margin:12px 0 5px 6px;font-weight:700}
-  #skp-login .fld{display:flex;align-items:center;gap:12px;background:#F2F6FD;border:0;border-radius:999px;padding:5px 14px 5px 5px;margin-top:14px;box-shadow:inset 0 3px 6px rgba(40,80,160,.10),0 2px 0 #fff;transition:box-shadow .15s,background .15s}
+  #skp-login .fld{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#FFFFFF,#F1F5FD);border:0;border-radius:999px;padding:5px 14px 5px 5px;margin-top:8px;box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(110,140,200,.16),0 8px 16px -8px rgba(40,80,160,.35),0 1px 2px rgba(40,80,160,.08);transition:box-shadow .15s,background .15s}
   #skp-login .fld:first-child{margin-top:0}
-  #skp-login .fld:focus-within{background:#fff;box-shadow:inset 0 3px 6px rgba(40,80,160,.06),0 0 0 4px rgba(79,128,224,.28)}
+  #skp-login .fld:focus-within{background:#fff;box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(110,140,200,.16),0 8px 16px -8px rgba(40,80,160,.35),0 0 0 4px rgba(79,128,224,.28)}
   #skp-login .fld .ic{flex:0 0 50px;height:50px;border-radius:50%;background:linear-gradient(180deg,#7FA6F0,#3F70D2);display:grid;place-items:center;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset 0 -4px 0 rgba(15,40,105,.28),0 8px 14px -6px rgba(47,93,184,.7)}
   #skp-login .fld .ic svg{width:22px;height:22px;fill:#fff}
   #skp-login .fld input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:12px 2px;font-size:16.5px;font-family:inherit;font-weight:700;color:#162038}
@@ -186,7 +186,7 @@
   #skp-login .mata{flex:0 0 auto;width:40px;height:40px;border:0;background:none;padding:0;margin:0;cursor:pointer;display:grid;place-items:center;border-radius:50%}
   #skp-login .mata svg{width:22px;height:22px;fill:none;stroke:#4D5D7F;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   #skp-login .mata:hover{background:#EEF4FF}
-  #skp-login .lg-lupa{display:block;text-align:right;margin:10px 8px 0;color:#16275A;font-weight:800;font-size:14px;text-decoration:none}
+  #skp-login .lg-lupa{display:block;text-align:right;margin:8px 8px 0;color:#16275A;font-weight:800;font-size:14px;text-decoration:none}
   #skp-login .lg-lupa:hover{color:#2F5DB8;text-decoration:underline}
   #skp-login .tbl{width:100%;margin-top:18px;padding:16px;border:0;border-radius:999px;background:linear-gradient(180deg,#5B8BE6,#2F5FC4);color:#fff;font-size:18px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;text-shadow:0 1px 0 rgba(15,40,105,.3);
     box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset 0 -5px 0 rgba(15,40,105,.3),0 16px 24px -12px rgba(47,93,184,.85);transition:transform .12s,box-shadow .12s,filter .2s}
@@ -204,16 +204,16 @@
   @media (max-height:780px) and (min-width:861px){
     #skp-login .lg-isi{padding-top:96px;padding-bottom:28px}
     #skp-login .lg-hp{padding-top:262px;width:390px}#skp-login .lg-sapa{top:18px}#skp-login .lg-hati{width:34px;height:30px;margin-bottom:2px}#skp-login .lg-sapa b{font-size:25px}
-    #skp-login .lg-duo{top:92px;width:270px;left:96px}#skp-login .kartu-login{padding:22px 26px 18px}#skp-login .fld{margin-top:10px}#skp-login .tbl{margin-top:14px;padding:13px}
+    #skp-login .lg-duo{top:92px;width:270px;left:62px}#skp-login .kartu-login{padding:22px 26px 18px}#skp-login .fld{margin-top:7px}#skp-login .tbl{margin-top:14px;padding:13px}
   }
-  @media (max-width:1100px) and (min-width:861px){#skp-login .lg-bunga{display:none}#skp-login .lg-hp{margin-right:0}#skp-login .lg-hp::before,#skp-login .lg-sapa{right:-10px}}
+  @media (max-width:1100px) and (min-width:861px){#skp-login .lg-bunga{display:none}#skp-login .lg-hp{margin-right:0}#skp-login .lg-hp::before,#skp-login .lg-sapa{right:-10px;left:6px}}
   @media (max-width:860px){
     #skp-login{background:linear-gradient(160deg,#E6F0FF 0%,#C9DCFB 50%,#A9C6F4 100%)}
     #skp-login .lg-isi{display:block;padding:84px 16px 28px}
     #skp-login .lg-bps{left:18px;top:18px}#skp-login .lg-bps img{width:44px}#skp-login .lg-bps b{font-size:15px}#skp-login .lg-bps small{font-size:12px}
     #skp-login .lg-kiri{display:none}
     #skp-login .lg-hp{width:auto;max-width:420px;margin:0 auto;padding-top:300px}
-    #skp-login .lg-hp::before,#skp-login .lg-sapa{left:14px;right:14px}
+    #skp-login .lg-hp::before,#skp-login .lg-sapa{left:8px;right:8px}
     #skp-login .lg-duo{left:50%;width:min(310px,80vw);top:108px;transform:translateX(-50%);animation:none}
     #skp-login .lg-sapa b{font-size:26px}
     #skp-login .kartu-login{padding:24px 20px 20px;border-radius:32px;box-shadow:inset 0 3px 0 #fff,inset 0 -5px 0 rgba(120,150,210,.14),0 30px 50px -24px rgba(28,58,117,.5)}
