@@ -1,6 +1,6 @@
 # DESIGN.md — SAKTI (Sahabat Kinerja Terintegrasi), BPS Kota Kendari
 
-**Arah:** kantor statistik yang rapi dan tenang. Data lebih penting daripada hiasan: satu warna biru untuk aksi, satu hijau untuk "Catat", sisanya netral. Tampilannya harus nyaman dibaca pimpinan di HP kecil, tanpa terasa penuh.
+**Arah: "clay biru pastel".** Tampilan ramah dan lembut seperti mainan tanah liat: kartu putih yang menggembung, tombol empuk 3D yang terasa bisa ditekan, biru pastel sebagai warna utama, dan empat pastel pendamping (pink, kuning, mint, ungu) untuk membedakan data. Karakter pegawai BPS (perempuan berhijab atau laki-laki, dipilih tiap pegawai) menyapa di dashboard; maskot bintang menemani banner nilai BerAKHLAK dan kartu ajakan. Data tetap nomor satu: hiasan hanya di sapaan, banner, dan kartu ajakan.
 
 Token ada di `tema.css`. Halaman memakai **nama token** (`var(--…)`), tidak menulis nilai mentah.
 
@@ -8,119 +8,101 @@ Token ada di `tema.css`. Halaman memakai **nama token** (`var(--…)`), tidak me
 
 | Token | Nilai | Peran |
 |---|---|---|
-| `--n-0` | `#FFFFFF` | Permukaan kartu, input, topbar |
-| `--n-25` | `#F6F8FB` | Latar halaman, kepala tabel |
-| `--n-50` | `#EEF2F6` | Isian halus, hover baris & tombol sekunder |
-| `--n-100` | `#E2E7EE` | Garis kartu & pemisah |
-| `--n-200` | `#CBD3DD` | Garis input & tombol sekunder |
-| `--n-500` | `#6B7686` | Placeholder, ikon nonaktif (4,6:1) |
-| `--n-600` | `#556274` | Teks sekunder, label, keterangan (6,2:1) |
-| `--n-800` | `#1F2A37` | Teks utama (14,5:1) |
-| `--n-900` | `#0F1722` | Judul, toast |
-| `--biru-50` | `#EAF2FB` | Latar terpilih, ikon KPI, info |
-| `--biru-100` | `#D3E5F7` | Garis fokus lembut, batang grafik pasif |
-| `--biru-600` | `#155EA8` | **Primer:** tombol utama, tautan, menu aktif (6,6:1) |
-| `--biru-700` | `#0F4C8A` | Hover/tekan tombol utama |
-| `--biru-900` | `#0B2F55` | Sidebar, kotak sapaan (hero) |
-| `--hijau-50` | `#E6F5EF` | Latar "Catat", status sudah mengisi |
-| `--hijau-600` | `#087F5B` | **Aksen tunggal:** Catat Kegiatan (menu, header obrolan, tombol kirim) (5,0:1) |
-| `--hijau-700` | `#066A4C` | Hover/tekan aksen |
-| `--sukses` / `--sukses-bg` | `#166534` / `#E8F6EE` | Berhasil, naik, sudah |
-| `--peringatan` / `--peringatan-bg` | `#B45309` / `#FEF3E2` | Perlu perhatian, belum ber-RK |
-| `--bahaya` / `--bahaya-bg` | `#B42318` / `#FDEDEC` | Error, hapus, tidak aktif |
+| `--latar` | `#EAF1FC` | Latar halaman (dengan dua gumpalan lembut biru & ungu) |
+| `--n-0` | `#FFFFFF` | Kartu, panel menu, kolom isian aktif |
+| `--n-25` | `#F5F8FE` | Kolom isian, kepala tabel, butir daftar |
+| `--n-50` | `#ECF1FA` | Lekukan (track bar, kontrol segmen), garis putus-putus |
+| `--n-100` | `#DFE7F4` | Garis kolom isian & pemisah |
+| `--n-500` | `#5E6F92` | Placeholder, label grup menu (4,9:1) |
+| `--n-600` | `#4D5D7F` | Teks sekunder (6,4:1; ≥5:1 di atas semua pastel) |
+| `--n-800` | `#23304D` | Teks utama |
+| `--n-900` | `#162038` | Judul, angka |
+| `--biru-50` / `--biru-100` | `#EEF4FF` / `#DBE7FF` | Hover menu, baris terpilih |
+| `--biru-400` / `--biru-500` | `#6E9BEA` / `#4F80E0` | Ikon menu, batang grafik, cincin fokus |
+| `--biru-600` / `--biru-700` | `#3F70D2` / `#2F5DB8` | **Primer:** tombol utama (putih di atasnya 4,7:1), tautan |
+| `--biru-900` | `#1C3A75` | Judul sapaan |
+| `--hijau-600` | `#18825A` | Aksen "Catat" (tombol Catat di menu bawah) |
 
-**Warna data** (hanya grafik & penanda bidang, bukan tombol): `--data-1` `#155EA8`, `--data-2` `#0A8F6A`, `--data-3` `#D9772B`, `--data-4` `#7A5AC8`, `--data-5` `#C2417A`, `--data-6` `#2E9BB8`.
+**Pastel pendamping** (latar kartu & petak ikon) dengan **tinta** yang terbaca di atasnya (≥4,5:1):
 
-**Pengecualian:** layar Kuis BerAKHLAK memakai palet permainannya sendiri (ungu, merah, biru, kuning, hijau), hanya di dalam layar kuis.
+| Pastel | Latar | Tinta | Warna padat (ikon, batang) |
+|---|---|---|---|
+| Biru | `--pas-biru` `#DCE8FF` | `--tinta-biru` `#2F5DB8` | `--biru-500` |
+| Pink | `--pas-pink` `#FFE0EA` | `--tinta-pink` `#B4335F` | `--pink` `#E26A93` |
+| Kuning | `--pas-kuning` `#FFF0C9` | `--tinta-kuning` `#8A5A00` | `--kuning` `#F4B43C` |
+| Mint | `--pas-mint` `#D9F5E6` | `--tinta-mint` `#17734F` | `--mint` `#3DBE86` |
+| Ungu | `--pas-ungu` `#ECE6FF` | `--tinta-ungu` `#5B43B8` | `--ungu` `#8E79E8` |
 
-Mode gelap: belum dipakai. Semua token netral sudah diberi nama agar mode gelap cukup menimpa nilainya nanti.
+Urutan tetap biru → pink → kuning → mint untuk empat kartu ringkasan; KPI di bawahnya biru → mint → kuning → pink. Semantik: `--sukses` `#17734F`, `--peringatan` `#A35200`, `--bahaya` `#B42318` (+ latar `-bg` masing-masing).
+
+**Pengecualian:** layar permainan Kuis BerAKHLAK (`kuis.html`) memakai palet permainannya sendiri (ungu, merah, biru, kuning, hijau). Penanda bidang (avatar inisial & potongan donat) memakai `WARNA_AV` yang gelap agar teks putih terbaca.
 
 ## 2. Tipografi
 
-- **Huruf:** Plus Jakarta Sans (variabel, disimpan sendiri di `fonts/`, lisensi OFL), cadangan: sistem. Satu keluarga untuk semua.
-- **Angka:** `font-variant-numeric: tabular-nums` untuk tabel, KPI, dan jam.
+- **Huruf:** Nunito (variabel 200–1000, disimpan sendiri di `fonts/nunito.woff2`, lisensi OFL). Bentuknya membulat, cocok dengan gaya clay.
+- **Bobot:** 500 isi, 600–700 label & menu, 800 tombol & judul kartu, 900 judul halaman, sapaan, dan angka.
+- **Angka:** `tabular-nums` untuk tabel, KPI, dan jam.
 
-| Token | Ukuran / tinggi baris | Peran |
+| Token | Ukuran | Peran |
 |---|---|---|
-| `--t-xs` | 12 / 16 | Badge, label kecil, keterangan grafik |
-| `--t-sm` | 13 / 18 | Kepala tabel, info tambahan, tab |
-| `--t-ui` | 14 / 20 | Isi tabel, menu, tombol |
-| `--t-body` | 16 / 24 | Paragraf, input (16 px di HP agar tidak di-zoom) |
-| `--t-h4` | 17 / 24 | Judul kartu |
-| `--t-h3` | 20 / 28 | Judul bagian, judul topbar |
-| `--t-h2` | 26 / 34 | Judul halaman, sapaan |
-| `--t-angka` | 32 / 38 | Angka KPI |
+| `--t-xs` | 12 | Badge, label grup menu |
+| `--t-sm` | 13 | Kepala tabel, tombol kecil |
+| `--t-ui` | 14,5 | Isi tabel, menu, tombol |
+| `--t-body` | 16 | Paragraf, isian di HP (agar tidak di-zoom) |
+| `--t-h4` | 17 | Judul kartu |
+| `--t-h3` | 21 | Judul topbar |
+| `--t-h2` | 28 | Sapaan di dashboard |
+| `--t-angka` | 32 | Angka KPI |
 
-Bobot: 400 isi, 500 menu, 600 label & tombol, 700 judul, 800 angka KPI. Panjang baris paragraf maks. 70 karakter.
-
-## 3. Jarak
+## 3. Jarak & bentuk
 
 Skala 4: `--s-1` 4 · `--s-2` 8 · `--s-3` 12 · `--s-4` 16 · `--s-5` 20 · `--s-6` 24 · `--s-8` 32 · `--s-10` 40.
-- Padding halaman: 28 desktop, 16 HP. Lebar isi maks. 1240 px.
-- Kartu: padding 20 (HP 16), jarak antarkartu 20 (HP 12).
-- Jarak antarbagian halaman: 24.
+Sudut: `--r-sm` 10 · `--r-md` 14 (isian, butir) · `--r-lg` 22 (kartu) · `--r-xl` 28 (sapaan, panel menu, modal) · `--r-full` (semua tombol berbentuk pil).
+Padding halaman 28 (HP 14). Kartu: padding 22–24, jarak antarkartu 18–20.
 
-## 4. Bentuk & kedalaman
+## 4. Kedalaman clay
 
-- Radius: `--r-sm` 6 (badge kotak, centang), `--r-md` 10 (tombol, input, item menu), `--r-lg` 14 (kartu, modal, hero), `--r-full` 999 (pill, avatar).
-- Bayangan: `--sh-1` `0 1px 2px rgba(15,23,34,.05)` untuk kartu (kartu terutama dibatasi garis `--n-100`); `--sh-2` `0 12px 32px rgba(15,23,34,.16)` untuk menu, modal, toast. Tidak ada bayangan lain.
-- Tanpa glassmorphism, tanpa gradasi dekoratif. Kotak sapaan memakai warna solid `--biru-900`.
+| Token | Dipakai untuk |
+|---|---|
+| `--clay` | Kartu: kilau putih di tepi atas + bayang lembut kebiruan di bawah |
+| `--clay-angkat` | Panel menu melayang, kotak sapaan |
+| `--empuk-putih` | Tombol sekunder, kontrol bulan, chip |
+| `--empuk-biru` | Tombol utama, menu aktif, tombol kirim |
+| `--empuk-tekan` | Keadaan ditekan (lekuk ke dalam) |
+
+**Aturan kedalaman:** yang **timbul** bisa ditekan (tombol, chip, menu aktif); yang **cekung** bisa diisi (kolom isian, track bar, kontrol segmen); kartu isi **menggembung lembut** tetapi tidak bereaksi saat ditekan, kecuali butir yang memang tautan. Ditekan → turun 2–3 px dan bayangan pindah ke dalam. Pilihan terpilih → tampak tertekan (biru) atau timbul putih di atas lekukan (segmen).
 
 ## 5. Komponen
 
-**Prinsip kedalaman: yang timbul berarti bisa diklik.**
-- Tombol dan kontrol tampak timbul seperti tuts kalkulator: gradasi tipis dari atas, kilau 1 px di tepi atas, dan "bibir" 2 px di bawah (`--n-300` untuk tombol putih, `--biru-800` untuk biru, `--hijau-800` untuk hijau).
-- Saat ditekan, tombol turun 2 px dan bibirnya hilang. Pilihan yang sedang aktif (bulan/triwulan, durasi kuis, halaman tabel) tampak **tertekan**.
-- Kolom isian tampak cekung (bayangan dalam 1 px).
-- Kartu isi tetap **datar**, hanya bergaris, supaya tombol mudah dikenali.
-- Label memakai huruf kalimat biasa, bukan kapital semua: kepala tabel, grup menu, label formulir.
+- **Panel menu (desktop):** kartu putih melayang (jarak 16 dari tepi, sudut 28). Urutan: logo → profil "Halo, Nama!" dengan avatar → menu → kartu ajakan dengan maskot bintang. Menu aktif = pil biru empuk; "Catat Kegiatan" = pil mint; "Kuis" = pil ungu saat kuis berlangsung. Kartu ajakan disembunyikan bila tinggi layar < 860 px.
+- **Menu bawah (HP):** bilah putih melayang sudut 24; menu aktif diberi latar pastel di belakang ikon dan garis kecil yang meluncur; tombol Catat berupa tuts mint.
+- **Kotak sapaan:** gradasi putih → biru pastel, karakter pilihan pegawai di kiri, tanaman di kanan (disembunyikan di HP), salam menurut jam, tombol pil biru (Catat kegiatan / Pantau pegawai / Pantau pengisian) dan kontrol bulan putih empuk. HP ≤ 460 px: karakter pindah ke kanan bawah.
+- **Empat kartu ringkasan:** di bawah sapaan, latar pastel biru/pink/kuning/mint, petak ikon padat dengan kilau, angka 30 px tebal.
+- **KPI:** kartu putih, petak ikon pastel, bar tebal 10 px dalam lekukan dengan gradasi warna yang sama.
+- **Grafik harian:** batang membulat berganti pastel; hari ini biru tua. **Kegiatan per Bidang:** donat dengan total di tengah, warnanya sama dengan penanda bidang.
+- **Aksi cepat & Perlu Perhatian:** petak pastel empuk, ikon dalam tuts berwarna, tombol pil berwarna tinta.
+- **Banner nilai BerAKHLAK:** gradasi putih → warna nilai, huruf nilai dalam tuts, maskot bintang di kanan (disembunyikan di HP ≤ 560 px).
+- **Catat Kegiatan:** kepala putih melayang dengan logo; pesan = kartu clay putih dengan garis biru di kiri; label bidang = pil; kolom ketik = pil cekung; tombol kirim = tuts bulat biru.
+- **Layar masuk:** dua karakter berdampingan + nama SAKTI di kiri, kartu putih clay di kanan; di HP keduanya "berdiri" di atas kartu.
+- **Pilihan karakter:** dua kartu potret di menu Profil (admin: Pengaturan). Pilihan disimpan di metadata akun Supabase (`user_metadata.karakter` = `p`/`l`), jadi ikut ke semua perangkat tanpa mengubah tabel; bawaan = perempuan.
 
+## 6. Logo & ilustrasi
 
-- **Tombol** tinggi 40 (HP 44), radius `--r-md`, teks 14/600.
-  - *Utama* `--biru-600` → hover `--biru-700`.
-  - *Sekunder* putih, garis `--n-200`, hover `--n-50`.
-  - *Senyap* tanpa garis, teks `--biru-600`, hover `--biru-50`.
-  - *Bahaya* teks `--bahaya`; konfirmasi hapus berlatar `--bahaya`.
-  - *Catat* `--hijau-600`.
-  - Fokus: cincin `0 0 0 3px rgba(21,94,168,.28)`. Nonaktif: opasitas .5.
-- **Input/select** tinggi 40 (HP 44), garis `--n-200`, radius `--r-md`. Fokus: garis `--biru-600` dan cincin fokus. Placeholder `--n-500`.
-- **Kartu** `--n-0`, garis `--n-100`, `--r-lg`, tanpa bayangan.
-- **Kartu KPI** ikon dalam kotak `--biru-50` dengan ikon `--biru-600`, satu warna untuk semua KPI. Tren naik/turun memakai pill sukses/bahaya.
-- **Badge/pill** 12/600, radius penuh, pasangan warna teks + latar semantik.
-- **Tabel** kepala 13/600 huruf biasa `--n-600` di `--n-25`; baris 14; hover `--n-25`. Kolom angka rata kanan.
-- **Navigasi**
-  - *Sidebar* `--biru-900`, item 14/500 putih 78%; aktif berlatar putih dengan teks `--biru-700`; "Catat Kegiatan" berlatar `--hijau-600`.
-  - *Menu bawah (HP)* putih; yang aktif `--biru-600` dengan garis 3 px di atas.
-- **Topbar** putih, garis bawah `--n-100`, judul 20/700.
-- **Toast** `--n-900`, teks putih, `--r-md`, `--sh-2`.
+- **Logo:** gelembung obrolan biru 3D berisi grafik naik + bintang (`img/logo-sakti.svg`). Ikon PWA dan gambar pratinjau tautan (`img/og-sakti.jpg`, dengan kedua karakter) dibuat dari logo ini.
+- **Karakter:** dua pegawai BPS berseragam (`img/karakter-perempuan.webp`, `img/karakter-laki.webp`), diberikan oleh pemilik aplikasi; latar sudah dihapus, papan nama dikosongkan. Bintang (`img/bintang.svg`) dan tanaman (`img/tanaman.svg`) buatan sendiri. Jangan memakai karakter atau aset merek lain.
+- Ilustrasi selalu `alt=""` (hiasan), kecuali logo di layar masuk.
 
-## 6. Ikon & gambar
+## 7. Gerak
 
-- Satu set ikon garis 2 px (gaya Lucide), 20 px di navigasi, 18 px di kartu, warna `currentColor`.
-- Emoji tidak dipakai sebagai ikon di tombol dan menu. Pengecualian: layar kuis dan medali juara.
-- Foto: hanya foto bukti kegiatan, sudut `--r-md`.
-- Logo: logo SAKTI/BPS di sidebar dan layar masuk; ilustrasi tidak dipakai.
+Cepat dan bermakna; semua mati otomatis bila perangkat diatur "kurangi gerakan".
+- Masuk halaman: naik pelan atau bergeser sesuai arah menu (maju dari kanan, mundur dari kiri).
+- Kartu muncul bertahap 50 ms; bar terisi dari kiri; angka KPI menghitung naik.
+- Tombol: riak dari titik sentuh + pantulan pegas; menu bawah memantulkan ikonnya.
+- Karakter sapaan muncul memantul sekali; tanaman dan bintang bergoyang/melayang pelan (satu-satunya gerak tanpa interaksi).
 
-## 7. Gerak (animasi)
+## 8. Aksesibilitas
 
-Gerak hanya untuk memberi arti: menunjukkan apa yang baru muncul, apa yang berubah, dan bahwa tombol sudah ditekan. Tidak ada animasi dekoratif yang berulang terus.
-
-| Token | Nilai | Peran |
-|---|---|---|
-| `--dur-1` | 120 ms | Tekan tombol, ikon menu bawah |
-| `--dur-2` | 200 ms | Hover, warna, modal muncul |
-| `--dur-3` | 320 ms | Halaman & kartu masuk |
-| `--dur-4` | 700 ms | Bar kemajuan terisi, angka KPI menghitung naik |
-| `--ease` | `cubic-bezier(.2,.8,.2,1)` | Gerak masuk (cepat lalu melambat) |
-| `--ease-io` | `cubic-bezier(.4,0,.2,1)` | Perubahan warna/keadaan |
-
-- **Pindah halaman:** halaman bergeser 32 px sesuai arah menu (0,42 detik). Menu di bawah/kanan masuk dari kanan, kembali ke menu sebelumnya masuk dari kiri, buka detail pegawai = maju. Judul topbar ikut naik pelan. Saat aplikasi pertama dibuka, halaman naik 8 px sambil memudar.
-- **Kartu:** muncul bertahap, jeda 50 ms antar kartu, maks. 200 ms.
-- **Bar kemajuan:** terisi dari kiri.
-- **Angka KPI:** menghitung naik ±0,7 detik, tetapi tidak dihitung ulang kalau nilainya sama dengan tampilan sebelumnya.
-- **Tombol:** turun 2 px saat ditekan, seperti tuts. Riak (ripple) melebar dari titik sentuh: putih di tombol berwarna, warna teks di tombol putih. Saat dilepas, tombol memantul seperti pegas (0,42 detik, sedikit melewati ukuran asli lalu kembali). Tombol yang memang terpilih (tertekan) tidak memantul.
-- **Menu bawah HP:** penanda biru meluncur ke menu yang dipilih, ikonnya ikut memantul.
-- **Modal & menu ⋮:** muncul dengan geser dan memudar.
-- **Baris tabel tidak dianimasikan**, supaya tidak berkedip saat mengetik di kolom cari.
-- **Aksesibilitas:** bila perangkat diatur "kurangi gerakan" (`prefers-reduced-motion`), semua animasi mati dan angka langsung tampil final.
-- Layar kuis punya gerak permainan sendiri (podium, konfeti) dan hanya berlaku di sana.
+- Kontras teks ≥ 4,5:1 di semua permukaan (diperiksa axe-core: 0 pelanggaran WCAG 2 A/AA di 15 layar).
+- Fokus keyboard: cincin biru 4 px (`--fokus`).
+- Target ketuk ≥ 40 px untuk tombol ikon; isian 16 px di HP.
+- Label tanpa huruf kapital semua.

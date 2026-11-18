@@ -14,17 +14,17 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
 <meta property="og:site_name" content="SAKTI · BPS Kota Kendari">
 <meta property="og:title" content="SAKTI – Sahabat Kinerja Terintegrasi">
 <meta property="og:description" content="Aplikasi SAKTI BPS Kota Kendari: catat kegiatan harian semudah chat, rekap otomatis, dan dokumen Bukti Dukung SKP siap unggah.">
-<meta property="og:image" content="img/og-sakti.png">
+<meta property="og:image" content="img/og-sakti.jpg">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <title>SAKTI – Sahabat Kinerja Terintegrasi · BPS Kota Kendari</title>
-<meta name="theme-color" content="#1F4E79">
+<meta name="theme-color" content="#EAF1FC">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SAKTI">
 <link rel="manifest" href="manifest-dashboard.json">
-<link rel="icon" href="icons/dashboard-192.png?v=2">
-<link rel="apple-touch-icon" href="icons/dashboard-192.png?v=2">
+<link rel="icon" href="icons/dashboard-192.png?v=3">
+<link rel="apple-touch-icon" href="icons/dashboard-192.png?v=3">
 <style>
   :root { --navy:var(--biru-700); --navy2:var(--biru-900); --biru:var(--biru-600); --biru-muda:var(--biru-50); --bg:var(--n-25); --kartu:#fff; --teks:var(--n-800); --teks2:var(--n-600); --garis:var(--n-100); --hijau:#008069; --merah:var(--bahaya); --kuning:var(--peringatan); }
   * { box-sizing: border-box; }
@@ -387,7 +387,8 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
 <body>
 <div class="app">
   <nav class="sisi" aria-label="Menu utama">
-    <div class="brand"><img src="icons/dashboard-192.png?v=2" alt=""><div>SAKTI<small>BPS Kota Kendari</small></div></div>
+    <div class="brand"><img src="img/logo-sakti.svg" alt="" width="44" height="44"><div>SAKTI<small>BPS Kota Kendari</small></div></div>
+    <div class="akun" id="akunBox"></div>
     <a class="menu" href="#dashboard" data-r="dashboard"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
     <a class="menu menu-catat" href="input.html"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6M9 10h6"/></svg>Catat Kegiatan</a>
     <a class="menu menu-kuis" href="kuis.html" data-kuis-menu hidden title="Kuis BerAKHLAK sedang berlangsung"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4"/><path d="M15 11h.01M18 13h.01"/></svg>Kuis BerAKHLAK<span class="skp-live titik" aria-label="sedang berlangsung"></span></a>
@@ -402,8 +403,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     <a class="menu" href="#dinas" data-r="dinas"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Perjalanan Dinas</a>
     <div class="menu-grup">Bantuan</div>
     <a class="menu" href="#saran" data-r="saran"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg>Saran Pengembang<span class="sb-badge" id="saranBadge" hidden></span></a>
-    <div class="akun" id="akunBox"></div>
-
+    <div class="sb-cta"><img src="img/bintang.svg" alt="" width="66" height="66"><b>Catat selagi ingat</b><small>Tulis kegiatan semudah mengirim pesan.</small><a href="input.html">Catat sekarang</a></div>
   </nav>
 
   <div class="isi-utama">
@@ -415,10 +415,12 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
       <div id="dNilai"></div>
       <div id="dashPeg">
       <div class="d-hero">
+        <img class="d-maskot" src="img/karakter-perempuan.webp" data-karakter alt="" width="520" height="910">
         <div class="d-hero-atas"><div><h2 id="sapa">Selamat datang</h2><p class="d-sub"><span id="sapaSub">Ringkasan kerja harian</span><span class="d-tgl" id="dTgl"></span></p></div>
-          <div class="d-hero-aksi"><div class="bulan" data-bulan></div></div></div>
-        <div class="d-hero-grid" id="dHero"></div>
+          <div class="d-hero-aksi"><a class="d-pil" href="input.html"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6M9 10h6"/></svg>Catat kegiatan</a><div class="bulan" data-bulan></div></div></div>
+        <img class="d-tanaman" src="img/tanaman.svg" alt="" width="104" height="147">
       </div>
+      <div class="d-hero-grid" id="dHero"></div>
       <div class="d-kpi" id="dKpi"></div>
       <div class="d-baris2">
         <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Kegiatan per Hari</h3><p id="chartKet">Jumlah kegiatan yang dicatat setiap hari</p></div><a class="lnk" style="width:auto;margin:0;padding:0" href="#rekap">Rekap ›</a></div>
@@ -428,17 +430,19 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
       </div>
       <div class="d-baris3 satu">
         <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Kegiatan per Bidang</h3><p id="perBidangSub">Calon dokumen Bukti Dukung</p></div><a class="lnk" style="width:auto;margin:0;padding:0" href="#upload">Upload ›</a></div>
-          <div id="perBidang" class="pb-grid"></div></div>
+          <div class="pb-wrap"><div class="pb-donat" id="pbDonat"></div><div id="perBidang" class="pb-grid"></div></div></div>
       </div>
       <div class="d-kartu d-pad" style="margin-bottom:20px"><div class="d-kep"><div><h3>Perlu Perhatian</h3><p>Rapikan agar dokumen Bukti Dukung lengkap</p></div><span id="dPendJml"></span></div>
         <div class="pend" id="dPend"></div></div>
       </div>
       <div id="dashPim" hidden>
       <div class="d-hero">
+        <img class="d-maskot" src="img/karakter-perempuan.webp" data-karakter alt="" width="520" height="910">
         <div class="d-hero-atas"><div><h2 id="pdSalam">Selamat datang</h2><p class="d-sub">Ringkasan kinerja pegawai <span id="pdSubBln"></span><span class="d-tgl" id="pdTgl"></span></p></div>
-          <div class="d-hero-aksi"><div class="bulan" data-bulan></div><button class="d-btn-kaca" id="pdSegar" type="button" title="Muat ulang" aria-label="Muat ulang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg></button></div></div>
-        <div class="d-hero-grid" id="pdHero"></div>
+          <div class="d-hero-aksi"><button class="d-pil" type="button" data-pdke="monitor"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Pantau pegawai</button><div class="bulan" data-bulan></div><button class="d-btn-kaca" id="pdSegar" type="button" title="Muat ulang" aria-label="Muat ulang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg></button></div></div>
+        <img class="d-tanaman" src="img/tanaman.svg" alt="" width="104" height="147">
       </div>
+      <div class="d-hero-grid" id="pdHero"></div>
       <div class="d-kpi" id="pdKpi"></div>
       <div class="d-baris2">
         <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Tren Pengisian</h3><p>Perbandingan tiga bulan terakhir</p></div><div class="seg" id="pdSeg"><button type="button" data-m="keg" class="on">Kegiatan</button><button type="button" data-m="peg">Pegawai</button></div></div>
@@ -541,6 +545,11 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
           <div style="margin-top:16px"><button class="btn utama" type="submit">Simpan profil</button></div>
         </form>
         <div>
+          <div class="kartu" style="margin-bottom:16px">
+            <h2>Karakter sapaan</h2>
+            <p style="margin:-6px 0 0;font-size:13px;color:var(--teks2)">Pilih karakter yang menyapa Anda di dashboard.</p>
+            <div class="pilih-karakter" data-pilih-karakter role="radiogroup" aria-label="Karakter sapaan"><button type="button" role="radio" aria-checked="false" data-k="p"><img src="img/karakter-perempuan.webp" alt="" width="520" height="909" loading="lazy">Perempuan</button><button type="button" role="radio" aria-checked="false" data-k="l"><img src="img/karakter-laki.webp" alt="" width="520" height="914" loading="lazy">Laki-laki</button></div>
+          </div>
           <div class="kartu" style="margin-bottom:16px">
             <h2>Akun</h2>
             <form id="formPw" class="form" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:170px"><label for="pwBaru" style="margin-top:0">Password baru</label><input id="pwBaru" type="password" autocomplete="new-password" minlength="6" placeholder="min. 6 karakter"></div><button class="btn" type="submit">Ganti password</button></form>
@@ -795,6 +804,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     $('perBidangSub').textContent = 'Calon dokumen Bukti Dukung ' + S.namaBulan(ym);
     $('perBidang').innerHTML = perB.length ? perB.map((x, i) => `<div class="top"><span class="av" style="background:${warnaAv(x.b)}">${S.esc(x.b.slice(0, 2).toUpperCase())}<span class="rk">${i + 1}</span></span><div class="nm"><b>${S.esc(x.b)}</b><small>${new Set(x.ks.map(k => k.tanggal)).size} hari · ${new Set(x.ks.map(k => k.rhkId).filter(id => rhkById(id))).size} RK · ${x.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)} foto</small></div><div class="nil"><b>${x.ks.length}</b><small>kegiatan</small></div></div>`).join('')
       : '<div class="kosong" style="padding:24px 8px">Belum ada kegiatan pada bulan ini.</div>';
+    $('pbDonat').innerHTML = donat(perB.map(x => ({ n: x.ks.length, w: warnaAv(x.b), l: x.b })), 'kegiatan');
     // perlu perhatian
     const hkKosong = hk.filter(d => !K.isi.has(d)).length;
     const total = tanpaRk.length + tanpaFoto.length + hkKosong;
@@ -808,17 +818,29 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   $('dPend').addEventListener('click', e => { const b = e.target.closest('[data-pend]'); if (!b) return; const a = b.dataset.pend;
     if (a === 'catat') { location.href = 'input.html'; return; }
     location.hash = 'rekap'; setTimeout(() => { if (a === 'rk') { $('fRk').value = '-'; renderTabel(); } }, 60); });
+  /* donat: potongan berwarna sama dengan penanda bidang, total di tengah */
+  function donat(data, lbl) {
+    const tot = data.reduce((a, d) => a + d.n, 0), C = 100, R = 78, r = 50; let a0 = -Math.PI / 2, s = '';
+    const titik = (rad, a) => [C + rad * Math.cos(a), C + rad * Math.sin(a)].map(v => v.toFixed(2));
+    if (!tot) s = `<circle cx="${C}" cy="${C}" r="${(R + r) / 2}" fill="none" stroke="#ECF1FA" stroke-width="${R - r}"/>`;
+    else if (data.length === 1) s = `<circle cx="${C}" cy="${C}" r="${(R + r) / 2}" fill="none" stroke="${data[0].w}" stroke-width="${R - r}"><title>${S.esc(data[0].l)}: ${data[0].n}</title></circle>`;
+    else data.forEach(d => { const a1 = a0 + d.n / tot * Math.PI * 2, gap = .025, b = a0 + gap, e = a1 - gap, besar = e - b > Math.PI ? 1 : 0;
+      const [x1, y1] = titik(R, b), [x2, y2] = titik(R, e), [x3, y3] = titik(r, e), [x4, y4] = titik(r, b);
+      if (e > b) s += `<path d="M${x1},${y1} A${R},${R} 0 ${besar} 1 ${x2},${y2} L${x3},${y3} A${r},${r} 0 ${besar} 0 ${x4},${y4} Z" fill="${d.w}"><title>${S.esc(d.l)}: ${d.n} (${Math.round(d.n / tot * 100)}%)</title></path>`; a0 = a1; });
+    return `<svg viewBox="0 0 200 200" role="img" aria-label="Sebaran ${lbl} per bidang">${s}<circle cx="${C}" cy="${C}" r="${r - 2}" fill="#fff"/></svg><div class="pb-tengah"><b>${fmtA(tot)}</b><small>${lbl}</small></div>`;
+  }
   function renderChart(ks, y, m, nHari, arsip) {
     const per = new Array(nHari).fill(0); ks.forEach(k => per[Number(k.tanggal.slice(8)) - 1]++); (arsip || []).forEach(r => per[Number(r.tanggal.slice(8)) - 1] += r.jumlah);
     const max = Math.max(4, ...per); const step = max <= 5 ? 1 : max <= 10 ? 2 : Math.ceil(max / 5); const top = Math.ceil(max / step) * step;
     const W = Math.max(300, Math.round($('chart').clientWidth || 640)), H = 220, L = 28, R = 6, T = 10, B = 26; const pw = W - L - R, ph = H - T - B; const bw = pw / nHari;
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jumlah kegiatan per hari, ${S.namaBulan(ym)}">`;
-    for (let v = 0; v <= top; v += step) { const yy = T + ph - v / top * ph; s += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="${v ? '#eef1f4' : '#cfd7e0'}"/><text x="${L - 6}" y="${yy + 4}" text-anchor="end" font-size="10.5" fill="#7b8794">${v}</text>`; }
+    for (let v = 0; v <= top; v += step) { const yy = T + ph - v / top * ph; s += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="${v ? '#E6ECF7' : '#C9D4E7'}" ${v ? 'stroke-dasharray="4 5"' : ''}/><text x="${L - 6}" y="${yy + 4}" text-anchor="end" font-size="11" font-weight="700" fill="#5E6F92">${v}</text>`; }
+    const PAS = ['#7FA6EE', '#F5A3BF', '#FFCF6E', '#7BD8AC', '#B3A4F2'];
     const hariIni = S.ymd(now);
     for (let d = 0; d < nHari; d++) {
       const x = L + d * bw, v = per[d], h = v / top * ph, w = new Date(y, m - 1, d + 1).getDay(), libur = w === 0 || w === 6, tgl = y + '-' + S.pad(m) + '-' + S.pad(d + 1);
-      if (v) { const bx = x + 1, bwid = Math.max(2, bw - 2), r = Math.min(4, bwid / 2, h), y0 = T + ph, y1 = y0 - h; s += `<path d="M${bx},${y0} V${y1 + r} Q${bx},${y1} ${bx + r},${y1} H${bx + bwid - r} Q${bx + bwid},${y1} ${bx + bwid},${y1 + r} V${y0} Z" fill="${tgl === hariIni ? '#1F4E79' : '#2E75B6'}"/>`; }
-      if ((d + 1) % (W < 480 ? 5 : 2) === 1 || d === nHari - 1) s += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="10.5" fill="${libur ? '#c0c7cf' : '#7b8794'}">${d + 1}</text>`;
+      if (v) { const bx = x + Math.min(3, bw * .18), bwid = Math.max(2, bw - 2 * Math.min(3, bw * .18)), r = Math.min(8, bwid / 2, h), y0 = T + ph, y1 = y0 - h; s += `<path d="M${bx},${y0} V${y1 + r} Q${bx},${y1} ${bx + r},${y1} H${bx + bwid - r} Q${bx + bwid},${y1} ${bx + bwid},${y1 + r} V${y0} Z" fill="${tgl === hariIni ? '#2F5DB8' : PAS[d % PAS.length]}"/>`; }
+      if ((d + 1) % (W < 480 ? 5 : 2) === 1 || d === nHari - 1) s += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${libur ? '#AEBCD5' : '#5E6F92'}">${d + 1}</text>`;
       s += `<rect class="hit" x="${x}" y="${T}" width="${bw}" height="${ph}" fill="transparent" data-i="${d}"/>`;
     }
     const el = $('chart'); el.innerHTML = s + '</svg><div class="tip"></div>';
@@ -826,7 +848,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     const tip = el.querySelector('.tip');
     el.querySelectorAll('.hit').forEach(r => {
       const show = () => { const i = +r.dataset.i; tip.innerHTML = `<b>${S.tglPanjang(y + '-' + S.pad(m) + '-' + S.pad(i + 1))}</b><br>${per[i]} kegiatan`; const box = el.getBoundingClientRect(), rb = r.getBoundingClientRect();
-        tip.style.left = Math.min(Math.max(rb.left - box.left + rb.width / 2, 70), box.width - 70) + 'px'; tip.style.top = (T + ph - per[i] / top * ph) * box.height / H + 'px'; tip.style.opacity = 1; r.setAttribute('fill', 'rgba(46,117,182,.07)'); };
+        tip.style.left = Math.min(Math.max(rb.left - box.left + rb.width / 2, 70), box.width - 70) + 'px'; tip.style.top = (T + ph - per[i] / top * ph) * box.height / H + 'px'; tip.style.opacity = 1; r.setAttribute('fill', 'rgba(79,128,224,.08)'); };
       r.addEventListener('mouseenter', show); r.addEventListener('click', show); r.addEventListener('mouseleave', () => { tip.style.opacity = 0; r.setAttribute('fill', 'transparent'); });
     });
   }
@@ -1759,7 +1781,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptPasang = e; $('btnPasang').hidden = false; });
   $('btnPasang').onclick = async () => { if (!promptPasang) return; promptPasang.prompt(); await promptPasang.userChoice; promptPasang = null; $('btnPasang').hidden = true; };
   function tampilAkun() {
-    $('akunBox').innerHTML = `<span class="av">${S.esc(inisial(profil.nama))}</span><div class="u"><b>${S.esc(profil.nama || '')}</b><small>${S.esc(profil.nip_baru || profil.nip || profil.username || '')}</small></div><button type="button" title="Keluar" aria-label="Keluar"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>`;
+    $('akunBox').innerHTML = `<span class="av">${S.esc(inisial(profil.nama))}</span><div class="u" title="${S.esc(profil.nama || '')}"><b>Halo, ${S.esc(S.namaPanggil(profil.nama || '') || 'Sobat')}!</b><small>${S.esc(profil.jabatan || profil.nip_baru || profil.nip || profil.username || '')}</small></div><button type="button" title="Keluar" aria-label="Keluar"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>`;
     $('akunBox').querySelector('button').onclick = () => S.keluar();
     $('tbAv').textContent = inisial(profil.nama); $('tbAv').style.background = warnaAv(profil.nama); $('tbAv').title = (profil.nama || '') + ' · Profil';
   }
@@ -1777,7 +1799,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (masuk && current() === 'dashboard') renderDashboard(); }, 200); });
   S.registerSW();
-  S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid;
+  S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid; S.pasangPilihKarakter(document.querySelector('[data-pilih-karakter]'));
     if (pegawai.peran === 'admin') { location.replace('admin.html'); return; }
     saya = pegawai; if (pegawai.peran === 'pimpinan') document.body.classList.add('pim');
     masuk = true;

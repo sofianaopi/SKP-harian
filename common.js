@@ -136,60 +136,62 @@
 
   /* ---------- Layar login ---------- */
   const CSS = `#skp-login[hidden]{display:none!important}
-  #skp-login{position:fixed;inset:0;z-index:1000;overflow:auto;font-family:"Plus Jakarta Sans","Segoe UI",-apple-system,Roboto,Arial,sans-serif;color:#13294b;
-    background:radial-gradient(120% 90% at 100% 0,rgba(255,255,255,.0) 55%,rgba(255,255,255,0) 56%),linear-gradient(135deg,#e9f2ff 0%,#cfe2fb 55%,#9cc3f2 100%)}
+  #skp-login{position:fixed;inset:0;z-index:1000;overflow:auto;font-family:"Nunito","Segoe UI",-apple-system,Roboto,Arial,sans-serif;color:#162038;font-weight:600;
+    background:radial-gradient(700px 520px at 100% 0,#D3E2FF 0,rgba(211,226,255,0) 70%),radial-gradient(640px 520px at 0 100%,#E6DFFF 0,rgba(230,223,255,0) 70%),#EAF1FC}
   #skp-login .lg-latar{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-  #skp-login .lg-hero{position:absolute;left:0;top:0;bottom:0;width:min(58vw,97vh);background:url(img/login-sakti.jpg) left top/cover no-repeat;
-    -webkit-mask-image:linear-gradient(90deg,#000 78%,transparent 100%);mask-image:linear-gradient(90deg,#000 78%,transparent 100%)}
-  #skp-login .lg-swoosh{position:absolute;right:-12%;top:-28%;width:62%;height:48%;border-radius:50%;border-bottom:26px solid #f39a1e;transform:rotate(-12deg);opacity:.95}
-  #skp-login .lg-swoosh2{position:absolute;right:-18%;top:-30%;width:70%;height:52%;border-radius:50%;background:linear-gradient(160deg,#1556c4,#0b3b8f);transform:rotate(-12deg)}
-  #skp-login .lg-bar{position:absolute;right:3%;bottom:16%;display:flex;gap:14px;align-items:flex-end;opacity:.35}
-  #skp-login .lg-bar i{display:block;width:30px;border-radius:4px 4px 0 0;background:linear-gradient(#8fb6ec,#bcd5f6)}
-  #skp-login .lg-teks{position:absolute;left:min(5.5vw,8vh);bottom:8vh;color:#fff;max-width:min(44vw,72vh);text-shadow:0 2px 12px rgba(0,20,60,.35)}
-  #skp-login .lg-teks .t1{font-size:clamp(44px,min(7vw,11vh),104px);font-weight:800;letter-spacing:2px;line-height:1}
-  #skp-login .lg-teks .t2{font-size:clamp(17px,min(2.2vw,3.6vh),34px);font-weight:700;margin-top:8px;line-height:1.15}
-  #skp-login .lg-teks i{display:block;width:min(150px,16vh);height:6px;border-radius:3px;background:#f39a1e;margin:min(16px,1.8vh) 0 min(14px,1.6vh)}
-  #skp-login .lg-teks .t3{font-size:clamp(13px,min(1.4vw,2.3vh),21px);font-weight:500;line-height:1.35;opacity:.95}
-  #skp-login .lg-isi{position:relative;min-height:100%;display:flex;align-items:center;justify-content:flex-end;padding:28px 6vw 28px 20px;box-sizing:border-box}
-  #skp-login .kartu-login{position:relative;background:rgba(246,250,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);
-    border-radius:26px;width:100%;max-width:440px;padding:30px 34px 28px;box-shadow:0 24px 60px rgba(11,45,105,.22);box-sizing:border-box}
-  #skp-login .lg-logo{width:96px;height:auto;display:block;margin:0 auto 8px}
-  #skp-login h1{font-size:30px;line-height:1.15;text-align:center;margin:0;padding:0;border:0;color:#0b2f6b;font-weight:800;letter-spacing:-.3px}
-  #skp-login .sub{text-align:center;color:#0d3a7e;font-size:16px;font-weight:700;margin:6px 0 0;padding:0;border:0}
-  #skp-login .sambut{text-align:center;color:#4a5d78;font-size:14.5px;line-height:1.5;margin:14px 0 18px}
-  #skp-login label{display:block;font-size:12.5px;color:#4a5d78;margin:12px 0 5px 6px;font-weight:600}
-  #skp-login .fld{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #d3deee;border-radius:999px;padding:6px 14px 6px 6px;margin-top:12px;transition:border-color .15s,box-shadow .15s}
-  #skp-login .fld:focus-within{border-color:#2f6fd0;box-shadow:0 0 0 4px rgba(47,111,208,.13)}
-  #skp-login .fld .ic{flex:0 0 40px;height:40px;border-radius:50%;background:#e6effb;display:grid;place-items:center}
-  #skp-login .fld .ic svg{width:20px;height:20px;fill:#1b4d9b}
-  #skp-login .fld input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:10px 2px;font-size:16px;font-family:inherit;color:#13294b}
-  #skp-login .fld input::placeholder{color:#8291a8}
-  #skp-login .mata{flex:0 0 auto;width:36px;height:36px;border:0;background:none;padding:0;margin:0;cursor:pointer;display:grid;place-items:center;border-radius:50%}
-  #skp-login .mata svg{width:22px;height:22px;fill:none;stroke:#4a5d78;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  #skp-login .mata:hover{background:#eef3fa}
-  #skp-login .tbl{width:100%;margin-top:18px;padding:15px;border:0;border-radius:999px;background:linear-gradient(180deg,#1a4fa6,#0c3a86);color:#fff;font-size:16.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 20px rgba(12,58,134,.28)}
-  #skp-login .tbl svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  #skp-login .tbl:hover{filter:brightness(1.08)}#skp-login .tbl:disabled{opacity:.6;cursor:progress}
-  #skp-login .err{color:#b42318;font-size:13.5px;margin-top:8px;text-align:center}#skp-login .err:empty{display:none}
-  #skp-login .link{width:100%;border:0;background:none;color:#1f5fbf;font-weight:600;font-size:13.5px;padding:6px;margin-top:4px;cursor:pointer;font-family:inherit}
-  #skp-login .ket{font-size:13px;color:#3f5370;background:#eaf2fd;border-radius:12px;padding:10px 12px;margin-top:6px;line-height:1.5}
-  #skp-login .lg-kaki{display:grid;grid-template-columns:1fr 1fr 1fr;margin-top:16px;padding-top:14px;border-top:1px solid #dde6f2}
-  #skp-login .lg-kaki div{text-align:center;font-size:12.5px;line-height:1.3;color:#1b4d9b;font-weight:600}
-  #skp-login .lg-kaki div+div{border-left:1px solid #cfdbeb}
-  #skp-login .lg-kaki svg{display:block;width:30px;height:30px;margin:0 auto 6px;fill:none;stroke:#2a6bd1;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  #skp-login .lg-gelembung{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,rgba(255,255,255,0) 70%)}
+  #skp-login .lg-g1{width:340px;height:340px;left:8%;top:6%;opacity:.8}#skp-login .lg-g2{width:200px;height:200px;left:40%;bottom:6%;background:radial-gradient(circle,rgba(255,224,234,.9),rgba(255,224,234,0) 70%)}
+  #skp-login .lg-panggung{position:absolute;left:0;top:0;bottom:0;width:56%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px}
+  #skp-login .lg-duo{display:flex;align-items:flex-end;justify-content:center;position:relative}#skp-login .lg-duo::after{content:"";position:absolute;left:8%;right:8%;bottom:-6px;height:22px;border-radius:50%;background:radial-gradient(closest-side,rgba(40,80,160,.22),rgba(40,80,160,0))}
+  #skp-login .lg-maskot{height:min(400px,46vh);width:auto;position:relative;z-index:1;filter:drop-shadow(0 18px 24px rgba(40,80,160,.22));animation:lgApung 5s ease-in-out infinite}#skp-login .lg-m2{margin-left:-6%;animation-delay:-2.5s}#skp-login .lg-maskot{-webkit-mask-image:linear-gradient(180deg,#000 80%,transparent 100%);mask-image:linear-gradient(180deg,#000 80%,transparent 100%)}#skp-login .lg-duo::after{display:none}
+  @keyframes lgApung{50%{transform:translateY(-10px)}}
+  #skp-login .lg-teks{text-align:center;color:#1C3A75}
+  #skp-login .lg-teks .t1{font-size:clamp(40px,min(5.6vw,9vh),78px);font-weight:900;letter-spacing:-1px;line-height:1}
+  #skp-login .lg-teks .t2{font-size:clamp(17px,min(2vw,3.2vh),26px);font-weight:800;margin-top:6px;color:#2F5DB8}
+  #skp-login .lg-teks .t3{font-size:clamp(13px,min(1.3vw,2.2vh),17px);font-weight:700;line-height:1.4;color:#4D5D7F;margin-top:8px}
+  #skp-login .lg-isi{position:relative;min-height:100%;display:flex;align-items:center;justify-content:flex-end;padding:28px 7vw 28px 20px;box-sizing:border-box}
+  #skp-login .kartu-login{position:relative;background:#fff;border-radius:32px;width:100%;max-width:430px;padding:30px 32px 26px;box-sizing:border-box;
+    box-shadow:inset 0 2px 0 #fff,inset 0 -4px 0 rgba(120,150,210,.14),0 30px 60px -20px rgba(28,58,117,.4),0 4px 10px rgba(40,80,160,.06)}
+  #skp-login .lg-logo{width:84px;height:auto;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 10px rgba(47,93,184,.3))}
+  #skp-login h1{font-size:32px;line-height:1.1;text-align:center;margin:0;padding:0;border:0;color:#1C3A75;font-weight:900;letter-spacing:-.5px}
+  #skp-login .sub{text-align:center;color:#2F5DB8;font-size:15.5px;font-weight:800;margin:4px 0 0;padding:0;border:0}
+  #skp-login .sambut{text-align:center;color:#4D5D7F;font-size:14px;line-height:1.5;margin:10px 0 14px;font-weight:600}
+  #skp-login label{display:block;font-size:12.5px;color:#4D5D7F;margin:12px 0 5px 6px;font-weight:700}
+  #skp-login .fld{display:flex;align-items:center;gap:10px;background:#F5F8FE;border:1.5px solid #DFE7F4;border-radius:999px;padding:6px 14px 6px 6px;margin-top:12px;box-shadow:inset 0 2px 5px rgba(40,80,160,.08);transition:border-color .15s,box-shadow .15s,background .15s}
+  #skp-login .fld:focus-within{border-color:#4F80E0;background:#fff;box-shadow:inset 0 2px 5px rgba(40,80,160,.06),0 0 0 4px rgba(79,128,224,.25)}
+  #skp-login .fld .ic{flex:0 0 40px;height:40px;border-radius:50%;background:linear-gradient(180deg,#fff,#E3ECFF);display:grid;place-items:center;box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(110,140,200,.2),0 4px 8px -4px rgba(40,80,160,.35)}
+  #skp-login .fld .ic svg{width:20px;height:20px;fill:#3F70D2}
+  #skp-login .fld input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:10px 2px;font-size:16px;font-family:inherit;font-weight:700;color:#162038}
+  #skp-login .fld input::placeholder{color:#5E6F92;font-weight:600}
+  #skp-login .mata{flex:0 0 auto;width:38px;height:38px;border:0;background:none;padding:0;margin:0;cursor:pointer;display:grid;place-items:center;border-radius:50%}
+  #skp-login .mata svg{width:22px;height:22px;fill:none;stroke:#4D5D7F;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #skp-login .mata:hover{background:#EEF4FF}
+  #skp-login .tbl{width:100%;margin-top:20px;padding:15px;border:0;border-radius:999px;background:linear-gradient(180deg,#5B8BE6,#3566CC);color:#fff;font-size:16.5px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;text-shadow:0 1px 0 rgba(15,40,105,.3);
+    box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset 0 -5px 0 rgba(15,40,105,.3),0 14px 22px -10px rgba(47,93,184,.8);transition:transform .12s,box-shadow .12s,filter .2s}
+  #skp-login .tbl:active{transform:translateY(3px);box-shadow:inset 0 3px 8px rgba(10,30,80,.4)}
+  #skp-login .tbl svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  #skp-login .tbl:hover{filter:brightness(1.06)}#skp-login .tbl:disabled{opacity:.6;cursor:progress}
+  #skp-login .err{color:#b42318;font-size:13.5px;margin-top:8px;text-align:center;font-weight:700}#skp-login .err:empty{display:none}
+  #skp-login .link{width:100%;border:0;background:none;color:#2F5DB8;font-weight:800;font-size:13.5px;padding:8px;margin-top:4px;cursor:pointer;font-family:inherit}
+  #skp-login .ket{font-size:13px;color:#23304D;background:#DCE8FF;border-radius:16px;padding:10px 12px;margin-top:6px;line-height:1.5}
+  #skp-login .lg-kaki{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:18px}
+  #skp-login .lg-kaki div{text-align:center;font-size:12px;line-height:1.3;color:#23304D;font-weight:800;background:#EEF4FF;border-radius:16px;padding:10px 4px;box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(110,140,200,.14)}
+  #skp-login .lg-kaki div:nth-child(2){background:#FFE0EA}#skp-login .lg-kaki div:nth-child(3){background:#D9F5E6}
+  #skp-login .lg-kaki svg{display:block;width:26px;height:26px;margin:0 auto 5px;fill:none;stroke:#3F70D2;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  #skp-login .lg-kaki div:nth-child(2) svg{stroke:#B4335F}#skp-login .lg-kaki div:nth-child(3) svg{stroke:#17734F}
   @media (max-height:720px) and (min-width:861px){
-    #skp-login .kartu-login{padding:20px 30px 18px}#skp-login .lg-logo{width:70px;margin-bottom:4px}#skp-login h1{font-size:25px}
-    #skp-login .sub{font-size:14.5px}#skp-login .sambut{margin:8px 0 10px;font-size:13.5px}#skp-login .fld{margin-top:9px}#skp-login .tbl{margin-top:13px;padding:12px}
+    #skp-login .kartu-login{padding:20px 30px 18px}#skp-login .lg-logo{width:62px;margin-bottom:2px}#skp-login h1{font-size:26px}
+    #skp-login .sub{font-size:14.5px}#skp-login .sambut{margin:6px 0 8px;font-size:13.5px}#skp-login .fld{margin-top:9px}#skp-login .tbl{margin-top:14px;padding:12px}
   }
   @media (max-width:860px){
-    #skp-login .lg-hero{width:100%;-webkit-mask-image:none;mask-image:none;background-position:22% center}
-    #skp-login .lg-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,40,100,.35),rgba(10,40,100,.7))}
-    #skp-login .lg-swoosh,#skp-login .lg-swoosh2,#skp-login .lg-bar,#skp-login .lg-teks{display:none}
-    #skp-login .lg-isi{justify-content:center;padding:22px 16px}
-    #skp-login .kartu-login{padding:24px 20px 18px;border-radius:22px}
-    #skp-login h1{font-size:26px}#skp-login .sub{font-size:14.5px}#skp-login .sambut{font-size:13.5px;margin:10px 0 12px}
-    #skp-login .lg-logo{width:78px}
-  }`;
+    #skp-login .lg-panggung{display:none}
+    #skp-login .lg-isi{justify-content:center;padding:126px 16px 22px}
+    #skp-login .kartu-login{padding:56px 20px 18px;border-radius:28px}
+    #skp-login .kartu-login::before{content:"";position:absolute;left:50%;top:-112px;width:150px;height:140px;transform:translateX(-50%);background:url(img/karakter-perempuan.webp) left bottom/auto 100% no-repeat,url(img/karakter-laki.webp) right bottom/auto 100% no-repeat;filter:drop-shadow(0 10px 12px rgba(40,80,160,.25))}
+    #skp-login .lg-logo{display:none}
+    #skp-login h1{font-size:28px}#skp-login .sub{font-size:14.5px}#skp-login .sambut{font-size:13.5px;margin:8px 0 10px}
+  }
+  @media (prefers-reduced-motion:reduce){#skp-login .lg-maskot{animation:none}}`;
   const IKON = {
     user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M3.8 20.5c.6-4.2 4-6.6 8.2-6.6s7.6 2.4 8.2 6.6z"/></svg>',
     kunci: '<svg viewBox="0 0 24 24"><path d="M7 10V7.5a5 5 0 0 1 10 0V10h.5A2.5 2.5 0 0 1 20 12.5v7A2.5 2.5 0 0 1 17.5 22h-11A2.5 2.5 0 0 1 4 19.5v-7A2.5 2.5 0 0 1 6.5 10zm2.2 0h5.6V7.5a2.8 2.8 0 0 0-5.6 0zM12 14a1.6 1.6 0 0 0-.8 3v1.6h1.6V17a1.6 1.6 0 0 0-.8-3z"/></svg>',
@@ -200,9 +202,9 @@
   function layar(html) {
     let el = document.getElementById('skp-login');
     if (!el) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); el = document.createElement('div'); el.id = 'skp-login'; document.body.appendChild(el); }
-    el.innerHTML = `<div class="lg-latar" aria-hidden="true"><div class="lg-swoosh2"></div><div class="lg-swoosh"></div><div class="lg-bar"><i style="height:70px"></i><i style="height:105px"></i><i style="height:140px"></i><i style="height:175px"></i></div><div class="lg-hero"></div><div class="lg-teks"><div class="t1">SAKTI</div><div class="t2">Sahabat Kinerja Terintegrasi</div><i></i><div class="t3">Asisten Cerdas Penyusunan SKP Triwulanan<br>BPS Kota Kendari</div></div></div>
+    el.innerHTML = `<div class="lg-latar" aria-hidden="true"><div class="lg-gelembung lg-g1"></div><div class="lg-gelembung lg-g2"></div><div class="lg-panggung"><div class="lg-duo"><img class="lg-maskot" src="img/karakter-perempuan.webp" alt="" width="520" height="909"><img class="lg-maskot lg-m2" src="img/karakter-laki.webp" alt="" width="520" height="914"></div><div class="lg-teks"><div class="t1">SAKTI</div><div class="t2">Sahabat Kinerja Terintegrasi</div><div class="t3">Asisten Cerdas Penyusunan SKP Triwulanan<br>BPS Kota Kendari</div></div></div></div>
       <div class="lg-isi"><div class="kartu-login" role="dialog" aria-label="Masuk">
-      <img class="lg-logo" src="img/logo-bps.png?v=20" alt="Logo BPS"><h1>SAKTI</h1><div class="sub">Sahabat Kinerja Terintegrasi</div>
+      <img class="lg-logo" src="img/logo-sakti.svg" alt="Logo SAKTI" width="84" height="84"><h1>SAKTI</h1><div class="sub">Sahabat Kinerja Terintegrasi</div>
       <div class="sambut">Asisten Cerdas Penyusunan SKP Triwulanan<br>BPS Kota Kendari</div>${html}</div></div>`;
     el.hidden = false; return el;
   }
@@ -295,11 +297,13 @@
         await formLogin(pesan); continue;
       }
       uid = data.session.user.id;
+      { const mk = (data.session.user.user_metadata || {}).karakter; if (KARAKTER[mk]) { karakterKu = mk; try { localStorage.setItem('sakti-karakter-' + uid, mk); } catch (e) { } } }
       const r = await c.from('pegawai').select('*').eq('id', uid).maybeSingle();
       if (r.error) { pesan = 'Gagal memuat akun: ' + r.error.message; await c.auth.signOut(); continue; }
       if (!r.data || !r.data.aktif) { pesan = !r.data ? 'Akun ini belum terdaftar sebagai pegawai. Hubungi admin.' : 'Akun Anda dinonaktifkan. Hubungi admin.'; await c.auth.signOut(); continue; }
       saya = r.data; break;
     }
+    pasangKarakter();
     if (opt.pimpinan && saya.peran !== 'pimpinan') {
       layar(`<div class="ket">Halaman ini khusus <b>pimpinan</b>. Anda masuk sebagai ${esc(saya.nama)}.</div><button type="button" class="tbl" onclick="location.href='${saya.peran === 'admin' ? 'admin.html' : 'index.html'}'">Kembali</button>`);
       return new Promise(() => { });
@@ -344,6 +348,14 @@
     return j;
   }
   async function keluar() { try { await client().auth.signOut(); } catch (e) { } location.reload(); }
+  /* karakter sapaan (perempuan/laki-laki) dipilih pegawai di Profil, disimpan di metadata akun (tanpa ubah database) */
+  const KARAKTER = { p: 'img/karakter-perempuan.webp', l: 'img/karakter-laki.webp' };
+  let karakterKu = null;
+  function karakter() { if (karakterKu) return karakterKu; try { return localStorage.getItem('sakti-karakter-' + uid) || 'p'; } catch (e) { return 'p'; } }
+  function pasangKarakter() { const k = karakter(); document.querySelectorAll('img[data-karakter]').forEach(i => { if (i.getAttribute('src') !== KARAKTER[k]) i.src = KARAKTER[k]; }); document.querySelectorAll('[data-pilih-karakter] [data-k]').forEach(b => { const on = b.dataset.k === k; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); }); }
+  async function aturKarakter(k) { if (!KARAKTER[k]) return; cek(await client().auth.updateUser({ data: { karakter: k } }), 'Gagal menyimpan pilihan karakter'); karakterKu = k; try { localStorage.setItem('sakti-karakter-' + uid, k); } catch (e) { } pasangKarakter(); }
+  function pasangPilihKarakter(el) { if (!el) return; el.addEventListener('click', async e => { const b = e.target.closest('[data-k]'); if (!b || b.classList.contains('on')) return; const lama = karakter(); karakterKu = b.dataset.k; pasangKarakter();
+    try { await aturKarakter(b.dataset.k); toast('Karakter sapaan disimpan'); } catch (x) { karakterKu = lama; pasangKarakter(); toast(x.message, 5000); } }); pasangKarakter(); }
   async function gantiPassword(pw) { if (!pw || pw.length < 6) throw new Error('Password minimal 6 karakter'); cek(await client().auth.updateUser({ password: pw })); }
 
   /* ---------- Utilitas ---------- */
@@ -620,7 +632,7 @@
 
   const api = {
     BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, cocokRk, tokenRk, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
-    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, soalBerakhlak, susunKuis, namaPanggil, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
+    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, karakter, aturKarakter, pasangKarakter, pasangPilihKarakter, soalBerakhlak, susunKuis, namaPanggil, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
     list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakRk: ids => proses('Menghapus ' + ids.length + ' RK…', () => db.hapusBanyakRk(ids), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),
@@ -640,7 +652,7 @@
     if (document.getElementById('skp-wa') || /(input|pimpinan|kuis)\.html/i.test(location.pathname) || !WA_NOMOR) return;
     const st = document.createElement('style');
     st.textContent = `#skp-wa{position:fixed;right:18px;bottom:18px;z-index:1001;font-family:inherit}
-    #skp-wa .wa-tbl{width:56px;height:56px;border-radius:50%;border:0;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);transition:transform .15s}
+    #skp-wa .wa-tbl{width:56px;height:56px;border-radius:50%;border:0;background:linear-gradient(180deg,#3BE07A,#1FB85A);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset 0 -4px 0 rgba(0,0,0,.18),0 10px 20px -8px rgba(20,120,60,.7);transition:transform .15s}
     #skp-wa .wa-tbl:hover{transform:scale(1.06)}#skp-wa .wa-tbl svg{width:32px;height:32px}
     #skp-wa .wa-pop{position:absolute;right:0;bottom:68px;width:min(300px,calc(100vw - 36px));background:#fff;color:#1d2733;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.22);overflow:hidden;display:none}
     #skp-wa.buka .wa-pop{display:block}
@@ -653,7 +665,7 @@
     #skp-wa .wa-mulai svg{width:20px;height:20px}
     #skp-wa .wa-label{position:absolute;right:66px;bottom:12px;white-space:nowrap;background:#fff;color:#1d2733;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,.15)}
     #skp-wa.buka .wa-label{display:none}
-    @media (max-width:760px){#skp-wa{bottom:calc(76px + env(safe-area-inset-bottom));right:12px}#skp-wa .wa-tbl{width:50px;height:50px}#skp-wa .wa-label{display:none}}
+    @media (max-width:760px){#skp-wa{bottom:calc(92px + env(safe-area-inset-bottom));right:14px}#skp-wa .wa-tbl{width:50px;height:50px}#skp-wa .wa-label{display:none}}
     @media print{#skp-wa{display:none}}`;
     document.head.appendChild(st);
     const el = document.createElement('div'); el.id = 'skp-wa';
