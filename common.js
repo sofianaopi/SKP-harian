@@ -137,61 +137,92 @@
   /* ---------- Layar login ---------- */
   const CSS = `#skp-login[hidden]{display:none!important}
   #skp-login{position:fixed;inset:0;z-index:1000;overflow:auto;font-family:"Nunito","Segoe UI",-apple-system,Roboto,Arial,sans-serif;color:#162038;font-weight:600;
-    background:radial-gradient(700px 520px at 100% 0,#D3E2FF 0,rgba(211,226,255,0) 70%),radial-gradient(640px 520px at 0 100%,#E6DFFF 0,rgba(230,223,255,0) 70%),#EAF1FC}
+    background:linear-gradient(180deg,rgba(255,255,255,0) 83%,rgba(232,240,255,.95) 83.2%,#DCE8FF 100%),linear-gradient(135deg,#E6F0FF 0%,#C9DCFB 45%,#A9C6F4 100%)}
   #skp-login .lg-latar{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-  #skp-login .lg-gelembung{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,rgba(255,255,255,0) 70%)}
-  #skp-login .lg-g1{width:340px;height:340px;left:8%;top:6%;opacity:.8}#skp-login .lg-g2{width:200px;height:200px;left:40%;bottom:6%;background:radial-gradient(circle,rgba(255,224,234,.9),rgba(255,224,234,0) 70%)}
-  #skp-login .lg-panggung{position:absolute;left:0;top:0;bottom:0;width:56%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px}
-  #skp-login .lg-duo{display:flex;align-items:flex-end;justify-content:center;position:relative}#skp-login .lg-duo::after{content:"";position:absolute;left:8%;right:8%;bottom:-6px;height:22px;border-radius:50%;background:radial-gradient(closest-side,rgba(40,80,160,.22),rgba(40,80,160,0))}
-  #skp-login .lg-maskot{height:min(400px,46vh);width:auto;position:relative;z-index:1;filter:drop-shadow(0 18px 24px rgba(40,80,160,.22));animation:lgApung 5s ease-in-out infinite}#skp-login .lg-m2{margin-left:-6%;animation-delay:-2.5s}#skp-login .lg-maskot{-webkit-mask-image:linear-gradient(180deg,#000 80%,transparent 100%);mask-image:linear-gradient(180deg,#000 80%,transparent 100%)}#skp-login .lg-duo::after{display:none}
-  @keyframes lgApung{50%{transform:translateY(-10px)}}
-  #skp-login .lg-teks{text-align:center;color:#1C3A75}
-  #skp-login .lg-teks .t1{font-size:clamp(40px,min(5.6vw,9vh),78px);font-weight:900;letter-spacing:-1px;line-height:1}
-  #skp-login .lg-teks .t2{font-size:clamp(17px,min(2vw,3.2vh),26px);font-weight:800;margin-top:6px;color:#2F5DB8}
-  #skp-login .lg-teks .t3{font-size:clamp(13px,min(1.3vw,2.2vh),17px);font-weight:700;line-height:1.4;color:#4D5D7F;margin-top:8px}
-  #skp-login .lg-isi{position:relative;min-height:100%;display:flex;align-items:center;justify-content:flex-end;padding:28px 7vw 28px 20px;box-sizing:border-box}
-  #skp-login .kartu-login{position:relative;background:#fff;border-radius:32px;width:100%;max-width:430px;padding:30px 32px 26px;box-sizing:border-box;
-    box-shadow:inset 0 2px 0 #fff,inset 0 -4px 0 rgba(120,150,210,.14),0 30px 60px -20px rgba(28,58,117,.4),0 4px 10px rgba(40,80,160,.06)}
-  #skp-login .lg-logo{width:84px;height:auto;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 10px rgba(47,93,184,.3))}
-  #skp-login h1{font-size:32px;line-height:1.1;text-align:center;margin:0;padding:0;border:0;color:#1C3A75;font-weight:900;letter-spacing:-.5px}
-  #skp-login .sub{text-align:center;color:#2F5DB8;font-size:15.5px;font-weight:800;margin:4px 0 0;padding:0;border:0}
-  #skp-login .sambut{text-align:center;color:#4D5D7F;font-size:14px;line-height:1.5;margin:10px 0 14px;font-weight:600}
+  #skp-login .lg-latar img{position:absolute;filter:drop-shadow(0 10px 14px rgba(40,80,160,.16))}
+  #skp-login .lg-awan1{width:170px;right:5%;top:6%;animation:lgAwan 9s ease-in-out infinite}
+  #skp-login .lg-awan2{width:130px;left:44%;top:30%;animation:lgAwan 11s ease-in-out infinite reverse}
+  #skp-login .lg-awan3{width:110px;left:4%;bottom:12%;opacity:.9;animation:lgAwan 13s ease-in-out infinite}
+  @keyframes lgAwan{50%{transform:translateX(16px)}}
+  #skp-login .lg-bintang{position:absolute;width:30px;height:30px;color:#F5C044;filter:drop-shadow(0 4px 4px rgba(200,140,20,.3));animation:lgKelip 3s ease-in-out infinite}
+  #skp-login .lg-b1{right:20%;top:9%}#skp-login .lg-b2{right:4%;top:36%;width:38px;height:38px;animation-delay:-1s}#skp-login .lg-b3{left:41%;top:52%;width:40px;height:40px;animation-delay:-2s}#skp-login .lg-b4{right:5%;top:62%;width:24px;height:24px;animation-delay:-.5s}
+  @keyframes lgKelip{50%{transform:scale(.82) rotate(12deg);opacity:.75}}
+  #skp-login .lg-isi{position:relative;min-height:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:40px;padding:110px max(5vw,28px) 48px max(6vw,28px);box-sizing:border-box;max-width:1240px;margin:0 auto}
+  #skp-login .lg-bps{position:absolute;left:max(4vw,24px);top:28px;display:flex;align-items:center;gap:12px;text-decoration:none}
+  #skp-login .lg-bps img{width:60px;height:auto}
+  #skp-login .lg-bps b{display:block;font-style:italic;font-weight:900;font-size:19px;letter-spacing:.2px;color:#1F63C4;line-height:1.1}
+  #skp-login .lg-bps small{display:block;font-style:italic;font-weight:800;font-size:13px;color:#3D6FC2}
+  #skp-login .lg-kiri h1{font-size:clamp(46px,min(6.4vw,10vh),92px);line-height:1.02;font-weight:900;letter-spacing:-2px;color:#16275A;margin:0}
+  #skp-login .lg-kiri h1 span{display:block;color:#1E4FB0}
+  #skp-login .lg-garis{display:block;width:120px;height:6px;border-radius:6px;background:linear-gradient(90deg,#F5B83A,#F7CF6A);margin:26px 0 22px}
+  #skp-login .lg-kiri p{font-size:clamp(16px,1.5vw,21px);line-height:1.5;color:#22325C;max-width:34ch;margin:0;font-weight:700}
+  #skp-login .lg-chip{display:inline-flex;align-items:center;gap:10px;margin-top:22px;background:rgba(255,255,255,.75);border-radius:999px;padding:7px 16px 7px 7px;box-shadow:inset 0 2px 0 #fff,0 8px 18px -10px rgba(40,80,160,.5);font-weight:800;color:#1C3A75;font-size:14px}
+  #skp-login .lg-chip img{width:34px;height:34px}
+  #skp-login .lg-hp{position:relative;width:420px;padding:330px 0 0;margin-right:40px}
+  #skp-login .lg-hp::before{content:"";position:absolute;left:34px;right:-40px;top:0;bottom:56px;border-radius:52px;background:linear-gradient(180deg,#FFFFFF,#F4F8FF);
+    box-shadow:inset 0 3px 0 #fff,inset 0 -6px 0 rgba(120,150,210,.14),0 40px 70px -30px rgba(28,58,117,.45),0 6px 14px rgba(40,80,160,.08)}
+  #skp-login .lg-sapa{position:absolute;left:34px;right:-40px;top:30px;text-align:center;z-index:1}
+  #skp-login .lg-hati{display:block;width:44px;height:40px;margin:0 auto 6px;filter:drop-shadow(0 6px 8px rgba(226,80,110,.35));animation:lgDenyut 1.6s ease-in-out infinite}
+  @keyframes lgDenyut{0%,100%{transform:scale(1)}15%{transform:scale(1.14)}30%{transform:scale(1)}}
+  #skp-login .lg-sapa b{position:relative;display:inline-block;font-size:30px;font-weight:900;color:#16275A;letter-spacing:-.5px;padding:0 30px}
+  #skp-login .lg-sapa b::before,#skp-login .lg-sapa b::after{content:"";position:absolute;top:50%;width:18px;height:24px;transform:translateY(-50%);background:linear-gradient(#F5B83A,#F5B83A) 0 0/14px 3px no-repeat,linear-gradient(#F5B83A,#F5B83A) 4px 50%/14px 3px no-repeat,linear-gradient(#F5B83A,#F5B83A) 0 100%/14px 3px no-repeat;border-radius:3px}
+  #skp-login .lg-sapa b::before{left:0;transform:translateY(-50%) scaleX(-1)}#skp-login .lg-sapa b::after{right:0}
+  #skp-login .lg-duo{position:absolute;left:70px;bottom:auto;top:122px;width:340px;height:auto;z-index:1;filter:drop-shadow(0 12px 16px rgba(28,58,117,.25));transform-origin:50% 100%;animation:lgSapa 900ms cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes lgSapa{from{transform:translateY(40px);opacity:0}}
+  #skp-login .lg-tanaman{position:absolute;left:-150px;bottom:20px;width:120px;z-index:0;transform-origin:50% 100%;animation:lgGoyang 6s ease-in-out infinite}
+  #skp-login .lg-bunga{position:absolute;right:-118px;bottom:24px;width:96px;z-index:0;transform-origin:50% 100%;animation:lgGoyang 5s ease-in-out infinite reverse}
+  @keyframes lgGoyang{50%{transform:rotate(2.5deg)}}
+  #skp-login .kartu-login{position:relative;z-index:2;background:#fff;border-radius:40px;width:100%;padding:30px 30px 24px;box-sizing:border-box;
+    box-shadow:inset 0 3px 0 #fff,inset 0 -5px 0 rgba(120,150,210,.14),-14px 0 0 -2px rgba(255,255,255,.85),-14px 0 0 0 rgba(160,185,235,.35),0 34px 60px -26px rgba(28,58,117,.5),0 4px 10px rgba(40,80,160,.06)}
+  #skp-login .kartu-login h1,#skp-login .lg-logo,#skp-login .kartu-login>.sub,#skp-login .sambut{display:none}
   #skp-login label{display:block;font-size:12.5px;color:#4D5D7F;margin:12px 0 5px 6px;font-weight:700}
-  #skp-login .fld{display:flex;align-items:center;gap:10px;background:#F5F8FE;border:1.5px solid #DFE7F4;border-radius:999px;padding:6px 14px 6px 6px;margin-top:12px;box-shadow:inset 0 2px 5px rgba(40,80,160,.08);transition:border-color .15s,box-shadow .15s,background .15s}
-  #skp-login .fld:focus-within{border-color:#4F80E0;background:#fff;box-shadow:inset 0 2px 5px rgba(40,80,160,.06),0 0 0 4px rgba(79,128,224,.25)}
-  #skp-login .fld .ic{flex:0 0 40px;height:40px;border-radius:50%;background:linear-gradient(180deg,#fff,#E3ECFF);display:grid;place-items:center;box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(110,140,200,.2),0 4px 8px -4px rgba(40,80,160,.35)}
-  #skp-login .fld .ic svg{width:20px;height:20px;fill:#3F70D2}
-  #skp-login .fld input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:10px 2px;font-size:16px;font-family:inherit;font-weight:700;color:#162038}
+  #skp-login .fld{display:flex;align-items:center;gap:12px;background:#F2F6FD;border:0;border-radius:999px;padding:5px 14px 5px 5px;margin-top:14px;box-shadow:inset 0 3px 6px rgba(40,80,160,.10),0 2px 0 #fff;transition:box-shadow .15s,background .15s}
+  #skp-login .fld:first-child{margin-top:0}
+  #skp-login .fld:focus-within{background:#fff;box-shadow:inset 0 3px 6px rgba(40,80,160,.06),0 0 0 4px rgba(79,128,224,.28)}
+  #skp-login .fld .ic{flex:0 0 50px;height:50px;border-radius:50%;background:linear-gradient(180deg,#7FA6F0,#3F70D2);display:grid;place-items:center;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset 0 -4px 0 rgba(15,40,105,.28),0 8px 14px -6px rgba(47,93,184,.7)}
+  #skp-login .fld .ic svg{width:22px;height:22px;fill:#fff}
+  #skp-login .fld input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:12px 2px;font-size:16.5px;font-family:inherit;font-weight:700;color:#162038}
   #skp-login .fld input::placeholder{color:#5E6F92;font-weight:600}
-  #skp-login .mata{flex:0 0 auto;width:38px;height:38px;border:0;background:none;padding:0;margin:0;cursor:pointer;display:grid;place-items:center;border-radius:50%}
+  #skp-login .mata{flex:0 0 auto;width:40px;height:40px;border:0;background:none;padding:0;margin:0;cursor:pointer;display:grid;place-items:center;border-radius:50%}
   #skp-login .mata svg{width:22px;height:22px;fill:none;stroke:#4D5D7F;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   #skp-login .mata:hover{background:#EEF4FF}
-  #skp-login .tbl{width:100%;margin-top:20px;padding:15px;border:0;border-radius:999px;background:linear-gradient(180deg,#5B8BE6,#3566CC);color:#fff;font-size:16.5px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;text-shadow:0 1px 0 rgba(15,40,105,.3);
-    box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset 0 -5px 0 rgba(15,40,105,.3),0 14px 22px -10px rgba(47,93,184,.8);transition:transform .12s,box-shadow .12s,filter .2s}
+  #skp-login .lg-lupa{display:block;text-align:right;margin:10px 8px 0;color:#16275A;font-weight:800;font-size:14px;text-decoration:none}
+  #skp-login .lg-lupa:hover{color:#2F5DB8;text-decoration:underline}
+  #skp-login .tbl{width:100%;margin-top:18px;padding:16px;border:0;border-radius:999px;background:linear-gradient(180deg,#5B8BE6,#2F5FC4);color:#fff;font-size:18px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;text-shadow:0 1px 0 rgba(15,40,105,.3);
+    box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset 0 -5px 0 rgba(15,40,105,.3),0 16px 24px -12px rgba(47,93,184,.85);transition:transform .12s,box-shadow .12s,filter .2s}
   #skp-login .tbl:active{transform:translateY(3px);box-shadow:inset 0 3px 8px rgba(10,30,80,.4)}
   #skp-login .tbl svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   #skp-login .tbl:hover{filter:brightness(1.06)}#skp-login .tbl:disabled{opacity:.6;cursor:progress}
-  #skp-login .err{color:#b42318;font-size:13.5px;margin-top:8px;text-align:center;font-weight:700}#skp-login .err:empty{display:none}
+  #skp-login .err{color:#b42318;font-size:13.5px;margin-top:10px;text-align:center;font-weight:700}#skp-login .err:empty{display:none}
+  #skp-login .lg-daftar{display:flex;align-items:center;gap:12px;margin:18px 0 0;color:#4D5D7F;font-size:13.5px;font-weight:700}
+  #skp-login .lg-daftar::before,#skp-login .lg-daftar::after{content:"";flex:1;height:1.5px;background:#DFE7F4}
+  #skp-login .lg-bantu{text-align:center;margin-top:10px;font-size:15px;font-weight:700;color:#16275A}
+  #skp-login .lg-bantu a{color:#2F5DB8;font-weight:900;text-decoration:none}#skp-login .lg-bantu a:hover{text-decoration:underline}
   #skp-login .link{width:100%;border:0;background:none;color:#2F5DB8;font-weight:800;font-size:13.5px;padding:8px;margin-top:4px;cursor:pointer;font-family:inherit}
-  #skp-login .ket{font-size:13px;color:#23304D;background:#DCE8FF;border-radius:16px;padding:10px 12px;margin-top:6px;line-height:1.5}
-  #skp-login .lg-kaki{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:18px}
-  #skp-login .lg-kaki div{text-align:center;font-size:12px;line-height:1.3;color:#23304D;font-weight:800;background:#EEF4FF;border-radius:16px;padding:10px 4px;box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(110,140,200,.14)}
-  #skp-login .lg-kaki div:nth-child(2){background:#FFE0EA}#skp-login .lg-kaki div:nth-child(3){background:#D9F5E6}
-  #skp-login .lg-kaki svg{display:block;width:26px;height:26px;margin:0 auto 5px;fill:none;stroke:#3F70D2;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  #skp-login .lg-kaki div:nth-child(2) svg{stroke:#B4335F}#skp-login .lg-kaki div:nth-child(3) svg{stroke:#17734F}
-  @media (max-height:720px) and (min-width:861px){
-    #skp-login .kartu-login{padding:20px 30px 18px}#skp-login .lg-logo{width:62px;margin-bottom:2px}#skp-login h1{font-size:26px}
-    #skp-login .sub{font-size:14.5px}#skp-login .sambut{margin:6px 0 8px;font-size:13.5px}#skp-login .fld{margin-top:9px}#skp-login .tbl{margin-top:14px;padding:12px}
+  #skp-login .ket{font-size:13px;color:#23304D;background:#DCE8FF;border-radius:16px;padding:10px 12px;margin-bottom:12px;line-height:1.5}
+  #skp-login form .ket+.fld{margin-top:0}
+  @media (max-height:780px) and (min-width:861px){
+    #skp-login .lg-isi{padding-top:96px;padding-bottom:28px}
+    #skp-login .lg-hp{padding-top:262px;width:390px}#skp-login .lg-sapa{top:18px}#skp-login .lg-hati{width:34px;height:30px;margin-bottom:2px}#skp-login .lg-sapa b{font-size:25px}
+    #skp-login .lg-duo{top:92px;width:270px;left:96px}#skp-login .kartu-login{padding:22px 26px 18px}#skp-login .fld{margin-top:10px}#skp-login .tbl{margin-top:14px;padding:13px}
   }
+  @media (max-width:1100px) and (min-width:861px){#skp-login .lg-bunga{display:none}#skp-login .lg-hp{margin-right:0}#skp-login .lg-hp::before,#skp-login .lg-sapa{right:-10px}}
   @media (max-width:860px){
-    #skp-login .lg-panggung{display:none}
-    #skp-login .lg-isi{justify-content:center;padding:126px 16px 22px}
-    #skp-login .kartu-login{padding:56px 20px 18px;border-radius:28px}
-    #skp-login .kartu-login::before{content:"";position:absolute;left:50%;top:-112px;width:150px;height:140px;transform:translateX(-50%);background:url(img/karakter-perempuan.webp) left bottom/auto 100% no-repeat,url(img/karakter-laki.webp) right bottom/auto 100% no-repeat;filter:drop-shadow(0 10px 12px rgba(40,80,160,.25))}
-    #skp-login .lg-logo{display:none}
-    #skp-login h1{font-size:28px}#skp-login .sub{font-size:14.5px}#skp-login .sambut{font-size:13.5px;margin:8px 0 10px}
+    #skp-login{background:linear-gradient(160deg,#E6F0FF 0%,#C9DCFB 50%,#A9C6F4 100%)}
+    #skp-login .lg-isi{display:block;padding:84px 16px 28px}
+    #skp-login .lg-bps{left:18px;top:18px}#skp-login .lg-bps img{width:44px}#skp-login .lg-bps b{font-size:15px}#skp-login .lg-bps small{font-size:12px}
+    #skp-login .lg-kiri{display:none}
+    #skp-login .lg-hp{width:auto;max-width:420px;margin:0 auto;padding-top:300px}
+    #skp-login .lg-hp::before,#skp-login .lg-sapa{left:14px;right:14px}
+    #skp-login .lg-duo{left:50%;width:min(310px,80vw);top:108px;transform:translateX(-50%);animation:none}
+    #skp-login .lg-sapa b{font-size:26px}
+    #skp-login .kartu-login{padding:24px 20px 20px;border-radius:32px;box-shadow:inset 0 3px 0 #fff,inset 0 -5px 0 rgba(120,150,210,.14),0 30px 50px -24px rgba(28,58,117,.5)}
+    #skp-login .lg-tanaman,#skp-login .lg-bunga,#skp-login .lg-awan2,#skp-login .lg-b3{display:none}
+    #skp-login .lg-awan1{width:110px;top:auto;bottom:4%;right:-20px}#skp-login .lg-awan3{width:90px;bottom:auto;top:16%;left:-24px}
   }
-  @media (prefers-reduced-motion:reduce){#skp-login .lg-maskot{animation:none}}`;
+  @media (max-width:380px){#skp-login .lg-hp{padding-top:280px}#skp-login .lg-duo{top:104px;width:270px}}
+  @media (prefers-reduced-motion:reduce){#skp-login *{animation:none!important}}
+  body:has(#skp-login:not([hidden])) #skp-wa{display:none}`;
   const IKON = {
     user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M3.8 20.5c.6-4.2 4-6.6 8.2-6.6s7.6 2.4 8.2 6.6z"/></svg>',
     kunci: '<svg viewBox="0 0 24 24"><path d="M7 10V7.5a5 5 0 0 1 10 0V10h.5A2.5 2.5 0 0 1 20 12.5v7A2.5 2.5 0 0 1 17.5 22h-11A2.5 2.5 0 0 1 4 19.5v-7A2.5 2.5 0 0 1 6.5 10zm2.2 0h5.6V7.5a2.8 2.8 0 0 0-5.6 0zM12 14a1.6 1.6 0 0 0-.8 3v1.6h1.6V17a1.6 1.6 0 0 0-.8-3z"/></svg>',
@@ -202,10 +233,14 @@
   function layar(html) {
     let el = document.getElementById('skp-login');
     if (!el) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); el = document.createElement('div'); el.id = 'skp-login'; document.body.appendChild(el); }
-    el.innerHTML = `<div class="lg-latar" aria-hidden="true"><div class="lg-gelembung lg-g1"></div><div class="lg-gelembung lg-g2"></div><div class="lg-panggung"><div class="lg-duo"><img class="lg-maskot" src="img/karakter-perempuan.webp" alt="" width="520" height="909"><img class="lg-maskot lg-m2" src="img/karakter-laki.webp" alt="" width="520" height="914"></div><div class="lg-teks"><div class="t1">SAKTI</div><div class="t2">Sahabat Kinerja Terintegrasi</div><div class="t3">Asisten Cerdas Penyusunan SKP Triwulanan<br>BPS Kota Kendari</div></div></div></div>
-      <div class="lg-isi"><div class="kartu-login" role="dialog" aria-label="Masuk">
-      <img class="lg-logo" src="img/logo-sakti.svg" alt="Logo SAKTI" width="84" height="84"><h1>SAKTI</h1><div class="sub">Sahabat Kinerja Terintegrasi</div>
-      <div class="sambut">Asisten Cerdas Penyusunan SKP Triwulanan<br>BPS Kota Kendari</div>${html}</div></div>`;
+    el.innerHTML = `<div class="lg-latar" aria-hidden="true"><img class="lg-awan1" src="img/awan.svg" alt=""><img class="lg-awan2" src="img/awan.svg" alt=""><img class="lg-awan3" src="img/awan.svg" alt=""><svg class="lg-bintang lg-b1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c.5 0 .8.3 1 .8l2.2 4.6 5 .7c1 .2 1.3 1.3.6 2l-3.6 3.5.9 5c.2 1-.9 1.7-1.7 1.2L12 18l-4.4 2.3c-.9.5-1.9-.2-1.7-1.2l.9-5L3.2 10.6c-.7-.7-.3-1.8.6-2l5-.7 2.2-4.6c.2-.5.5-.8 1-.8z"/></svg><svg class="lg-bintang lg-b2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c.5 0 .8.3 1 .8l2.2 4.6 5 .7c1 .2 1.3 1.3.6 2l-3.6 3.5.9 5c.2 1-.9 1.7-1.7 1.2L12 18l-4.4 2.3c-.9.5-1.9-.2-1.7-1.2l.9-5L3.2 10.6c-.7-.7-.3-1.8.6-2l5-.7 2.2-4.6c.2-.5.5-.8 1-.8z"/></svg><svg class="lg-bintang lg-b3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c.5 0 .8.3 1 .8l2.2 4.6 5 .7c1 .2 1.3 1.3.6 2l-3.6 3.5.9 5c.2 1-.9 1.7-1.7 1.2L12 18l-4.4 2.3c-.9.5-1.9-.2-1.7-1.2l.9-5L3.2 10.6c-.7-.7-.3-1.8.6-2l5-.7 2.2-4.6c.2-.5.5-.8 1-.8z"/></svg><svg class="lg-bintang lg-b4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c.5 0 .8.3 1 .8l2.2 4.6 5 .7c1 .2 1.3 1.3.6 2l-3.6 3.5.9 5c.2 1-.9 1.7-1.7 1.2L12 18l-4.4 2.3c-.9.5-1.9-.2-1.7-1.2l.9-5L3.2 10.6c-.7-.7-.3-1.8.6-2l5-.7 2.2-4.6c.2-.5.5-.8 1-.8z"/></svg></div>
+      <div class="lg-isi"><div class="lg-bps"><img src="img/logo-bps.png?v=20" alt="Logo BPS" width="60" height="44"><div><b>BADAN PUSAT STATISTIK</b><small>KOTA KENDARI</small></div></div>
+      <div class="lg-kiri"><h1>Selamat Datang <span>di SAKTI</span></h1><i class="lg-garis"></i><p>Silakan masuk untuk mencatat kegiatan harian dan menyusun SKP Anda.</p>
+        <div class="lg-chip"><img src="img/logo-sakti.svg" alt="" width="34" height="34">Sahabat Kinerja Terintegrasi</div></div>
+      <div class="lg-hp"><div class="lg-sapa"><svg class="lg-hati" viewBox="0 0 24 22" aria-hidden="true"><defs><linearGradient id="lgH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8DA1"/><stop offset="1" stop-color="#E8506E"/></linearGradient></defs><path d="M12 21s-9.5-5.6-9.5-12A5.2 5.2 0 0 1 12 6a5.2 5.2 0 0 1 9.5 3C21.5 15.4 12 21 12 21z" fill="url(#lgH)"/><ellipse cx="7.5" cy="7.5" rx="2" ry="1.3" fill="#fff" opacity=".6" transform="rotate(-30 7.5 7.5)"/></svg><b>Selamat Datang!</b></div>
+        <img class="lg-duo" src="img/karakter-duo.webp" alt="" width="760" height="648">
+        <img class="lg-tanaman" src="img/tanaman-pot.svg" alt="" aria-hidden="true"><img class="lg-bunga" src="img/bunga.svg" alt="" aria-hidden="true">
+        <div class="kartu-login" role="dialog" aria-label="Masuk ke SAKTI">${html}</div></div></div>`;
     el.hidden = false; return el;
   }
   const pwField = (id, ac, ph = 'Password') => `<div class="fld"><span class="ic">${IKON.kunci}</span><input id="${id}" type="password" autocomplete="${ac}" required placeholder="${ph}" aria-label="${ph}"><button type="button" class="mata" data-lihat="${id}" aria-label="Tampilkan password">${IKON.tutup}</button></div>`;
@@ -214,9 +249,10 @@
 
   function formLogin(pesan) {
     return new Promise(resolve => {
-      const el = layar(`<form id="fLogin">${fldTeks('lNip', 'NIP lama / Username', 'autocomplete="username" autocapitalize="off" required')}
-        ${pwField('lPw', 'current-password')}
-        <button type="submit" class="tbl">${IKON.masuk}Masuk</button><div class="err" id="lErr">${esc(pesan || '')}</div></form><div id="lSetup"></div>`);
+      const el = layar(`<form id="fLogin">${fldTeks('lNip', 'NIP lama atau username', 'autocomplete="username" autocapitalize="off" required')}
+        ${pwField('lPw', 'current-password', 'Kata sandi')}${WA_NOMOR ? `<a class="lg-lupa" href="https://wa.me/${WA_NOMOR}?text=${encodeURIComponent('Halo admin SAKTI, saya lupa kata sandi akun SAKTI saya. NIP lama saya: ')}" target="_blank" rel="noopener">Lupa kata sandi?</a>` : ''}
+        <button type="submit" class="tbl">${IKON.masuk}Masuk</button><div class="err" id="lErr">${esc(pesan || '')}</div></form><div id="lSetup"></div>
+        ${WA_NOMOR ? `<div class="lg-daftar">atau</div><div class="lg-bantu">Belum punya akun? <a href="https://wa.me/${WA_NOMOR}?text=${encodeURIComponent('Halo admin SAKTI, saya ingin dibuatkan akun SAKTI. Nama: ')}" target="_blank" rel="noopener">Hubungi admin</a></div>` : ''}`);
       pasangLihat(el);
       try { const n = localStorage.getItem('skp-nip-terakhir'); if (n) el.querySelector('#lNip').value = n; } catch (e) { }
       el.querySelector(el.querySelector('#lNip').value ? '#lPw' : '#lNip').focus();

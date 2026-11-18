@@ -1,10 +1,10 @@
 /* Service worker: membuat aplikasi tetap terbuka walau sinyal hilang.
    Hemat kuota: saat versi naik hanya berkas inti (±130 KB terkompresi) yang diunduh ulang.
    Pustaka besar (Excel, template Word/Excel, halaman admin) baru disimpan saat pertama kali dipakai. */
-const CACHE = 'sakti-v68';
+const CACHE = 'sakti-v69';
 const PUSTAKA = 'sakti-pustaka-1';   // berkas bernama-versi (vendor/, fonts/): disimpan sekali, tidak diunduh ulang tiap versi
 // berkas lain (gambar latar, docx.js, dinas.js, admin, kuis) tetap tersimpan otomatis saat pertama kali dibuka
-const INTI = ['./', 'index.html', 'input.html', 'tema.css', 'config.js', 'common.js', 'excel.js', 'rkpicker.js', 'manifest-input.json', 'manifest-dashboard.json', 'icons/input-192.png', 'icons/dashboard-192.png', 'img/logo-sakti.svg', 'img/karakter-perempuan.webp', 'img/karakter-laki.webp'];
+const INTI = ['./', 'index.html', 'input.html', 'tema.css', 'config.js', 'common.js', 'excel.js', 'rkpicker.js', 'manifest-input.json', 'manifest-dashboard.json', 'icons/input-192.png', 'icons/dashboard-192.png', 'img/logo-sakti.svg', 'img/karakter-perempuan.webp', 'img/karakter-laki.webp', 'img/karakter-duo.webp', 'img/awan.svg'];
 const PUSTAKA_INTI = ['vendor/supabase-js-2.119.0.js', 'fonts/nunito.woff2'];
 const tetap = u => /\/(vendor|fonts)\//.test(u.pathname);
 

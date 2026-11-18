@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Logo SAKTI">
+  <defs>
+    <linearGradient id="lgBalon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9CDFF"/><stop offset=".55" stop-color="#6FA2F2"/><stop offset="1" stop-color="#4C7FDC"/></linearGradient>
+    <linearGradient id="lgSisi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3D6BC4"/><stop offset="1" stop-color="#2E57A8"/></linearGradient>
+    <linearGradient id="lgB1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DCE9FF"/></linearGradient>
+    <linearGradient id="lgBintang" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE596"/><stop offset="1" stop-color="#F6B73C"/></linearGradient>
+    <radialGradient id="lgKilau" cx="35%" cy="20%" r="60%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <!-- sisi timbul (3D) -->
+  <path d="M22 26 h76 a16 16 0 0 1 16 16 v40 a16 16 0 0 1 -16 16 h-44 l-22 16 v-16 h-10 a16 16 0 0 1 -16 -16 v-40 a16 16 0 0 1 16 -16z" fill="url(#lgSisi)" transform="translate(0 6)"/>
+  <!-- gelembung chat -->
+  <path d="M22 22 h76 a16 16 0 0 1 16 16 v40 a16 16 0 0 1 -16 16 h-44 l-22 16 v-16 h-10 a16 16 0 0 1 -16 -16 v-40 a16 16 0 0 1 16 -16z" fill="url(#lgBalon)"/>
+  <path d="M22 22 h76 a16 16 0 0 1 16 16 v40 a16 16 0 0 1 -16 16 h-44 l-22 16 v-16 h-10 a16 16 0 0 1 -16 -16 v-40 a16 16 0 0 1 16 -16z" fill="url(#lgKilau)"/>
+  <!-- grafik naik -->
+  <rect x="30" y="62" width="13" height="20" rx="5" fill="url(#lgB1)"/>
+  <rect x="50" y="52" width="13" height="30" rx="5" fill="url(#lgB1)"/>
+  <rect x="70" y="42" width="13" height="40" rx="5" fill="url(#lgB1)"/>
+  <path d="M30 52 L50 40 L66 45 L88 30" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- bintang -->
+  <path d="M98 4 l5.6 11.4 12.6 1.8 -9.1 8.9 2.1 12.5 -11.2 -5.9 -11.2 5.9 2.1 -12.5 -9.1 -8.9 12.6 -1.8z" fill="url(#lgBintang)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+</svg>

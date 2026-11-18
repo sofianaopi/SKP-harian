@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 170" aria-hidden="true">
+  <defs>
+    <linearGradient id="tnPot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#D3E2FA"/></linearGradient>
+    <linearGradient id="tnDaun" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B7EBC9"/><stop offset="1" stop-color="#5FBF8A"/></linearGradient>
+    <linearGradient id="tnDaun2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A6E3BC"/><stop offset="1" stop-color="#4FAE7C"/></linearGradient>
+  </defs>
+  <ellipse cx="60" cy="164" rx="34" ry="5" fill="#3B5BA8" opacity=".12"/>
+  <path d="M60 110 C58 80 60 50 62 30" stroke="#4FAE7C" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <path d="M60 96 C40 92 22 74 20 52 C40 54 56 70 60 96Z" fill="url(#tnDaun)"/>
+  <path d="M61 86 C80 80 96 60 96 38 C76 42 62 60 61 86Z" fill="url(#tnDaun2)"/>
+  <path d="M61 60 C46 54 38 36 42 18 C56 26 62 42 61 60Z" fill="url(#tnDaun)"/>
+  <path d="M62 50 C74 42 80 26 76 10 C64 18 60 34 62 50Z" fill="url(#tnDaun2)"/>
+  <path d="M60 104 C78 104 96 92 104 76 C84 74 68 86 60 104Z" fill="url(#tnDaun2)"/>
+  <path d="M32 112 h56 l-7 48 a6 6 0 0 1 -6 5 h-30 a6 6 0 0 1 -6 -5z" fill="url(#tnPot)"/>
+  <rect x="28" y="106" width="64" height="12" rx="6" fill="#E9F1FF"/>
+  <path d="M40 126 h40" stroke="#A9C8F5" stroke-width="3" stroke-linecap="round"/>
+</svg>
