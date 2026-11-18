@@ -158,16 +158,16 @@
   #skp-login .lg-kiri p{font-size:clamp(16px,1.5vw,21px);line-height:1.5;color:#22325C;max-width:34ch;margin:0;font-weight:700}
   #skp-login .lg-chip{display:inline-flex;align-items:center;gap:10px;margin-top:22px;background:rgba(255,255,255,.75);border-radius:999px;padding:7px 16px 7px 7px;box-shadow:inset 0 2px 0 #fff,0 8px 18px -10px rgba(40,80,160,.5);font-weight:800;color:#1C3A75;font-size:14px}
   #skp-login .lg-chip img{width:34px;height:34px}
-  #skp-login .lg-hp{position:relative;width:420px;padding:330px 0 0;margin-right:40px}
+  #skp-login .lg-hp{position:relative;width:420px;padding:336px 0 0;margin-right:40px}
   #skp-login .lg-hp::before{content:"";position:absolute;left:10px;right:-14px;top:0;bottom:28px;border-radius:52px;background:linear-gradient(180deg,#FFFFFF,#F4F8FF);
     box-shadow:inset 0 3px 0 #fff,inset 0 -6px 0 rgba(120,150,210,.14),0 40px 70px -30px rgba(28,58,117,.45),0 6px 14px rgba(40,80,160,.08)}
   #skp-login .lg-sapa{position:absolute;left:10px;right:-14px;top:30px;text-align:center;z-index:1}
-  #skp-login .lg-hati{display:block;width:44px;height:40px;margin:0 auto 6px;filter:drop-shadow(0 6px 8px rgba(226,80,110,.35));animation:lgDenyut 1.6s ease-in-out infinite}
+  #skp-login .lg-hati{display:block;width:58px;height:auto;margin:0 auto 8px;filter:drop-shadow(0 6px 8px rgba(30,80,170,.25));animation:lgDenyut 2.4s ease-in-out infinite}
   @keyframes lgDenyut{0%,100%{transform:scale(1)}15%{transform:scale(1.14)}30%{transform:scale(1)}}
   #skp-login .lg-sapa b{position:relative;display:inline-block;font-size:30px;font-weight:900;color:#16275A;letter-spacing:-.5px;padding:0 30px}
   #skp-login .lg-sapa b::before,#skp-login .lg-sapa b::after{content:"";position:absolute;top:50%;width:18px;height:24px;transform:translateY(-50%);background:linear-gradient(#F5B83A,#F5B83A) 0 0/14px 3px no-repeat,linear-gradient(#F5B83A,#F5B83A) 4px 50%/14px 3px no-repeat,linear-gradient(#F5B83A,#F5B83A) 0 100%/14px 3px no-repeat;border-radius:3px}
   #skp-login .lg-sapa b::before{left:0;transform:translateY(-50%) scaleX(-1)}#skp-login .lg-sapa b::after{right:0}
-  #skp-login .lg-duo{position:absolute;left:46px;bottom:auto;top:122px;width:340px;height:auto;z-index:1;filter:drop-shadow(0 12px 16px rgba(28,58,117,.25));transform-origin:50% 100%;animation:lgSapa 900ms cubic-bezier(.34,1.56,.64,1) both}
+  #skp-login .lg-duo{position:absolute;left:46px;bottom:auto;top:128px;width:340px;height:auto;z-index:1;filter:drop-shadow(0 12px 16px rgba(28,58,117,.25));transform-origin:50% 100%;animation:lgSapa 900ms cubic-bezier(.34,1.56,.64,1) both}
   @keyframes lgSapa{from{transform:translateY(40px);opacity:0}}
   #skp-login .lg-tanaman{position:absolute;left:-150px;bottom:20px;width:120px;z-index:0;transform-origin:50% 100%;animation:lgGoyang 6s ease-in-out infinite}
   #skp-login .lg-bunga{position:absolute;right:-104px;bottom:24px;width:96px;z-index:0;transform-origin:50% 100%;animation:lgGoyang 5s ease-in-out infinite reverse}
@@ -203,8 +203,8 @@
   #skp-login form .ket+.fld{margin-top:0}
   @media (max-height:780px) and (min-width:861px){
     #skp-login .lg-isi{padding-top:96px;padding-bottom:28px}
-    #skp-login .lg-hp{padding-top:262px;width:390px}#skp-login .lg-sapa{top:18px}#skp-login .lg-hati{width:34px;height:30px;margin-bottom:2px}#skp-login .lg-sapa b{font-size:25px}
-    #skp-login .lg-duo{top:92px;width:270px;left:62px}#skp-login .kartu-login{padding:22px 26px 18px}#skp-login .fld{margin-top:7px}#skp-login .tbl{margin-top:14px;padding:13px}
+    #skp-login .lg-hp{padding-top:272px;width:390px}#skp-login .lg-sapa{top:18px}#skp-login .lg-hati{width:46px;margin-bottom:2px}#skp-login .lg-sapa b{font-size:25px}
+    #skp-login .lg-duo{top:102px;width:270px;left:62px}#skp-login .kartu-login{padding:22px 26px 18px}#skp-login .fld{margin-top:7px}#skp-login .tbl{margin-top:14px;padding:13px}
   }
   @media (max-width:1100px) and (min-width:861px){#skp-login .lg-bunga{display:none}#skp-login .lg-hp{margin-right:0}#skp-login .lg-hp::before,#skp-login .lg-sapa{right:-10px;left:6px}}
   @media (max-width:860px){
@@ -212,15 +212,15 @@
     #skp-login .lg-isi{display:block;padding:84px 16px 28px}
     #skp-login .lg-bps{left:18px;top:18px}#skp-login .lg-bps img{width:44px}#skp-login .lg-bps b{font-size:15px}#skp-login .lg-bps small{font-size:12px}
     #skp-login .lg-kiri{display:none}
-    #skp-login .lg-hp{width:auto;max-width:420px;margin:0 auto;padding-top:300px}
+    #skp-login .lg-hp{width:auto;max-width:420px;margin:0 auto;padding-top:318px}
     #skp-login .lg-hp::before,#skp-login .lg-sapa{left:8px;right:8px}
-    #skp-login .lg-duo{left:50%;width:min(310px,80vw);top:108px;transform:translateX(-50%);animation:none}
+    #skp-login .lg-duo{left:50%;width:min(310px,80vw);top:126px;transform:translateX(-50%);animation:none}
     #skp-login .lg-sapa b{font-size:26px}
     #skp-login .kartu-login{padding:24px 20px 20px;border-radius:32px;box-shadow:inset 0 3px 0 #fff,inset 0 -5px 0 rgba(120,150,210,.14),0 30px 50px -24px rgba(28,58,117,.5)}
     #skp-login .lg-tanaman,#skp-login .lg-bunga,#skp-login .lg-awan2,#skp-login .lg-b3{display:none}
     #skp-login .lg-awan1{width:110px;top:auto;bottom:4%;right:-20px}#skp-login .lg-awan3{width:90px;bottom:auto;top:16%;left:-24px}
   }
-  @media (max-width:380px){#skp-login .lg-hp{padding-top:280px}#skp-login .lg-duo{top:104px;width:270px}}
+  @media (max-width:380px){#skp-login .lg-hp{padding-top:296px}#skp-login .lg-duo{top:120px;width:270px}}
   @media (prefers-reduced-motion:reduce){#skp-login *{animation:none!important}}
   body:has(#skp-login:not([hidden])) #skp-wa{display:none}`;
   const IKON = {
@@ -237,7 +237,7 @@
       <div class="lg-isi"><div class="lg-bps"><img src="img/logo-bps.png?v=20" alt="Logo BPS" width="60" height="44"><div><b>BADAN PUSAT STATISTIK</b><small>KOTA KENDARI</small></div></div>
       <div class="lg-kiri"><h1>Selamat Datang <span>di SAKTI</span></h1><i class="lg-garis"></i><p>Silakan masuk untuk mencatat kegiatan harian dan menyusun SKP Anda.</p>
         <div class="lg-chip"><img src="img/logo-sakti.svg" alt="" width="34" height="34">Sahabat Kinerja Terintegrasi</div></div>
-      <div class="lg-hp"><div class="lg-sapa"><svg class="lg-hati" viewBox="0 0 24 22" aria-hidden="true"><defs><linearGradient id="lgH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8DA1"/><stop offset="1" stop-color="#E8506E"/></linearGradient></defs><path d="M12 21s-9.5-5.6-9.5-12A5.2 5.2 0 0 1 12 6a5.2 5.2 0 0 1 9.5 3C21.5 15.4 12 21 12 21z" fill="url(#lgH)"/><ellipse cx="7.5" cy="7.5" rx="2" ry="1.3" fill="#fff" opacity=".6" transform="rotate(-30 7.5 7.5)"/></svg><b>Selamat Datang!</b></div>
+      <div class="lg-hp"><div class="lg-sapa"><img class="lg-hati" src="img/logo-bps.png?v=20" alt="Logo BPS" width="60" height="44"><b>Selamat Datang!</b></div>
         <img class="lg-duo" src="img/karakter-duo.webp" alt="" width="760" height="648">
         <img class="lg-tanaman" src="img/tanaman-pot.svg" alt="" aria-hidden="true"><img class="lg-bunga" src="img/bunga.svg" alt="" aria-hidden="true">
         <div class="kartu-login" role="dialog" aria-label="Masuk ke SAKTI">${html}</div></div></div>`;
