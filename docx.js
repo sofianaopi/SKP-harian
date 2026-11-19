@@ -92,7 +92,7 @@
   /* Ambil header (kop) atau footer dari dokumen Word, beserta gambar & gaya yang dipakai */
   async function extractBagian(buf, jenis) {
     const k = await extractKop(buf, jenis);
-    return { xml: k.headerXml, rels: k.hrels, media: k.media, styles: k.styles };
+    return { xml: k.headerXml, rels: k.hrels, media: k.media, styles: k.styles, pgMar: k.pgMar };
   }
   async function extractKop(buf, jenis = 'header') {
     const tag = jenis === 'footer' ? 'footerReference' : 'headerReference', awalan = jenis === 'footer' ? 'ftr_' : 'kop_';
@@ -390,6 +390,28 @@
   /* ---------- Laporan Perjalanan Dinas (pengawasan / pendataan lapangan) ----------
      o: {template, jenis, nomor, tglSt, nama, periode, baris:[{tanggal, uraian, masalah, solusi}],
          tempatTgl, jabatan, ketua, nipKetua, petugas, nipPetugas, fotos:[{data,w,h,ket}]} */
+  /* Batas bawah gambar/bentuk "mengambang" di kop (twip dari tepi atas kertas).
+     Gambar mengambang tidak mendorong isi halaman ke bawah, sehingga isi bisa tertimpa kop di setiap halaman. */
+  function batasKopMengambang(hx, atasMargin, jarakHeader) {
+    let maks = 0;
+    // perkiraan tinggi paragraf header sebelum paragraf tempat gambar ditambatkan (untuk posisi "relatif paragraf")
+    const ps = String(hx || '').match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []; const tinggiP = p => { const sz = Math.max(22, ...(p.match(/<w:sz w:val="(\d+)"/g) || []).map(x => +x.match(/\d+/)[0]).filter(v => !/<wp:anchor/.test(p) || v)); const sp = p.match(/<w:spacing [^>]*>/); const at = n => +((sp && sp[0].match(new RegExp('w:' + n + '="(\\d+)"')) || [])[1] || 0); const ln = sp && /lineRule="auto"/.test(sp[0]) && at('line') ? at('line') / 240 : 1; return sz * 10 * 1.17 * ln + at('before') + at('after'); };
+    const geser = []; let akum = 0; ps.forEach(p => { if (/<wp:anchor/.test(p)) geser.push(akum); akum += tinggiP(p); });
+    let ke = 0;
+    (String(hx || '').match(/<wp:anchor[\s\S]*?<\/wp:anchor>/g) || []).forEach(a => {
+      const gp = geser[Math.min(ke++, geser.length - 1)] || 0;
+      const cy = +((a.match(/<wp:extent cx="\d+" cy="(\d+)"/) || [])[1] || 0); if (!cy) return;
+      const pv = a.match(/<wp:positionV relativeFrom="([^"]+)">([\s\S]*?)<\/wp:positionV>/); const rel = pv ? pv[1] : 'paragraph';
+      const off = pv && /<wp:posOffset>/.test(pv[2]) ? +(pv[2].match(/<wp:posOffset>(-?\d+)<\/wp:posOffset>/) || [])[1] / 635 : 0;
+      const al = pv && (pv[2].match(/<wp:align>([^<]+)<\/wp:align>/) || [])[1];
+      if (/^(bottomMargin|insideMargin|outsideMargin)$/.test(rel)) return;
+      let atas = rel === 'page' || rel === 'topMargin' ? off : rel === 'margin' ? atasMargin + off : jarakHeader + gp + off;
+      if (al && (rel === 'page' || rel === 'topMargin')) atas = al === 'top' ? 0 : al === 'center' ? Math.max(0, (rel === 'topMargin' ? atasMargin : 0) / 2 - cy / 1270) : atas;
+      if (/behindDoc="1"/.test(a) && cy / 635 > 6000) return;   // gambar latar seukuran kertas (watermark) diabaikan
+      maks = Math.max(maks, atas + cy / 635 + (+((a.match(/distB="(\d+)"/) || [])[1] || 0)) / 635);
+    });
+    return Math.round(maks);
+  }
   async function laporanDinas(o) {
     picId = 1;
     const z = await readZip(o.template);
@@ -405,7 +427,7 @@
     // Judul
     // dua baris kosong agar judul tidak menempel/tertutup kop
     const kosong = P('<w:r><w:rPr>' + F + '<w:sz w:val="20"/></w:rPr></w:r>', sp0 + '<w:rPr><w:sz w:val="20"/></w:rPr>');
-    b += kosong + kosong;
+    b += '<!--SPASI_KOP-->';
     b += P(R('LAPORAN PERJALANAN DINAS ' + String(o.jenis || '').toUpperCase(), 20), sp0 + '<w:jc w:val="right"/>');
     b += P('', sp0);
     // Identitas
@@ -446,9 +468,7 @@
     // Lampiran dokumentasi: 2 foto per baris
     const fotos = o.fotos || [];
     if (fotos.length) {
-     b += P('', '<w:spacing w:after="0" w:line="360" w:lineRule="auto"/>');
-     b += P('', '<w:spacing w:after="0" w:line="360" w:lineRule="auto"/>');
-     b += P('', '<w:spacing w:after="0" w:line="360" w:lineRule="auto"/>');
+      b += P('<w:r><w:br w:type="page"/></w:r>', sp0);
       b += P(R('Lampiran Dokumentasi'), '<w:spacing w:after="160"/>');
       const EMU = 914400, maxW = 2.85 * EMU, maxH = 2.6 * EMU; const media = [];
       const sel2 = isi => `<w:tc><w:tcPr><w:tcW w:w="4675" w:type="dxa"/></w:tcPr>${isi}</w:tc>`;
@@ -489,6 +509,24 @@
       ct = ct.replace('</Types>', '<Override PartName="/word/footer_dinas.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>');
       doc = doc.replace(/<w:footerReference[^>]*\/>/g, '').replace(/(<w:headerReference[^>]*\/>)/, '$1<w:footerReference w:type="default" r:id="rIdFooterDinas"/>');
       pasangMedia(o.footer.media); gayaTambah += o.footer.styles || '';
+    }
+    // Margin atas otomatis: isi setiap halaman (termasuk lampiran dokumentasi & lanjutan tabel) dimulai di bawah kop
+    {
+      const m = rels.match(/<Relationship [^>]*\/header"[^>]*>/); const tgt = m && (m[0].match(/Target="([^"]+)"/) || [])[1];
+      const hn = tgt ? 'word/' + tgt.replace(/^\/?word\//, '') : null;
+      const hx = hn ? (ganti[hn] != null ? ganti[hn] : (z.names.includes(hn) ? td(await z.get(hn)) : '')) : '';
+      const pm = doc.match(/<w:pgMar [^>]*\/>/); let naik = false;
+      if (pm && hx) {
+        const atr = n => +((pm[0].match(new RegExp('w:' + n + '="(-?\\d+)"')) || [])[1] || 0);
+        // kop unggahan membawa margin dokumen asalnya (tempat kop itu dirancang): pakai jarak atas & header-nya
+        const km = o.kop && o.kop.xml && o.kop.pgMar ? o.kop.pgMar : '', ka = n => +((km.match(new RegExp('w:' + n + '="(-?\\d+)"')) || [])[1] || 0);
+        let pm2 = pm[0]; if (ka('header')) pm2 = pm2.replace(/w:header="-?\d+"/, 'w:header="' + ka('header') + '"');
+        const atas0 = atr('top') || 1440, jh = ka('header') || atr('header') || 720, batas = batasKopMengambang(hx, Math.max(atas0, ka('top')), jh);
+        const atas = Math.max(atas0, Math.abs(ka('top')), batas ? batas + 340 : 0);
+        if (atas > atas0) { pm2 = pm2.replace(/w:top="-?\d+"/, 'w:top="' + atas + '"'); naik = true; }
+        if (pm2 !== pm[0]) doc = doc.replace(pm[0], pm2);
+      }
+      doc = doc.replace('<!--SPASI_KOP-->', naik ? '' : kosong + kosong);
     }
     if (gayaTambah) {
       const st = td(await z.get('word/styles.xml'));
