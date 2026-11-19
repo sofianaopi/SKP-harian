@@ -383,7 +383,60 @@
     if (!j.ok) throw new Error(j.error || 'Google Drive menolak permintaan');
     return j;
   }
-  async function keluar() { try { await client().auth.signOut(); } catch (e) { } location.reload(); }
+  async function keluar() { try { await pengingat.lepas(); } catch (e) { } try { await client().auth.signOut(); } catch (e) { } location.reload(); }
+  /* ---------- Pengingat: notifikasi HP "belum catat kegiatan hari ini" (Web Push) ----------
+     Langganan disimpan per perangkat di tabel pengingat; pengiriman oleh Edge Function kirim-pengingat (lihat PANDUAN-PENGINGAT.md).
+     Kunci publik VAPID boleh terbuka; kunci privatnya hanya di Supabase (Secrets). */
+  const VAPID_PUBLIK = CFG.VAPID_PUBLIC_KEY || 'BBlmTU_ulvg0t-WNR2yfxYlAStwggHYh7cOZB3SQ2KREtp5ZqQ2XVH6wsxcwqaeAb2S34zont4d5rbnlBZ9xl5k';
+  const b64keU8 = b => { const p = '='.repeat((4 - b.length % 4) % 4), r = atob((b + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); };
+  const namaPerangkat = () => { const u = navigator.userAgent; const os = /Android/i.test(u) ? 'Android' : /iPhone|iPad|iPod/i.test(u) ? 'iPhone/iPad' : /Windows/i.test(u) ? 'Windows' : /Mac OS/i.test(u) ? 'Mac' : /Linux/i.test(u) ? 'Linux' : 'Perangkat';
+    const br = /Edg\//.test(u) ? 'Edge' : /SamsungBrowser/.test(u) ? 'Samsung Internet' : /OPR\//.test(u) ? 'Opera' : /Firefox\//.test(u) ? 'Firefox' : /Chrome\//.test(u) ? 'Chrome' : /Safari\//.test(u) ? 'Safari' : 'Peramban'; return os + ' · ' + br; };
+  async function izinNotif() { let z = 'Notification' in window ? Notification.permission : 'denied';
+    if (z !== 'granted') try { const q = await navigator.permissions.query({ name: 'notifications' }); if (q.state === 'granted') z = 'granted'; else if (q.state === 'denied') z = 'denied'; } catch (e) { }
+    return z; }
+  const pengingat = {
+    didukung: () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window,
+    iosBelumDipasang: () => /iPhone|iPad|iPod/i.test(navigator.userAgent) && !(navigator.standalone || matchMedia('(display-mode: standalone)').matches),
+    perangkat: namaPerangkat,
+    async reg() { if (!('serviceWorker' in navigator)) throw new Error('Peramban ini tidak mendukung notifikasi.');
+      const r = await Promise.race([navigator.serviceWorker.ready, new Promise((_, j) => setTimeout(() => j(new Error('Layanan notifikasi belum siap. Muat ulang halaman lalu coba lagi.')), 8000))]); return r; },
+    async status() {
+      const o = { didukung: pengingat.didukung(), izin: await izinNotif(), perangkat: namaPerangkat(), aktif: false, jam: '16:00', baris: null };
+      if (!o.didukung) return o;
+      try { const r = await pengingat.reg(); const sub = await r.pushManager.getSubscription();
+        let lokal = null; try { lokal = JSON.parse(localStorage.getItem('sakti-pengingat-' + uid) || 'null'); } catch (x) { }
+        if (sub) { const q = await client().from('pengingat').select('aktif,jam,terakhir').eq('endpoint', sub.endpoint).maybeSingle(); if (q.data) { o.baris = q.data; o.aktif = q.data.aktif && o.izin === 'granted'; o.jam = q.data.jam; }
+          else if (lokal && lokal.aktif && o.izin === 'granted') { await pengingat.atur(lokal); o.aktif = true; o.jam = lokal.jam; } }   // langganan diperbarui peramban → simpan ulang
+        else if (lokal && lokal.aktif && o.izin === 'granted') { await pengingat.atur(lokal); o.aktif = true; o.jam = lokal.jam; }
+        if (!o.baris && lokal) o.jam = lokal.jam || o.jam;
+      } catch (e) { o.galat = e.message; }
+      return o;
+    },
+    /* dipanggil langsung dari klik pengguna (izin notifikasi wajib dari ketukan) */
+    async atur({ aktif, jam }) {
+      if (!pengingat.didukung()) throw new Error(pengingat.iosBelumDipasang() ? 'Di iPhone, pasang SAKTI ke Layar Utama dulu (Safari → Bagikan → Tambah ke Layar Utama), lalu buka dari ikonnya.' : 'Peramban ini tidak mendukung notifikasi. Gunakan Chrome di HP.');
+      if (aktif && await izinNotif() !== 'granted') { const z = await Notification.requestPermission(); if (z !== 'granted') throw new Error(z === 'denied' ? 'Izin notifikasi ditolak. Buka pengaturan situs di peramban, izinkan Notifikasi, lalu coba lagi.' : 'Izin notifikasi belum diberikan.'); }
+      const r = await pengingat.reg(); let sub = await r.pushManager.getSubscription();
+      if (!sub && !aktif) { try { localStorage.setItem('sakti-pengingat-' + uid, JSON.stringify({ aktif: false, jam: jam || '16:00' })); } catch (x) { } return; }
+      if (!sub) sub = await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64keU8(VAPID_PUBLIK) });
+      const zona = (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'Asia/Makassar';
+      cek(await client().rpc('simpan_pengingat', { p_endpoint: sub.endpoint, p_langganan: sub.toJSON(), p_aktif: !!aktif, p_jam: jam || '16:00', p_zona: zona, p_perangkat: namaPerangkat() }), 'Gagal menyimpan pengingat');
+      try { localStorage.setItem('sakti-pengingat-' + uid, JSON.stringify({ aktif: !!aktif, jam: jam || '16:00' })); } catch (x) { }
+    },
+    async uji() {
+      if (!pengingat.didukung() || await izinNotif() !== 'granted') throw new Error('Aktifkan pengingat dan izinkan notifikasi dulu.');
+      const r = await pengingat.reg();
+      try { await r.showNotification('Sudah catat kegiatan hari ini? ✍️', { body: 'Ini contoh pengingat. Ketuk untuk membuka Catat Kegiatan.', icon: 'icons/input-192.png', badge: 'icons/input-192.png', tag: 'pengingat-uji', data: { url: 'input.html' } }); } catch (e) { throw new Error('Notifikasi belum diizinkan di perangkat ini. Izinkan Notifikasi di pengaturan situs, lalu coba lagi.'); }
+    },
+    async lepas() {   /* saat keluar akun: perangkat ini tidak lagi menerima pengingat akun ini */
+      if (!pengingat.didukung() || !navigator.serviceWorker.controller) return;
+      const r = await Promise.race([navigator.serviceWorker.ready, new Promise(res => setTimeout(() => res(null), 1500))]); if (!r) return;
+      const sub = await r.pushManager.getSubscription(); if (!sub) return;
+      try { await client().from('pengingat').delete().eq('endpoint', sub.endpoint); } catch (e) { }
+      try { localStorage.removeItem('sakti-pengingat-' + uid); } catch (e) { }
+      try { await sub.unsubscribe(); } catch (e) { }
+    }
+  };
   /* karakter sapaan (perempuan/laki-laki) dipilih pegawai di Profil, disimpan di metadata akun (tanpa ubah database) */
   const KARAKTER = { p: 'img/karakter-perempuan.webp', l: 'img/karakter-laki.webp' };
   let karakterKu = null;
@@ -668,7 +721,7 @@
 
   const api = {
     BULAN, HARI, BIDANG, BIDANG_BAWAAN, muatBidang, bidangDari, urutRk, ymd, parseYmd, uid: mkid, esc, pad, tglPanjang, tglSedang, rentangTgl, kelompokRk, pager, cocokRk, tokenRk, namaBulan, labelHari, targetBulan, compressImage, download, toast, sibuk, proses, waLink: () => waLink(),
-    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, karakter, aturKarakter, pasangKarakter, pasangPilihKarakter, soalBerakhlak, susunKuis, namaPanggil, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
+    BERAKHLAK, nilaiHariIni, bannerNilaiHariIni, pengingat, karakter, aturKarakter, pasangKarakter, pasangPilihKarakter, soalBerakhlak, susunKuis, namaPanggil, mulai, keluar, gantiPassword, token, drive, blobKeBase64: b => blobKeDataUrl(b).then(d => d.split(',')[1]), client, emailDariNip, cek, config: CFG,
     get saya() { return saya; },
     backend: async () => ({ mode: 'server' }),
     list: s => db.list(s), get: (s, id) => db.get(s, id), put: (s, o) => proses('Menyimpan…', () => db.put(s, o), 250), putDiam: (s, o) => db.put(s, o), putBanyak: (s, a, p) => proses('Menyimpan data…', () => db.putBanyak(s, a, p), 150), hapusBanyakRk: ids => proses('Menghapus ' + ids.length + ' RK…', () => db.hapusBanyakRk(ids), 150), hapusBanyakKegiatan: ks => proses('Menghapus ' + ks.length + ' kegiatan…', () => db.hapusBanyakKegiatan(ks), 150), arsipkanKegiatan: ks => proses('Mengarsipkan kegiatan…', () => db.arsipkanKegiatan(ks), 150), del: (s, id) => proses('Menghapus…', () => db.del(s, id), 150),

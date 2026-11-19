@@ -881,7 +881,9 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   /* ---------- Pengingat (notifikasi HP) ---------- */
   const JAM_PG = ['15:00', '15:30', '16:00', '16:30', '17:00'];
   let pgStatus = null, pgSibuk = false;
+  const PG_LAMA = '<b>Fitur pengingat belum lengkap terpasang.</b> Unggah ulang <b>common.js</b> versi terbaru ke hosting, lalu muat ulang halaman.';
   function tampilPengingat() {
+    if (!S.pengingat) { $('pgInfo').innerHTML = PG_LAMA; $('pgInfo').hidden = false; $('pgSaklar').disabled = true; $('pgUji').disabled = true; return; }
     const o = pgStatus || { aktif: false, jam: '16:00', izin: 'default', didukung: S.pengingat.didukung(), perangkat: S.pengingat.perangkat() };
     const sk = $('pgSaklar'); sk.setAttribute('aria-checked', o.aktif); sk.classList.toggle('on', !!o.aktif); $('pgSaklarTeks').textContent = o.aktif ? 'Aktif' : 'Nonaktif'; sk.disabled = pgSibuk;
     $('pgJam').innerHTML = JAM_PG.map(j => `<button type="button" role="radio" aria-checked="${o.jam === j}" class="${o.jam === j ? 'on' : ''}" data-jam="${j}">${j.replace(':', '.')}</button>`).join('');
@@ -896,7 +898,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     $('pgUji').disabled = !(o.aktif && o.izin === 'granted');
     $('pgMenuTitik').hidden = !o.aktif; $('tbPgTitik').hidden = !o.aktif; $('tbPengingat').title = o.aktif ? 'Pengingat aktif pukul ' + o.jam.replace(':', '.') : 'Pengingat catat kegiatan (nonaktif)'; const aj = $('pgAjakTeks'); if (aj) aj.textContent = o.aktif ? 'Aktif setiap hari kerja pukul ' + o.jam.replace(':', '.') + ' di perangkat ini.' : 'Dapatkan notifikasi di HP bila belum mencatat kegiatan hari ini.';
   }
-  async function renderPengingat() { tampilPengingat(); pgStatus = await S.pengingat.status(); tampilPengingat(); }
+  async function renderPengingat() { tampilPengingat(); if (!S.pengingat) return; pgStatus = await S.pengingat.status(); tampilPengingat(); }
   async function aturPengingat(o) {
     if (pgSibuk) return; pgSibuk = true; const lama = pgStatus; pgStatus = Object.assign({}, pgStatus || {}, o); tampilPengingat();
     try { await S.pengingat.atur({ aktif: pgStatus.aktif, jam: pgStatus.jam }); pgSibuk = false; pgStatus = await S.pengingat.status();
@@ -1855,7 +1857,10 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (masuk && current() === 'dashboard') renderDashboard(); }, 200); });
   S.registerSW();
-  S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid; S.pasangPilihKarakter(document.querySelector('[data-pilih-karakter]')); S.pengingat.status().then(o => { if (!pgStatus) { pgStatus = o; tampilPengingat(); } }).catch(() => { });
+  S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid;
+    // fitur tambahan dipasang terpisah: bila common.js di hosting belum versi terbaru, dashboard tetap jalan
+    try { if (S.pasangPilihKarakter) S.pasangPilihKarakter(document.querySelector('[data-pilih-karakter]')); } catch (e) { console.warn(e); }
+    try { if (S.pengingat) S.pengingat.status().then(o => { if (!pgStatus) { pgStatus = o; tampilPengingat(); } }).catch(() => { }); } catch (e) { console.warn(e); }
     if (pegawai.peran === 'admin') { location.replace('admin.html'); return; }
     saya = pegawai; if (pegawai.peran === 'pimpinan') document.body.classList.add('pim');
     masuk = true;

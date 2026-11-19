@@ -1096,7 +1096,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.on').forEach(m => m.classList.remove('on')); });
   $('btnKeluar').onclick = () => S.keluar();
 
-  S.mulai({ admin: true }).then(async ({ uid, pegawai }) => { isiDlUnit(); S.pasangPilihKarakter(document.querySelector('[data-pilih-karakter]'));
+  S.mulai({ admin: true }).then(async ({ uid, pegawai }) => { isiDlUnit(); try { if (S.pasangPilihKarakter) S.pasangPilihKarakter(document.querySelector('[data-pilih-karakter]')); } catch (e) { console.warn(e); }
     sayaId = uid; $('hdrSub').textContent = 'Admin · ' + (S.config.NAMA_INSTANSI || 'BPS Kota Kendari'); $('sbNama').textContent = S.namaPanggil(pegawai.nama || '') || 'Admin'; $('sbNama').parentNode.title = pegawai.nama || ''; $('sbAv').textContent = $('tbAv').textContent = inisial(pegawai.nama); $('tbAv').title = pegawai.nama;
     try { await muat(); } catch (x) { S.toast(x.message, 6000); }
     muatKop(); muatSD(); muatDrive(); route(); window.addEventListener('hashchange', route); if (location.hash.slice(1) !== 'pesan') muatPesan(false);
