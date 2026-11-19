@@ -446,7 +446,9 @@
     // Lampiran dokumentasi: 2 foto per baris
     const fotos = o.fotos || [];
     if (fotos.length) {
-      b += P('<w:r><w:br w:type="page"/></w:r>', sp0);
+     b += P('', '<w:spacing w:after="0" w:line="360" w:lineRule="auto"/>');
+     b += P('', '<w:spacing w:after="0" w:line="360" w:lineRule="auto"/>');
+     b += P('', '<w:spacing w:after="0" w:line="360" w:lineRule="auto"/>');
       b += P(R('Lampiran Dokumentasi'), '<w:spacing w:after="160"/>');
       const EMU = 914400, maxW = 2.85 * EMU, maxH = 2.6 * EMU; const media = [];
       const sel2 = isi => `<w:tc><w:tcPr><w:tcW w:w="4675" w:type="dxa"/></w:tcPr>${isi}</w:tc>`;
