@@ -400,7 +400,6 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     <a class="menu pim-only" href="#analisis" data-r="analisis"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M8 17v-6M13 17V7M18 17v-3"/></svg>Analisis Pegawai</a>
     <a class="menu pim-only" href="#pegawai" data-r="pegawai"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Pegawai</a>
     <div class="menu-grup">Fitur tambahan</div>
-    <a class="menu" href="#pengingat" data-r="pengingat"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Pengingat<span class="pg-titik" id="pgMenuTitik" hidden title="Pengingat aktif"></span></a>
     <a class="menu" href="#dinas" data-r="dinas"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Perjalanan Dinas</a>
     <div class="menu-grup">Bantuan</div>
     <a class="menu" href="#saran" data-r="saran"><svg class="g" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg>Saran Pengembang<span class="sb-badge" id="saranBadge" hidden></span></a>
@@ -409,7 +408,6 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
 
   <div class="isi-utama">
   <div class="topbar"><div class="tb-judul"><h1 id="tbJudul">Dashboard</h1><p id="tbSub">Ringkasan kerja harian</p></div>
-    <a class="tb-lonceng" href="#pengingat" id="tbPengingat" title="Pengingat catat kegiatan" aria-label="Pengingat catat kegiatan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><i class="tb-pg-titik" id="tbPgTitik" hidden></i></a>
     <a class="av" id="tbAv" href="#profil" title="Profil">?</a></div>
   <main>
     <!-- DASHBOARD -->
@@ -531,26 +529,6 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     <!-- FITUR TAMBAHAN: LAPORAN PERJALANAN DINAS (isi dibuat oleh dinas.js) -->
     <section id="v-dinas" hidden></section>
 
-    <!-- PENGINGAT -->
-    <section id="v-pengingat" hidden>
-      <div class="pg-hero d-kartu">
-        <svg class="pg-lonceng" viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="pgL" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".6" stop-color="#FFD25E"/><stop offset="1" stop-color="#F0A92A"/></radialGradient><linearGradient id="pgT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFDE85"/><stop offset="1" stop-color="#E89A1C"/></linearGradient></defs><ellipse cx="60" cy="112" rx="34" ry="5" fill="#3B5BA8" opacity=".14"/><circle cx="60" cy="16" r="8" fill="url(#pgT)"/><path d="M60 20c-20 0-32 15-32 36v18l-10 14c-2 3 0 6 4 6h76c4 0 6-3 4-6l-10-14V56c0-21-12-36-32-36z" fill="url(#pgL)"/><path d="M44 40c4-8 10-11 16-12" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".8"/><path d="M48 98a12 12 0 0 0 24 0z" fill="url(#pgT)"/><circle cx="92" cy="30" r="13" fill="#E26A93"/><text x="92" y="35" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" font-family="Nunito,sans-serif">1</text><path d="M14 44c-4 6-4 14 0 20M24 48c-2 4-2 8 0 12M106 52c4 6 4 14 0 20" stroke="#93B7F5" stroke-width="4" stroke-linecap="round" fill="none"/></svg>
-        <div class="pg-teks"><h2>Pengingat catat kegiatan</h2><p>Bila sampai jam yang Anda pilih belum ada kegiatan yang dicatat, SAKTI mengirim notifikasi ke perangkat ini, seperti pesan masuk. Hanya hari kerja (Senin–Jumat), paling banyak sekali sehari.</p></div>
-        <button type="button" class="pg-saklar" id="pgSaklar" role="switch" aria-checked="false" aria-label="Pengingat di perangkat ini"><span class="pg-jalur"><span class="pg-kenop"></span></span><b id="pgSaklarTeks">Nonaktif</b></button>
-      </div>
-      <div class="pg-info" id="pgInfo" hidden></div>
-      <div class="d-baris2 pg-baris">
-        <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Jam pengingat</h3><p>Pilih kapan Anda ingin diingatkan</p></div></div>
-          <div class="pg-jam" id="pgJam" role="radiogroup" aria-label="Jam pengingat"></div>
-          <label class="pg-lain">Jam lain <input type="time" id="pgJamLain" step="300"></label>
-          <p class="pg-cat">Pengingat tidak dikirim bila hari itu Anda sudah mencatat kegiatan.</p></div>
-        <div class="d-kartu d-pad"><div class="d-kep"><div><h3>Perangkat ini</h3><p id="pgPerangkat">—</p></div><span id="pgIzin"></span></div>
-          <div class="pg-hp" aria-hidden="true"><div class="pg-notif"><img src="icons/input-192.png" alt="" width="36" height="36"><div><b>SAKTI · sekarang</b><strong>Sudah catat kegiatan hari ini? ✍️</strong><span>Belum ada kegiatan tercatat hari ini. Catat sekarang selagi ingat.</span></div></div></div>
-          <button type="button" class="btn" id="pgUji" style="margin-top:14px;width:100%"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Kirim notifikasi uji</button>
-          <p class="pg-cat">Pengingat aktif per perangkat. Aktifkan juga di HP lain bila perlu.</p></div>
-      </div>
-    </section>
-
     <!-- PROFIL -->
     <section id="v-profil" hidden>
       <div class="kepala"><div style="flex:1"><h1>Profil</h1><p>Lengkapi data diri. Nama dan NIP baru tampil di dokumen Bukti Dukung.</p></div></div>
@@ -577,7 +555,6 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
             <form id="formPw" class="form" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:170px"><label for="pwBaru" style="margin-top:0">Password baru</label><input id="pwBaru" type="password" autocomplete="new-password" minlength="6" placeholder="min. 6 karakter"></div><button class="btn" type="submit">Ganti password</button></form>
             <p style="margin:14px 0 0"><button class="btn kecil" type="button" id="btnKeluar">Keluar dari akun</button></p>
           </div>
-          <a class="kartu saran-ajak pg-ajak" href="#pengingat"><span class="sa-ik"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><div><b>Pengingat catat kegiatan</b><small id="pgAjakTeks">Dapatkan notifikasi di HP bila belum mencatat kegiatan hari ini.</small></div><span style="color:var(--teks2);font-size:20px">›</span></a>
           <a class="kartu saran-ajak" href="#saran"><span class="sa-ik"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg></span><div><b>Saran untuk Pengembang</b><small>Ada ide fitur, kendala, atau pertanyaan? Kirim ke admin agar SAKTI terus sesuai kebutuhan pegawai.</small></div><span class="sb-badge" id="saranBadge2" hidden></span><span style="color:var(--teks2);font-size:20px">›</span></a>
           <div class="kartu">
             <h2>Pasang di HP</h2>
@@ -722,9 +699,9 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   const ambilFoto = id => { if (!fotoCache.has(id)) fotoCache.set(id, S.get('foto', id)); return fotoCache.get(id); };
 
   /* ---------- Menu ---------- */
-  const ROUTES = ['dashboard', 'rekap', 'rk', 'upload', 'dinas', 'pengingat', 'profil', 'saran', 'analisis', 'pegawai', 'lihat'];
+  const ROUTES = ['dashboard', 'rekap', 'rk', 'upload', 'dinas', 'profil', 'saran', 'analisis', 'pegawai', 'lihat'];
   const R_PIM = ['analisis', 'pegawai', 'lihat'];
-  const JUDUL_R = { dashboard: ['Dashboard', 'Ringkasan kerja harian Anda'], rekap: ['Rekap Kegiatan', 'Rapikan uraian, bidang, dan RK'], rk: ['RK & IKI', 'Rencana Kinerja & Indikator Kinerja Individu'], upload: ['Upload Dokumen', 'Dokumen Bukti Dukung SKP & Google Drive'], dinas: ['Perjalanan Dinas', 'Laporan pengawasan / pendataan lapangan'], pengingat: ['Pengingat', 'Notifikasi di HP bila belum mencatat kegiatan'], profil: ['Profil', 'Data diri, kata sandi, dan bantuan'], saran: ['Saran Pengembang', 'Kirim saran, laporan masalah, atau pertanyaan ke admin'], analisis: ['Analisis Pegawai', 'Beban kerja dan keaktifan pengisian seluruh pegawai'], pegawai: ['Pegawai', 'Daftar pegawai beserta kegiatannya'], lihat: ['Kegiatan Pegawai', 'Rincian kegiatan per hari, RK, dan IKI'] };
+  const JUDUL_R = { dashboard: ['Dashboard', 'Ringkasan kerja harian Anda'], rekap: ['Rekap Kegiatan', 'Rapikan uraian, bidang, dan RK'], rk: ['RK & IKI', 'Rencana Kinerja & Indikator Kinerja Individu'], upload: ['Upload Dokumen', 'Dokumen Bukti Dukung SKP & Google Drive'], dinas: ['Perjalanan Dinas', 'Laporan pengawasan / pendataan lapangan'], profil: ['Profil', 'Data diri, kata sandi, dan bantuan'], saran: ['Saran Pengembang', 'Kirim saran, laporan masalah, atau pertanyaan ke admin'], analisis: ['Analisis Pegawai', 'Beban kerja dan keaktifan pengisian seluruh pegawai'], pegawai: ['Pegawai', 'Daftar pegawai beserta kegiatannya'], lihat: ['Kegiatan Pegawai', 'Rincian kegiatan per hari, RK, dan IKI'] };
   const WARNA_AV = ['#1D64AE', '#047857', '#C2410C', '#6D28D9', '#BE185D', '#0E7490', '#A16207', '#4338CA'];   // semua ≥4,9:1 dengan teks putih
   const inisial = n => String(n || '?').replace(/,.*$/, '').trim().split(/\s+/).map(w => w.replace(/\.+$/, '')).filter(w => w && !/^(hj|h|dr|ir|drs|dra|prof)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
   const warnaAv = n => { let s = 0; for (const c of String(n || '')) s = (s * 31 + c.charCodeAt(0)) >>> 0; return WARNA_AV[s % WARNA_AV.length]; };
@@ -736,7 +713,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     render(r); window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', () => { if (masuk) route(); });
-  function render(r) { renderBulan(); if (r === 'dashboard') renderDashboard(); if (r === 'rekap') renderRekap(); if (r === 'rk') renderRkMenu(); if (r === 'upload') renderUpload(); if (r === 'profil') renderProfil(); if (r === 'saran') renderSaran(); if (r === 'analisis') PIM.analisis(); if (r === 'pegawai') PIM.daftar(); if (r === 'lihat') PIM.lihat(location.hash.split('/')[1]); if (r === 'dinas' && window.SKPDinas) SKPDinas.render(); if (r === 'pengingat') renderPengingat(); }
+  function render(r) { renderBulan(); if (r === 'dashboard') renderDashboard(); if (r === 'rekap') renderRekap(); if (r === 'rk') renderRkMenu(); if (r === 'upload') renderUpload(); if (r === 'profil') renderProfil(); if (r === 'saran') renderSaran(); if (r === 'analisis') PIM.analisis(); if (r === 'pegawai') PIM.daftar(); if (r === 'lihat') PIM.lihat(location.hash.split('/')[1]); if (r === 'dinas' && window.SKPDinas) SKPDinas.render(); }
 
   function geserBulan(d) { const [y, m] = ym.split('-').map(Number); const t = new Date(y, m - 1 + d, 1); ym = t.getFullYear() + '-' + S.pad(t.getMonth() + 1); render(current()); }
   function renderBulan() {
@@ -788,9 +765,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     $('sapa').textContent = (jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam') + (profil.nama ? ', ' + S.namaPanggil(profil.nama) : '');
     $('sapaSub').textContent = 'Kerja harian ' + S.namaBulan(ym) + (profil.jabatan ? ' · ' + profil.jabatan : ''); $('dTgl').textContent = S.tglPanjang(S.ymd(now));
     const [y, m] = ym.split('-').map(Number); const nHari = new Date(y, m, 0).getDate(); const hariIni = S.ymd(now);
-    const hk = hariKerjaS(ym);   // hari kerja yang sudah lewat (untuk peringatan "belum terisi")
-    const hkBln = []; for (let d = 1; d <= nHari; d++) { const w = new Date(y, m - 1, d).getDay(); if (w && w < 6) hkBln.push(ym + '-' + S.pad(d)); }   // semua hari kerja (Senin–Jumat) sebulan penuh
-    const hkIsi = hkBln.filter(d => K.isi.has(d)).length, pctHk = hkBln.length ? Math.round(hkIsi / hkBln.length * 100) : 0;
+    const hk = hariKerjaS(ym), hkIsi = hk.filter(d => K.isi.has(d)).length, pctHk = hk.length ? Math.round(hkIsi / hk.length * 100) : 0;
     const tanpaRk = ks.filter(k => !k.rhkId || !rhkById(k.rhkId)), pctRk = ks.length ? Math.round((ks.length - tanpaRk.length) / ks.length * 100) : 0;
     const tanpaFoto = ks.filter(k => !(k.fotoIds || []).length), pctFoto = ks.length ? Math.round((ks.length - tanpaFoto.length) / ks.length * 100) : 0;
     const bds = S.bidangDari(ks.map(k => k.bidang)).filter(b => ks.some(k => k.bidang === b)), tanpaBd = ks.filter(k => !k.bidang).length;
@@ -799,7 +774,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     const nArsip = K.arsip.reduce((a, r) => a + r.jumlah, 0);
     $('dHero').innerHTML = [
       [IKD.doc, 'Kegiatan ' + S.BULAN[m - 1], fmtA(K.keg), deltaTeks(K.keg, L.keg)],
-      [IKD.kal, 'Hari kerja terisi', hkIsi + '<small style="font-size:16px;opacity:.75"> / ' + hkBln.length + '</small>', bulanIni ? (sudahHariIni ? '✓ hari ini sudah mengisi' : 'hari ini belum mengisi') : pctHk + '% hari kerja'],
+      [IKD.kal, 'Hari kerja terisi', hkIsi + '<small style="font-size:16px;opacity:.75"> / ' + hk.length + '</small>', bulanIni ? (sudahHariIni ? '✓ hari ini sudah mengisi' : 'hari ini belum mengisi') : pctHk + '% hari kerja'],
       [IKD.cam, 'Foto bukti', fmtA(K.foto), deltaTeks(K.foto, L.foto)],
       [IKD.target, 'Sudah ber-RK', pctRk + '%', tanpaRk.length ? tanpaRk.length + ' kegiatan belum ber-RK' : (ks.length ? 'semua sudah ber-RK' : 'belum ada kegiatan')]
     ].map(([ik, l, v, s]) => `<div class="d-tile"><div class="t-kep"><span class="t-ik">${ik}</span>${l}</div><b>${v}</b><small>${s}</small></div>`).join('');
@@ -877,37 +852,6 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
       r.addEventListener('mouseenter', show); r.addEventListener('click', show); r.addEventListener('mouseleave', () => { tip.style.opacity = 0; r.setAttribute('fill', 'transparent'); });
     });
   }
-
-  /* ---------- Pengingat (notifikasi HP) ---------- */
-  const JAM_PG = ['15:00', '15:30', '16:00', '16:30', '17:00'];
-  let pgStatus = null, pgSibuk = false;
-  function tampilPengingat() {
-    const o = pgStatus || { aktif: false, jam: '16:00', izin: 'default', didukung: S.pengingat.didukung(), perangkat: S.pengingat.perangkat() };
-    const sk = $('pgSaklar'); sk.setAttribute('aria-checked', o.aktif); sk.classList.toggle('on', !!o.aktif); $('pgSaklarTeks').textContent = o.aktif ? 'Aktif' : 'Nonaktif'; sk.disabled = pgSibuk;
-    $('pgJam').innerHTML = JAM_PG.map(j => `<button type="button" role="radio" aria-checked="${o.jam === j}" class="${o.jam === j ? 'on' : ''}" data-jam="${j}">${j.replace(':', '.')}</button>`).join('');
-    $('pgJamLain').value = JAM_PG.includes(o.jam) ? '' : o.jam;
-    $('pgPerangkat').textContent = o.perangkat || '—';
-    $('pgIzin').innerHTML = !o.didukung ? '<span class="pill-merah">Tidak didukung</span>' : o.izin === 'granted' ? '<span class="pill-hijau">✓ Notifikasi diizinkan</span>' : o.izin === 'denied' ? '<span class="pill-merah">Notifikasi diblokir</span>' : '<span class="badge" style="background:var(--n-50);color:var(--n-600)">Belum diizinkan</span>';
-    const info = $('pgInfo'); let t = '';
-    if (!o.didukung) t = S.pengingat.iosBelumDipasang() ? '<b>iPhone/iPad:</b> notifikasi hanya bisa bila SAKTI dipasang di Layar Utama. Buka di Safari → ketuk <b>Bagikan</b> → <b>Tambah ke Layar Utama</b>, lalu buka SAKTI dari ikon tersebut.' : 'Peramban ini belum mendukung notifikasi. Gunakan <b>Google Chrome</b> di HP Android atau komputer.';
-    else if (o.izin === 'denied') t = '<b>Notifikasi diblokir di peramban.</b> Ketuk ikon gembok/ⓘ di samping alamat situs → <b>Izin</b> / <b>Notifikasi</b> → <b>Izinkan</b>, lalu muat ulang halaman.';
-    else if (o.galat) t = S.esc(o.galat);
-    info.innerHTML = t; info.hidden = !t;
-    $('pgUji').disabled = !(o.aktif && o.izin === 'granted');
-    $('pgMenuTitik').hidden = !o.aktif; $('tbPgTitik').hidden = !o.aktif; $('tbPengingat').title = o.aktif ? 'Pengingat aktif pukul ' + o.jam.replace(':', '.') : 'Pengingat catat kegiatan (nonaktif)'; const aj = $('pgAjakTeks'); if (aj) aj.textContent = o.aktif ? 'Aktif setiap hari kerja pukul ' + o.jam.replace(':', '.') + ' di perangkat ini.' : 'Dapatkan notifikasi di HP bila belum mencatat kegiatan hari ini.';
-  }
-  async function renderPengingat() { tampilPengingat(); pgStatus = await S.pengingat.status(); tampilPengingat(); }
-  async function aturPengingat(o) {
-    if (pgSibuk) return; pgSibuk = true; const lama = pgStatus; pgStatus = Object.assign({}, pgStatus || {}, o); tampilPengingat();
-    try { await S.pengingat.atur({ aktif: pgStatus.aktif, jam: pgStatus.jam }); pgSibuk = false; pgStatus = await S.pengingat.status();
-      S.toast(o.aktif === false ? 'Pengingat dinonaktifkan' : o.aktif ? 'Pengingat aktif — Senin–Jumat pukul ' + pgStatus.jam.replace(':', '.') : 'Jam pengingat diubah ke ' + pgStatus.jam.replace(':', '.')); }
-    catch (e) { pgSibuk = false; pgStatus = Object.assign({}, lama || {}, { izin: 'Notification' in window ? Notification.permission : 'denied' }); S.pengingat.status().then(o => { pgStatus = o; tampilPengingat(); }); S.toast(e.message, 6000); }
-    tampilPengingat();
-  }
-  $('pgSaklar').onclick = () => aturPengingat({ aktif: !(pgStatus && pgStatus.aktif), jam: (pgStatus && pgStatus.jam) || '16:00' });
-  $('pgJam').addEventListener('click', e => { const b = e.target.closest('[data-jam]'); if (!b || b.classList.contains('on')) return; if (pgStatus && pgStatus.aktif) aturPengingat({ jam: b.dataset.jam }); else { pgStatus = Object.assign({}, pgStatus || {}, { jam: b.dataset.jam }); tampilPengingat(); } });
-  $('pgJamLain').addEventListener('change', e => { const v = e.target.value; if (!/^\d\d:\d\d$/.test(v)) return; if (pgStatus && pgStatus.aktif) aturPengingat({ jam: v }); else { pgStatus = Object.assign({}, pgStatus || {}, { jam: v }); tampilPengingat(); } });
-  $('pgUji').onclick = async () => { try { await S.pengingat.uji(); S.toast('Notifikasi uji dikirim — lihat bilah notifikasi'); } catch (e) { S.toast(e.message, 5000); } };
   /* ---------- Rekap Kegiatan: RK & IKI + daftar kegiatan ---------- */
   function renderRekap() { renderTabel(); }
   /* ---------- Menu RK & IKI ---------- */
@@ -1855,7 +1799,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   document.addEventListener('visibilitychange', () => { if (!document.hidden) segarkan(); });
   let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (masuk && current() === 'dashboard') renderDashboard(); }, 200); });
   S.registerSW();
-  S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid; S.pasangPilihKarakter(document.querySelector('[data-pilih-karakter]')); S.pengingat.status().then(o => { if (!pgStatus) { pgStatus = o; tampilPengingat(); } }).catch(() => { });
+  S.mulai().then(async ({ uid, pegawai }) => { isiDlUnit(); sayaUid = uid; S.pasangPilihKarakter(document.querySelector('[data-pilih-karakter]'));
     if (pegawai.peran === 'admin') { location.replace('admin.html'); return; }
     saya = pegawai; if (pegawai.peran === 'pimpinan') document.body.classList.add('pim');
     masuk = true;
