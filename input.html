@@ -150,7 +150,7 @@
   <div id="bidang" role="tablist" aria-label="Bidang"></div>
   <button type="button" id="rkBar" class="rk-bar" hidden><span class="rk-ik">🎯</span><span id="rkTeks" class="rk-teks"></span><span class="rk-ubah" id="rkUbah">Ubah</span></button>
   <button type="button" id="rkSaran" class="rk-saran" hidden><span id="rkSaranTeks"></span><b class="pakai">Pakai</b></button>
-  <div id="pratinjau"></div>
+  <div id="pratinjau" aria-live="polite"></div>
   <div class="bar">
     <div class="kolom">
       <textarea id="teks" rows="1" placeholder="Ketik kegiatan hari ini…" aria-label="Uraian kegiatan"></textarea>
@@ -159,6 +159,7 @@
     </div>
     <button id="kirim" aria-label="Kirim"><svg viewBox="0 0 24 24"><path d="M2 21 23 12 2 3v7l15 2-15 2z"/></svg></button>
   </div>
+  <div id="zonaLepas" aria-hidden="true"><div><svg viewBox="0 0 24 24"><path d="M19 13v6H5v-6H3v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2zm-6 .67 2.59-2.58L17 12.5l-5 5-5-5 1.41-1.41L11 13.67V3h2v10.67z"/></svg><b>Lepaskan foto di sini</b><small>Foto akan dilampirkan ke kegiatan</small></div></div>
   <input type="file" id="fileGaleri" accept="image/*" multiple hidden>
   <input type="file" id="fileKamera" accept="image/*" capture="environment" hidden>
 </div>
@@ -279,7 +280,7 @@
     const nearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 120;
     const list = kegiatan.slice().sort((a, b) => (a.tanggal + (a.jam || '') + a.dibuat).localeCompare(b.tanggal + (b.jam || '') + b.dibuat));
     const rmap = {}; rhkList.forEach((r, i) => rmap[r.id] = { r, i });
-    let html = '<div class="info">📒 Catat kegiatan seperti mengirim pesan WhatsApp. Pilih <b>bidang</b> di atas kolom ketik — kegiatan tiap bidang menjadi satu dokumen Bukti Dukung. Banyak kegiatan sekaligus? Ketuk ikon tabel ▦ di atas untuk impor dari Excel, lampirkan foto bukti dengan 📎 atau 📷, dan ketuk pesan untuk mengubah atau menghapus.</div>';
+    let html = '<div class="info">📒 Catat kegiatan seperti mengirim pesan WhatsApp. Pilih <b>bidang</b> di atas kolom ketik — kegiatan tiap bidang menjadi satu dokumen Bukti Dukung. Banyak kegiatan sekaligus? Ketuk ikon tabel ▦ di atas untuk impor dari Excel, lampirkan foto bukti dengan 📎 atau 📷' + (matchMedia('(pointer:fine)').matches ? ', atau langsung <b>tempel screenshot dengan Ctrl+V</b>' : '') + ', dan ketuk pesan untuk mengubah atau menghapus.</div>';
     let last = null, lastTs = 0;
     const show = list.slice(-400);
     for (const k of show) {
@@ -323,13 +324,43 @@
   $('kirim').onclick = kirim;
   $('btnLampir').onclick = () => $('fileGaleri').click();
   $('btnKamera').onclick = () => $('fileKamera').click();
-  [$('fileGaleri'), $('fileKamera')].forEach(inp => inp.onchange = async () => {
-    for (const f of [...inp.files].slice(0, 8)) { try { lampiran.push(await S.compressImage(f)); } catch (e) { S.toast('Foto gagal dibaca'); } }
-    inp.value = ''; renderPratinjau();
+  const MAKS_FOTO = 8;
+  /* tambah foto dari pilih file, tempel (Ctrl+V), atau seret-lepas */
+  async function tambahFoto(files, asal) {
+    files = [...files].filter(f => f && /^image\//.test(f.type)); if (!files.length) return 0;
+    const sisa = MAKS_FOTO - lampiran.length; if (sisa <= 0) { S.toast('Maksimal ' + MAKS_FOTO + ' foto per kegiatan'); return 0; }
+    let n = 0, awal = lampiran.length;
+    for (const f of files.slice(0, sisa)) { try { lampiran.push(asal === 'tempel' ? await S.compressImage(f, 1600, 0.8) : await S.compressImage(f)); n++; } catch (e) { S.toast('Foto gagal dibaca'); } }   // tangkapan layar berisi tulisan: resolusi sedikit lebih tinggi agar tetap terbaca
+    renderPratinjau(awal);
+    if (files.length > sisa) S.toast('Hanya ' + sisa + ' foto ditambahkan (maksimal ' + MAKS_FOTO + ')');
+    else if (asal === 'tempel' && n) S.toast(n === 1 ? '📋 Screenshot ditempel — tulis uraiannya lalu kirim' : '📋 ' + n + ' gambar ditempel');
+    else if (asal === 'seret' && n) S.toast(n + ' foto ditambahkan');
+    if (asal !== 'pilih') ta.focus();
+    return n;
+  }
+  [$('fileGaleri'), $('fileKamera')].forEach(inp => inp.onchange = async () => { await tambahFoto(inp.files, 'pilih'); inp.value = ''; });
+  const lembarTerbuka = () => document.querySelector('.lapis.on, #viewer.on');
+  window.addEventListener('paste', e => {
+    const cd = e.clipboardData; if (!cd) return;
+    const gambar = [...(cd.items || [])].filter(it => it.kind === 'file' && /^image\//.test(it.type)).map(it => it.getAsFile()).filter(Boolean);
+    if (!gambar.length) return;                                   // teks biasa: tempel seperti biasa
+    if (cd.getData('text/plain') && !/^\s*$/.test(cd.getData('text/plain')) && e.target === ta) return;   // salinan dari dokumen (teks + gambar): utamakan teks
+    if (lembarTerbuka()) { if (document.querySelector('#lapisEdit.on')) S.toast('Tutup jendela Ubah dulu, lalu tempel screenshot di kolom catatan'); return; }
+    e.preventDefault(); tambahFoto(gambar, 'tempel');
   });
-  function renderPratinjau() {
+  // seret-lepas gambar dari folder komputer ke halaman
+  let seretN = 0; const zona = $('zonaLepas');
+  const adaGambar = e => [...((e.dataTransfer && e.dataTransfer.items) || [])].some(it => it.kind === 'file' && (!it.type || /^image\//.test(it.type)));
+  window.addEventListener('dragenter', e => { if (!adaGambar(e) || lembarTerbuka()) return; e.preventDefault(); seretN++; zona.classList.add('on'); });
+  window.addEventListener('dragover', e => { if (adaGambar(e) && !lembarTerbuka()) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+  window.addEventListener('dragleave', () => { if (--seretN <= 0) { seretN = 0; zona.classList.remove('on'); } });
+  window.addEventListener('drop', e => { seretN = 0; zona.classList.remove('on'); if (!e.dataTransfer || !e.dataTransfer.files.length || lembarTerbuka()) return; e.preventDefault(); tambahFoto(e.dataTransfer.files, 'seret'); });
+  if (matchMedia('(pointer:fine)').matches) ta.placeholder = 'Ketik kegiatan… (Ctrl+V untuk tempel screenshot)';
+  function renderPratinjau(baruDari) {
     const p = $('pratinjau'); p.classList.toggle('on', lampiran.length > 0); p.innerHTML = '';
-    lampiran.forEach((f, i) => { const d = document.createElement('div'); d.innerHTML = `<img src="${f.data}" alt=""><button aria-label="Hapus foto">×</button>`; d.querySelector('button').onclick = () => { lampiran.splice(i, 1); renderPratinjau(); }; p.appendChild(d); });
+    lampiran.forEach((f, i) => { const d = document.createElement('div'); if (baruDari != null && i >= baruDari) d.className = 'baru'; d.innerHTML = `<img src="${f.data}" alt="Foto ${i + 1}"><button aria-label="Hapus foto ${i + 1}">×</button>`; d.querySelector('button').onclick = () => { lampiran.splice(i, 1); renderPratinjau(); }; p.appendChild(d); });
+    if (lampiran.length) p.insertAdjacentHTML('beforeend', `<small class="pt-jml">${lampiran.length}/${MAKS_FOTO} foto</small>`);
+    if (baruDari != null) p.scrollLeft = p.scrollWidth;
   }
 
   let sibuk = false;

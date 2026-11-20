@@ -722,3 +722,16 @@ nav.sisi a.menu.aktif .pg-titik { background: #fff; }
 .tb-lonceng svg { width: 21px; height: 21px; }
 .tb-lonceng:active { transform: translateY(2px); box-shadow: var(--empuk-tekan); }
 .tb-pg-titik { position: absolute; top: 7px; right: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 2px #fff; }
+
+/* Catat Kegiatan: tempel screenshot & seret-lepas foto */
+:root.hal-chat #pratinjau { align-items: center; padding-top: 10px; }
+:root.hal-chat #pratinjau div.baru { animation: skpMasukFoto 420ms var(--pegas) both; }
+:root.hal-chat #pratinjau div.baru img { box-shadow: 0 0 0 3px var(--biru-400), var(--clay); }
+@keyframes skpMasukFoto { from { transform: translateY(12px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+:root.hal-chat .pt-jml { flex: 0 0 auto; padding: 4px 10px; border-radius: 99px; background: rgba(255, 255, 255, .85); color: var(--n-600); font-weight: 800; font-size: 12px; box-shadow: var(--clay); }
+#zonaLepas { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; background: rgba(28, 58, 117, .28); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); pointer-events: none; }
+#zonaLepas.on { display: grid; }
+#zonaLepas > div { display: grid; justify-items: center; gap: 6px; padding: 34px 46px; border-radius: 28px; background: #fff; border: 3px dashed var(--biru-400); box-shadow: var(--sh-2); animation: skpMasukFoto 320ms var(--pegas) both; }
+#zonaLepas svg { width: 48px; height: 48px; fill: var(--biru-600); }
+#zonaLepas b { font-size: 19px; font-weight: 900; color: var(--n-900); }
+#zonaLepas small { color: var(--n-600); font-weight: 600; }
