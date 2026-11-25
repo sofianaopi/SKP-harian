@@ -1115,8 +1115,10 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   $('pilihSemua').onchange = e => { $('tblKeg').querySelectorAll('tr[data-unit]').forEach(tr => { const cb = tr.querySelector('[data-pilih]'); cb.checked = e.target.checked; tr.classList.toggle('dipilih', cb.checked); anggotaTr(tr).forEach(k => cb.checked ? dipilih.add(k.id) : dipilih.delete(k.id)); }); aturMassal(); };
   $('mBatal').onclick = () => { dipilih.clear(); renderTabel(); };
   async function pasangRk(ks, rk) {
-    ks.forEach(k => k.rhkId = rk ? rk.id : null); await S.putBanyak('kegiatan', ks);
-    S.toast(ks.length > 1 ? ks.length + ' kegiatan ' + (rk ? 'dipasangkan ke RK' : 'dilepas dari RK') : (rk ? 'RK dipasangkan' : 'RK dilepas'), 1800);
+    // bidang kegiatan mengikuti bidang RK yang dipilih
+    const bdRk = rk && rk.bidang ? rk.bidang : null; const pindah = bdRk ? ks.filter(k => k.bidang !== bdRk).length : 0;
+    ks.forEach(k => { k.rhkId = rk ? rk.id : null; if (bdRk) k.bidang = bdRk; }); await S.putBanyak('kegiatan', ks);
+    S.toast((ks.length > 1 ? ks.length + ' kegiatan ' + (rk ? 'dipasangkan ke RK' : 'dilepas dari RK') : (rk ? 'RK dipasangkan' : 'RK dilepas')) + (pindah ? ' · bidang menjadi ' + bdRk : ''), pindah ? 2600 : 1800);
   }
   $('mTerapkan').onclick = () => {
     const ks = kegiatan.filter(k => dipilih.has(k.id)); if (!ks.length) return;
@@ -1209,7 +1211,8 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     renderFotoEdit(); $('mKeg').classList.add('on'); setTimeout(() => $('kTeks').focus(), 50);
   }
   function tampilKRk() { const r = rhkById($('kRk').value); $('kRkBtn').classList.toggle('kosong-rk', !r); $('kRkBtn').textContent = r ? '🎯 ' + (rhkList.indexOf(r) + 1) + '. ' + r.nama : '+ Pilih RK'; }
-  $('kRkBtn').onclick = () => SKPPilihRK.buka({ rhkList, bidang: $('kBidang').value, terpilih: $('kRk').value, onPilih: r => { $('kRk').value = r ? r.id : ''; tampilKRk(); } });
+  const pilihBd = (sel, b) => { if (!b) return; if (![...sel.options].some(o => o.value === b)) sel.add(new Option(b, b)); sel.value = b; };
+  $('kRkBtn').onclick = () => SKPPilihRK.buka({ rhkList, bidang: $('kBidang').value, terpilih: $('kRk').value, onPilih: r => { $('kRk').value = r ? r.id : ''; if (r) pilihBd($('kBidang'), r.bidang); tampilKRk(); } });
   function renderFotoEdit() {
     const box = $('kFoto'); box.innerHTML = '';
     edit.fotoIds.forEach(fid => { const d = document.createElement('div'); d.innerHTML = '<img alt=""><button class="x" aria-label="Hapus foto">×</button>'; ambilFoto(fid).then(f => f && (d.querySelector('img').src = f.data));

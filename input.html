@@ -216,7 +216,8 @@
   function renderChips() {
     const bd = $('bidang'); bd.innerHTML = '';
     S.BIDANG.forEach(n => { const b = document.createElement('button'); b.className = 'bd' + (pilihBidang === n ? ' on' : ''); b.textContent = n; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', pilihBidang === n);
-      b.onclick = () => { pilihBidang = n; simpanPref(); if (rkManual === undefined) cocokkanRk(); renderChips(); }; bd.appendChild(b); });
+      b.onclick = () => { pilihBidang = n; simpanPref(); const rm = rkManual && rkById(rkManual); if (rm && rm.bidang && rm.bidang !== n) rkManual = undefined;   // ganti bidang → RK lain bidang dilepas
+        if (rkManual === undefined) cocokkanRk(); renderChips(); }; bd.appendChild(b); });
     renderRkBar();
     setTimeout(() => { const ob = bd.querySelector('.on'); ob && ob.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }, 0);
   }
@@ -269,8 +270,10 @@
     const kini = rkTerpakai();
     SKPPilihRK.buka({ rhkList, bidang: pilihBidang, terpilih: kini ? kini.id : null, judul: 'RK untuk kegiatan bidang ' + pilihBidang,
       onPilih: r => { rkManual = r ? r.id : null;
-        if (!r || !r.bidang || r.bidang === pilihBidang) { if (r) rkPerBidang[pilihBidang] = r.id; else delete rkPerBidang[pilihBidang]; simpanPref(); }
-        renderRkBar(); } });
+        // bidang mengikuti bidang RK yang dipilih
+        if (r && r.bidang && S.BIDANG.includes(r.bidang) && r.bidang !== pilihBidang) { pilihBidang = r.bidang; S.toast('Bidang menyesuaikan RK: ' + r.bidang, 1600); }
+        if (pilihBidang) { if (r) rkPerBidang[pilihBidang] = r.id; else delete rkPerBidang[pilihBidang]; }
+        simpanPref(); renderChips(); } });
   };
 
   const centang = '<svg viewBox="0 0 16 11"><path d="M11.07.65 4.98 7.3 2.4 4.73 1.33 5.8l3.68 3.68L12.14 1.7zM14.6.65 8.5 7.3l-.78-.78-1.06 1.07 1.87 1.87L15.67 1.7z"/></svg>';
@@ -374,7 +377,7 @@
       const now = new Date();
       const fotoIds = [];
       for (const f of lampiran) { const id = 'f' + S.uid(); await S.put('foto', { id, data: f.data, w: f.w, h: f.h }); fotoIds.push(id); fotoCache.set(id, Promise.resolve({ id, data: f.data })); }
-      const k = { id: 'k' + S.uid(), ...(tglAkhir ? { tanggalAkhir: tglAkhir } : {}), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: pilihBidang, jenisId: null, rhkId: (rkTerpakai() || {}).id || null, jumlah: 1, fotoIds, dibuat: Date.now() };
+      const k = { id: 'k' + S.uid(), ...(tglAkhir ? { tanggalAkhir: tglAkhir } : {}), tanggal: tglCatat || S.ymd(now), jam: S.pad(now.getHours()) + ':' + S.pad(now.getMinutes()), teks: teks || '(foto bukti)', bidang: ((rkTerpakai() || {}).bidang && S.BIDANG.includes(rkTerpakai().bidang)) ? rkTerpakai().bidang : pilihBidang, jenisId: null, rhkId: (rkTerpakai() || {}).id || null, jumlah: 1, fotoIds, dibuat: Date.now() };
       await S.put('kegiatan', k);
       kegiatan.push(k); ta.value = ''; autosize(); lampiran = []; renderPratinjau(); clearTimeout(tundaCocok); rkOto = null; rkSaran = null; rkManual = undefined; renderRkBar();
       $('chat').scrollTop = $('chat').scrollHeight; renderChat(); $('chat').scrollTop = $('chat').scrollHeight; renderSub();
@@ -417,7 +420,8 @@
     $('konfirmasi').style.display = 'none'; $('lapisEdit').classList.add('on');
   }
   function tampilERk() { const r = rkById($('eRhk').value); $('eRkBtn').innerHTML = r ? '🎯 <b>' + (rhkList.indexOf(r) + 1) + '.</b> ' + S.esc(r.nama) + (r.indikator ? '<div style="font-size:12px;color:#667781;margin-top:3px">IKI: ' + S.esc(r.indikator) + '</div>' : '') : '<span style="color:#667781">— Tanpa RK — ketuk untuk memilih</span>'; }
-  $('eRkBtn').onclick = () => SKPPilihRK.buka({ rhkList, bidang: $('eBidang').value, terpilih: $('eRhk').value, onPilih: r => { $('eRhk').value = r ? r.id : ''; tampilERk(); } });
+  const pilihBd = (sel, b) => { if (!b) return; if (![...sel.options].some(o => o.value === b)) sel.add(new Option(b, b)); sel.value = b; };
+  $('eRkBtn').onclick = () => SKPPilihRK.buka({ rhkList, bidang: $('eBidang').value, terpilih: $('eRhk').value, onPilih: r => { $('eRhk').value = r ? r.id : ''; if (r) pilihBd($('eBidang'), r.bidang); tampilERk(); } });
   const tutupEdit = () => { $('lapisEdit').classList.remove('on'); editing = null; };
   $('eBatal').onclick = tutupEdit;
   $('lapisEdit').onclick = e => { if (e.target.id === 'lapisEdit') tutupEdit(); };
