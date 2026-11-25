@@ -1324,6 +1324,9 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     renderDrive();
   }
   const adaDrive = () => !!(driveCfg && driveCfg.url);
+  /* Dokumen tambahan "Nama (2).docx" yang dokumen pertamanya (RK, bidang & periode sama) ada di Drive */
+  const induk = d => { const m = (d.nama || '').match(/^(.*) \(\d+\)\.docx$/); if (!m || !d.driveId) return null;
+    return dokumen.find(x => x.id !== d.id && x.driveId && x.nama === m[1] + '.docx' && (x.periode || '') === (d.periode || '') && (x.bidang || '') === (d.bidang || '')) || null; };
   function renderDrive() {
     const box = $('driveDaftar');
     if (!adaDrive()) { box.innerHTML = '<div class="kosong">Penyimpanan Google Drive belum diaktifkan oleh admin. Dokumen tetap bisa diunduh langsung.</div>'; $('btnSalinSemua').hidden = true; return; }
@@ -1331,7 +1334,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     box.innerHTML = dokumen.length ? '<div class="tabel-wrap"><table class="t"><thead><tr><th>Periode</th><th>Bidang</th><th>Dokumen</th><th>Disimpan</th><th></th></tr></thead><tbody>' +
       dokumen.map(d => `<tr><td style="white-space:nowrap">${S.esc(d.periode || '')}</td><td>${S.esc(d.bidang || '')}</td><td style="word-break:break-all"><a href="${S.esc(d.url)}" target="_blank" rel="noopener">${S.esc(d.nama)}</a></td>
         <td style="white-space:nowrap;color:var(--teks2);font-size:12.5px">${d.dibuat ? S.esc(new Date(d.dibuat).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) : ''}</td>
-        <td style="white-space:nowrap;text-align:right"><a class="btn kecil" href="${S.esc(d.url)}" target="_blank" rel="noopener">Buka</a> <button class="btn kecil" type="button" data-salin="${S.esc(d.id)}">Salin link</button> <button class="ikon hapus" type="button" data-hapusdok="${S.esc(d.id)}" title="Hapus dari Drive" aria-label="Hapus dari Drive"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('') + '</tbody></table></div>'
+        <td style="white-space:nowrap;text-align:right"><a class="btn kecil" href="${S.esc(d.url)}" target="_blank" rel="noopener">Buka</a> <button class="btn kecil" type="button" data-salin="${S.esc(d.id)}">Salin link</button> ${induk(d) ? `<button class="btn kecil" type="button" data-gabungdok="${S.esc(d.id)}" style="color:#0b6b3a" title="Gabungkan isi dokumen ini ke ${S.esc(induk(d).nama)} lalu hapus dokumen ini">Gabungkan</button> ` : ''}<button class="ikon hapus" type="button" data-hapusdok="${S.esc(d.id)}" title="Hapus dari Drive" aria-label="Hapus dari Drive"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('') + '</tbody></table></div>'
       : '<div class="kosong">Belum ada dokumen yang disimpan ke Google Drive. Klik “☁ Simpan &amp; arsipkan” pada daftar di atas.</div>';
     box.insertAdjacentHTML('beforeend', '<p style="font-size:12.5px;color:var(--teks2);margin:10px 0 0">Kegiatan dan foto yang sudah disimpan ke Drive dihapus dari aplikasi untuk menghemat ruang; dokumen di Drive adalah arsipnya. Kegiatan baru dengan RK yang sama (bidang &amp; periode sama) digabung ke dokumen yang sudah ada: IKI sama masuk ke tabel IKI itu, IKI berbeda dibuat halaman baru.</p>');
   }
@@ -1401,6 +1404,28 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   $('driveKartu').addEventListener('click', async e => {
     const sl = e.target.closest('[data-salin]'); if (sl) { const d = dokumen.find(x => x.id === sl.dataset.salin); if (d) salin(d.url); return; }
     if (e.target.closest('#btnSalinSemua')) { salin(dokumen.map(d => d.nama.replace(/\.docx$/, '') + ': ' + d.url).join('\n')); return; }
+    const gb = e.target.closest('[data-gabungdok]');
+    if (gb) {
+      const d = dokumen.find(x => x.id === gb.dataset.gabungdok), u = d && induk(d); if (!u) return;
+      if (!await konfirmasi('Gabungkan jadi satu dokumen?', 'Isi ' + d.nama + ' dimasukkan ke ' + u.nama + ':\n• IKI sama → kegiatan masuk ke tabel IKI itu, nomornya melanjutkan.\n• IKI berbeda → dibuat halaman baru di akhir dokumen.\n\nSetelah itu ' + d.nama + ' dipindahkan ke sampah Google Drive.')) return;
+      const sb = S.sibuk('Membuka kedua dokumen di Google Drive…');
+      try {
+        const [a, b] = await Promise.all([S.drive(driveCfg.url, 'ambil', { id: u.driveId }), S.drive(driveCfg.url, 'ambil', { id: d.driveId })]);
+        const buf = t => Uint8Array.from(atob(t.data), c => c.charCodeAt(0)).buffer;
+        sb.pesan('Menggabungkan…'); const g = await DOCX.gabungDokumen({ utama: buf(a), tambahan: buf(b) });
+        sb.pesan('Menyimpan ke ' + u.nama + '…');
+        const h2 = await S.drive(driveCfg.url, 'perbarui', { id: u.driveId, nama: u.nama, periode: u.periode, data: await S.blobKeBase64(g.blob) });
+        if (!h2.id || !h2.url || !(h2.ukuran > 0)) throw new Error('Google Drive tidak mengonfirmasi dokumen gabungan tersimpan');
+        const u2 = Object.assign({}, u, { driveId: h2.id, url: h2.url, ukuran: h2.ukuran, nama: h2.nama || u.nama, dibuat: new Date().toISOString() });
+        await S.put('dokumen', u2);
+        try { await S.drive(driveCfg.url, 'hapus', { id: d.driveId }); } catch (x) { if (!/not found|tidak ditemukan|No item/i.test(x.message)) S.toast('Dokumen gabungan tersimpan, tetapi ' + d.nama + ' gagal dihapus dari Drive — hapus manual: ' + x.message, 7000); }
+        await S.del('dokumen', d.id);
+        dokumen = [u2].concat(dokumen.filter(x => x.id !== u.id && x.id !== d.id)); renderDrive();
+        S.toast('Digabung ke ' + u2.nama + (g.baru.length ? ' · ' + g.baru.length + ' IKI baru di halaman baru' : ''), 5000);
+      } catch (x) { S.toast(/tidak dikenal/i.test(x.message) ? 'Apps Script Google Drive belum diperbarui (perintah gabung belum ada). Minta admin memasang TAMBAHAN-GABUNG-RK.gs lalu Deploy versi baru.' : 'Gagal menggabungkan: ' + (x.message || x), 8000); }
+      finally { sb.selesai(); }
+      return;
+    }
     const h = e.target.closest('[data-hapusdok]'); if (!h) return;
     const d = dokumen.find(x => x.id === h.dataset.hapusdok);
     if (!await konfirmasi('Hapus arsip dari Google Drive?', d.nama + ' akan dipindahkan ke sampah Drive dan link-nya tidak bisa dibuka lagi. Kegiatan di dalam dokumen ini sudah tidak ada di aplikasi, jadi datanya akan hilang sama sekali (masih bisa dipulihkan dari Sampah Google Drive dalam 30 hari).')) return;

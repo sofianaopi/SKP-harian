@@ -416,6 +416,83 @@
     idDasar = 900;
     return { blob: zip(files.concat(media)), masuk, baru };
   }
+  /* Gabungkan dokumen Bukti Dukung tambahan "(2)" ke dokumen pertama (RK sama).
+     IKI sama → baris kegiatan dokumen tambahan masuk ke tabel IKI itu (nomor melanjutkan);
+     IKI berbeda → bloknya dipindah ke halaman baru di akhir dokumen pertama.
+     o: {utama: ArrayBuffer, tambahan: ArrayBuffer} → {blob, masuk:[iki], baru:[iki]} */
+  async function gabungDokumen(o) {
+    const zu = await readZip(o.utama), zt = await readZip(o.tambahan);
+    let doc = td(await zu.get('word/document.xml')), rels = td(await zu.get('word/_rels/document.xml.rels')), ct = td(await zu.get('[Content_Types].xml'));
+    const dt = td(await zt.get('word/document.xml')), relsT = td(await zt.get('word/_rels/document.xml.rels'));
+    if (!doc || !rels || !ct || !dt || !relsT) throw new Error('Salah satu dokumen di Drive tidak bisa dibaca sebagai dokumen Word');
+    const bacaTabel = (xml, a0, a1) => potongan(xml, 'w:tbl', a0, a1).map(t => {
+      const isi = xml.slice(t.a, t.b); const rows = potongan(isi, 'w:tr').map(r => ({ a: t.a + r.a, b: t.a + r.b, teks: teksDari(isi.slice(r.a, r.b)).trim() }));
+      const iIki = rows.findIndex(r => /^Indikator\s*Kinerja/i.test(r.teks)); if (iIki < 0) return null;
+      const ikis = rows[iIki].teks.replace(/^Indikator\s*Kinerja[^:]*:?/i, '').split('\n').map(kunciIki).filter(Boolean);
+      const iCap = rows.findIndex((r, i) => i > iIki && /^\[?\s*capaian\s*\]?$/i.test(r.teks));
+      let no = 0; rows.forEach(r => { const m = r.teks.match(/^(\d+)\s*\.\s/); if (m) no = Math.max(no, Number(m[1])); });
+      return { a: t.a, b: t.b, ikis, no, item: rows.slice((iCap >= 0 ? iCap : iIki) + 1) };
+    }).filter(Boolean);
+    const u0 = doc.indexOf('<w:body>') + 8, u1 = doc.lastIndexOf('<w:sectPr');
+    const t0 = dt.indexOf('<w:body>') + 8, t1 = dt.lastIndexOf('<w:sectPr');
+    const tabU = bacaTabel(doc, u0, u1), tabT = bacaTabel(dt, t0, t1);
+    if (!tabT.length) throw new Error('Tabel RK/IKI di dokumen tambahan tidak ditemukan — gabungkan manual di Word');
+    // nomor objek & gambar baru agar tidak bentrok
+    let maks = 0; for (const m of doc.matchAll(/<(?:wp:docPr|pic:cNvPr|wps:cNvPr|wpg:cNvPr) [^>]*id="(\d+)"/g)) maks = Math.max(maks, Number(m[1]));
+    let nId = maks + 10; const cap = Date.now().toString(36); let nRel = 0; const media = [], petaRel = new Map();
+    const relT = id => { const m = relsT.match(new RegExp('<Relationship [^>]*Id="' + id + '"[^>]*/?>')); return m && m[0]; };
+    async function pindah(xml) {
+      xml = xml.replace(/<w:bookmarkStart [^>]*\/>/g, '').replace(/<w:bookmarkEnd [^>]*\/>/g, '')
+        .replace(/(<(?:wp:docPr|pic:cNvPr|wps:cNvPr|wpg:cNvPr) [^>]*id=")(\d+)"/g, (m, p) => p + (nId++) + '"');
+      const ids = new Set([...xml.matchAll(/r:(?:embed|id|link|pict)="([^"]+)"/g)].map(m => m[1]));
+      for (const id of ids) {
+        if (!petaRel.has(id)) {
+          const r = relT(id); if (!r) continue;
+          const baru = 'rIdM' + cap + '_' + (++nRel); const tgt = (r.match(/Target="([^"]+)"/) || [])[1] || ''; let tgtBaru = null;
+          if (!/TargetMode="External"/.test(r) && /^(?:\/?word\/)?media\//.test(tgt)) {
+            const asal = 'word/' + tgt.replace(/^\/?word\//, ''), data = await zt.get(asal);
+            const ext = (tgt.split('.').pop() || 'jpeg').toLowerCase(), nm = 'gabung_' + cap + '_' + nRel + '.' + ext;
+            if (data) media.push({ name: 'word/media/' + nm, data });
+            if (!new RegExp('Extension="' + ext + '"', 'i').test(ct)) ct = ct.replace('<Default ', `<Default Extension="${ext}" ContentType="${MIME[ext] || 'application/octet-stream'}"/><Default `);
+            tgtBaru = 'media/' + nm;
+          }
+          let rb = r.replace(/Id="[^"]+"/, 'Id="' + baru + '"'); if (tgtBaru) rb = rb.replace(/Target="[^"]+"/, 'Target="' + tgtBaru + '"');
+          rels = rels.replace('</Relationships>', rb.replace(/\s*\/?>$/, '/>') + '</Relationships>');
+          petaRel.set(id, baru);
+        }
+        xml = xml.split('"' + id + '"').join('"' + petaRel.get(id) + '"');
+      }
+      return xml;
+    }
+    const sisip = [], halaman = [], masuk = [], baru = [];
+    let awalBlok = t0;
+    for (const t of tabT) {
+      const k = t.ikis[0] || '';
+      const tu = tabU.find(u => t.ikis.length ? t.ikis.every(i => u.ikis.includes(i)) : !u.ikis.length);
+      if (tu && t.item.length) {
+        let n = tu.no;
+        const isi = t.item.map(r => dt.slice(r.a, r.b).replace(/(<w:t(?: [^>]*)?>\s*)(\d+)(\s*\.)/, (m, a, b, c) => /^\d+\s*\.\s/.test(r.teks) ? a + (++n) + c : m)).join('');
+        tu.no = n; sisip.push({ pos: tu.b - '</w:tbl>'.length, xml: await pindah(isi) }); masuk.push(k);
+      } else if (!tu) {
+        let blok = dt.slice(awalBlok, t.b).replace(/^\s*(?:<w:p(?: [^>]*)?>(?:(?!<\/w:p>)[\s\S])*?<w:br w:type="page"\/>[\s\S]*?<\/w:p>)/, '');
+        halaman.push('<w:p><w:r><w:br w:type="page"/></w:r></w:p>' + await pindah(blok)); baru.push(k);
+      }
+      awalBlok = t.b;
+    }
+    if (halaman.length) sisip.push({ pos: u1, xml: halaman.join('') });
+    sisip.sort((a, b) => b.pos - a.pos).forEach(x => { doc = doc.slice(0, x.pos) + x.xml + doc.slice(x.pos); });
+    const akarT = dt.match(/<w:document[^>]*>/)[0], akarL = doc.match(/<w:document[^>]*>/)[0]; let akarB = akarL;
+    for (const m of akarT.matchAll(/\sxmlns:([\w]+)="[^"]*"/g)) if (!new RegExp('\\sxmlns:' + m[1] + '=').test(akarB)) akarB = akarB.replace(/>$/, m[0] + '>');
+    if (akarB !== akarL) doc = doc.replace(akarL, akarB);
+    const files = [];
+    for (const n of zu.names) {
+      if (n === 'word/document.xml') files.push({ name: n, data: doc });
+      else if (n === 'word/_rels/document.xml.rels') files.push({ name: n, data: rels });
+      else if (n === '[Content_Types].xml') files.push({ name: n, data: ct });
+      else if (!n.endsWith('/')) files.push({ name: n, data: await zu.get(n) });
+    }
+    return { blob: zip(files.concat(media)), masuk, baru };
+  }
   async function buktiDukung(o) {
     /* o: {template, kop?, judul, nama, nip, bagian: [{rk, iki, items:[{teks, fotos:[{data,w,h}]}]}]}
        Tiap kegiatan = baris uraian diikuti baris fotonya.
@@ -655,5 +732,5 @@
     Object.entries(ganti).forEach(([n, d]) => files.push({ name: n, data: d }));
     return zip(files.concat(o._media || [], tambahMedia));
   }
-  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, extractBagian, buktiDukung, gabungBukti, laporanDinas, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
+  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, extractBagian, buktiDukung, gabungBukti, gabungDokumen, laporanDinas, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
 })();
