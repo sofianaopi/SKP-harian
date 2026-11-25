@@ -292,9 +292,10 @@
 
 
   /* ---------- Bukti Dukung SKP: mengisi cetakan Word kantor (template-bukti-dukung.docx) ---------- */
+  let idDasar = 900;   // nomor awal objek gambar (dinaikkan saat menggabung agar tidak bentrok dengan gambar lama)
   function imgNs(rId, wEmu, hEmu) {
     const n = picId++;
-    return `<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${wEmu}" cy="${hEmu}"/><wp:docPr id="${900 + n}" name="Foto ${n}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${900 + n}" name="foto${n}.jpeg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${wEmu}" cy="${hEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+    return `<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${wEmu}" cy="${hEmu}"/><wp:docPr id="${idDasar + n}" name="Foto ${n}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${idDasar + n}" name="foto${n}.jpeg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${wEmu}" cy="${hEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
   }
   const paraDengan = (xml, tanda) => { const re = new RegExp('<w:p(?: [^>]*)?>(?:(?!<w:p[ >])[\\s\\S])*?' + tanda + '[\\s\\S]*?</w:p>'); const m = xml.match(re); return m ? m[0] : null; };
   /* teks dengan baris baru → pindah baris di Word */
@@ -304,6 +305,116 @@
     const i = d.indexOf(teks); if (i < 0) return null;
     const a = Math.max(d.lastIndexOf('<w:tr>', i), d.lastIndexOf('<w:tr ', i)); const b = d.indexOf('</w:tr>', i);
     return a < 0 || b < 0 ? null : d.slice(a, b + 7);
+  }
+  /* Baris uraian + baris foto untuk daftar kegiatan (dipakai buktiDukung & gabungBukti).
+     mulai = nomor urut pertama; tambahFoto(f) mengembalikan rId gambar yang sudah didaftarkan. */
+  function barisKegiatan(rowU, rowF, items, mulai, tambahFoto) {
+    const EMU = 914400, maxW = 4.6 * EMU, maxH = 3.0 * EMU;
+    return (items.length ? items : [{ teks: '-', fotos: [] }]).map((it, i) => {
+      const u = rowU.replace('{{NO}}. ', items.length ? (mulai + i) + '. ' : '').replace('{{URAIAN}}', x(it.teks));
+      const pf = paraDengan(rowF, '\\{\\{FOTO\\}\\}');
+      let fx = '';
+      (it.fotos || []).forEach((f, j) => {
+        const rId = tambahFoto(f);
+        const ratio = (f.w && f.h) ? f.w / f.h : 4 / 3; let w = maxW, h = w / ratio; if (h > maxH) { h = maxH; w = h * ratio; }
+        fx += `<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="${j ? 60 : 120}"/><w:jc w:val="center"/></w:pPr>${imgNs(rId, Math.round(w), Math.round(h))}</w:p>`;
+      });
+      if (fx) fx += '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="60"/><w:jc w:val="center"/></w:pPr></w:p>';
+      else fx = '<w:p><w:pPr><w:pStyle w:val="TableParagraph"/><w:spacing w:before="120" w:after="120"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:i/><w:color w:val="808080"/><w:sz w:val="18"/></w:rPr><w:t>(tidak ada foto)</w:t></w:r></w:p>';
+      const rf = (it.fotos || []).length > 1 ? rowF.replace(/<w:cantSplit\/>/g, '') : rowF;
+      return u + rf.replace(pf, fx);
+    }).join('');
+  }
+  /* Salinan blok cetakan untuk halaman ke-2 dst.: nomor objek unik, tanpa bookmark ganda, garis kop jadi garis paragraf */
+  function salinBlok(d, geser) {
+    d = d.replace(/(<wp:docPr [^>]*id=")(\d+)"/g, (m, p, n) => p + (Number(n) + geser) + '"').replace(/(<(?:wps|pic):cNvPr [^>]*id=")(\d+)"/g, (m, p, n) => p + (Number(n) + geser) + '"')
+      .replace(/<w:bookmarkStart [^>]*\/>/g, '').replace(/<w:bookmarkEnd [^>]*\/>/g, '');
+    const garis = paraDengan(d, '(?:mc:AlternateContent|wpg:wgp)');
+    if (garis) d = d.replace(garis, '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="12" w:space="1" w:color="000000"/></w:pBdr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:ind w:left="-27"/></w:pPr></w:p>');
+    return d;
+  }
+  /* Teks biasa dari potongan XML Word (pindah baris & paragraf → \n) */
+  const teksDari = xml => xml.replace(/<w:br\/>|<w:cr\/>|<\/w:p>/g, '\n').replace(/<w:tab\/>/g, ' ').replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+  const kunciIki = t => String(t || '').replace(/^\s*\d+\s*[.)]\s*/, '').replace(/\s+/g, ' ').replace(/[.;,\s]+$/, '').trim().toLowerCase();
+  /* Potongan tingkat atas (tidak bersarang) dari tag tertentu: [{a, b}] posisi awal & akhir */
+  function potongan(xml, tag, dari, sampai) {
+    const out = [], re = new RegExp('<' + tag + '[ >]|</' + tag + '>', 'g'); re.lastIndex = dari || 0; let m, dalam = 0, a = -1;
+    const batas = sampai == null ? xml.length : sampai;
+    while ((m = re.exec(xml)) && m.index < batas) {
+      if (m[0][1] !== '/') { if (!dalam++) a = m.index; }
+      else if (dalam && !--dalam) out.push({ a, b: m.index + m[0].length });
+    }
+    return out;
+  }
+  /* Gabungkan kegiatan baru ke dokumen Bukti Dukung lama (file di Google Drive) dengan RK yang sama.
+     o: {lama: ArrayBuffer dokumen lama, template, judul, nama, nip, rk, bagian: [{iki, items}]}
+     - IKI sudah ada di dokumen lama → kegiatan ditambahkan di tabel IKI itu, nomor melanjutkan.
+     - IKI belum ada → halaman baru di akhir dokumen lama (RK sama, IKI baru), nomor mulai dari 1.
+     Hasil: {blob, masuk: [iki yang digabung ke tabel lama], baru: [iki yang dibuat halaman baru]} */
+  async function gabungBukti(o) {
+    picId = 1;
+    const zl = await readZip(o.lama), zt = await readZip(o.template);
+    let doc = td(await zl.get('word/document.xml'));
+    let rels = td(await zl.get('word/_rels/document.xml.rels'));
+    let ct = td(await zl.get('[Content_Types].xml'));
+    const tpl = td(await zt.get('word/document.xml'));
+    if (!doc || !rels || !ct) throw new Error('Dokumen lama di Google Drive tidak bisa dibaca sebagai dokumen Word');
+    // nomor objek gambar baru di atas nomor tertinggi yang sudah ada
+    let maks = 0; for (const m of doc.matchAll(/<(?:wp:docPr|pic:cNvPr|wps:cNvPr) [^>]*id="(\d+)"/g)) maks = Math.max(maks, Number(m[1]));
+    idDasar = maks + 10;
+    const cap = Date.now().toString(36); let nFoto = 0; const media = [];
+    const tambahFoto = f => {
+      nFoto++; const rId = 'rIdG' + cap + '_' + nFoto, name = 'gabung_' + cap + '_' + nFoto + '.jpeg';
+      media.push({ name: 'word/media/' + name, data: dataUrlBytes(f.data) });
+      rels = rels.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${name}"/></Relationships>`);
+      return rId;
+    };
+    // cetakan: blok asli, baris uraian & foto
+    const t0 = tpl.indexOf('<w:body>') + 8, t1 = tpl.lastIndexOf('<w:sectPr');
+    const blokT = tpl.slice(t0, t1);
+    const rowU = barisDengan(blokT, '{{URAIAN}}'), rowF = barisDengan(blokT, '{{FOTO}}');
+    if (!rowU || !rowF) throw new Error('Cetakan Bukti Dukung tidak memiliki baris {{URAIAN}} / {{FOTO}}');
+    // tabel di dokumen lama yang memuat baris IKI → daftar IKI & nomor terakhir
+    const b0 = doc.indexOf('<w:body>') + 8, b1 = doc.lastIndexOf('<w:sectPr');
+    const tabel = potongan(doc, 'w:tbl', b0, b1).map(t => {
+      const isi = doc.slice(t.a, t.b); const baris = potongan(isi, 'w:tr').map(r => teksDari(isi.slice(r.a, r.b)).trim());
+      const bIki = baris.find(r => /^Indikator\s*Kinerja/i.test(r)); if (bIki == null) return null;
+      const ikis = bIki.replace(/^Indikator\s*Kinerja[^:]*:?/i, '').split('\n').map(kunciIki).filter(Boolean);
+      let no = 0; baris.forEach(r => { const m = r.match(/^(\d+)\s*\.\s/); if (m) no = Math.max(no, Number(m[1])); });
+      return { a: t.a, b: t.b, ikis, no };
+    }).filter(Boolean);
+    const sisip = [], halamanBaru = [], masuk = [], baru = [];
+    o.bagian.forEach(bg => {
+      const k = kunciIki(bg.iki);
+      const t = tabel.find(t => k ? t.ikis.includes(k) : !t.ikis.length);
+      if (t) { sisip.push({ pos: t.b - '</w:tbl>'.length, xml: barisKegiatan(rowU, rowF, bg.items, t.no + 1, tambahFoto) }); t.no += bg.items.length; masuk.push(bg.iki); }
+      else {
+        let d = salinBlok(blokT, idDasar + 2000 + 1000 * halamanBaru.length);
+        d = d.replace('{{JUDUL}}', x(o.judul)).replace('{{NAMA}}', x(o.nama)).replace('{{NIP}}', x(o.nip)).replace('{{RK}}', xBaris(o.rk || '')).replace('{{IKI}}', xBaris(bg.iki || ''));
+        const ru = barisDengan(d, '{{URAIAN}}'), rf = barisDengan(d, '{{FOTO}}');
+        d = d.replace(rf, '').replace(ru, barisKegiatan(ru, rf, bg.items, 1, tambahFoto));
+        halamanBaru.push('<w:p><w:r><w:br w:type="page"/></w:r></w:p>' + d); baru.push(bg.iki);
+      }
+    });
+    // sisipkan dari belakang agar posisi tidak bergeser; halaman baru di akhir isi dokumen
+    if (halamanBaru.length) sisip.push({ pos: b1, xml: halamanBaru.join('') });
+    sisip.sort((a, b) => b.pos - a.pos).forEach(s => { doc = doc.slice(0, s.pos) + s.xml + doc.slice(s.pos); });
+    // namespace yang dipakai cetakan tetapi hilang di dokumen lama (mis. setelah disimpan ulang di Word)
+    const akarT = tpl.match(/<w:document[^>]*>/)[0], akarL = doc.match(/<w:document[^>]*>/)[0]; let akarB = akarL;
+    for (const m of akarT.matchAll(/\sxmlns:([\w]+)="[^"]*"/g)) if (!new RegExp('\\sxmlns:' + m[1] + '=').test(akarB)) akarB = akarB.replace(/>$/, m[0] + '>');
+    if (akarB !== akarL) doc = doc.replace(akarL, akarB);
+    if (!/Extension="jpe?g"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
+    else if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace('<Default ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
+    const files = [];
+    for (const n of zl.names) {
+      if (n === 'word/document.xml') files.push({ name: n, data: doc });
+      else if (n === 'word/_rels/document.xml.rels') files.push({ name: n, data: rels });
+      else if (n === '[Content_Types].xml') files.push({ name: n, data: ct });
+      else if (!n.endsWith('/')) files.push({ name: n, data: await zl.get(n) });
+    }
+    idDasar = 900;
+    return { blob: zip(files.concat(media)), masuk, baru };
   }
   async function buktiDukung(o) {
     /* o: {template, kop?, judul, nama, nip, bagian: [{rk, iki, items:[{teks, fotos:[{data,w,h}]}]}]}
@@ -544,5 +655,5 @@
     Object.entries(ganti).forEach(([n, d]) => files.push({ name: n, data: d }));
     return zip(files.concat(o._media || [], tambahMedia));
   }
-  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, extractBagian, buktiDukung, laporanDinas, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
+  window.DOCX = { build, zip, p, run, tc, tr, tbl, img, laporan, extractKop, extractBagian, buktiDukung, gabungBukti, laporanDinas, zipBerkas: files => { const b = zip(files); return new Blob([b], { type: 'application/zip' }); } };
 })();

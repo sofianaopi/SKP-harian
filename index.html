@@ -1271,6 +1271,11 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     const pb = pbDari(g, p); if (pb) return { blob: pb.blob, nama: namaDok(g, p), perbaikan: pb };
     return buatBukti(g, p);
   }
+  function infoGabung(g, p) {
+    const d1 = adaDrive() && dokSama(g, p); if (!d1) return '';
+    if (pbDari(g, p)) return `<div class="pb-info" style="color:#8a5300">⚠ RK ini sudah ada di Drive (${S.esc(d1.nama)}), tetapi versi perbaikan tidak bisa digabung — akan disimpan sebagai dokumen tambahan. Hapus perbaikan bila ingin digabung.</div>`;
+    const ada = perIki(g).length; return `<div class="pb-info" style="color:#0b6b3a">↪ <b>Digabung ke dokumen di Drive:</b> ${S.esc(d1.nama)} — kegiatan dengan IKI yang sama masuk ke tabel IKI-nya, IKI berbeda dibuat halaman baru${ada > 1 ? ' (' + ada + ' IKI)' : ''}.</div>`;
+  }
   function infoPb(g, p, i) {
     const pb = pbDari(g, p); if (!pb) return '';
     const ids = new Set(pb.ids || []), baru = g.ks.filter(k => !ids.has(k.id)).length, hilang = (pb.ids || []).filter(id => !g.ks.some(k => k.id === id)).length;
@@ -1308,7 +1313,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     let html = '';
     if (!grup.length) html = '<div class="kosong">Belum ada kegiatan pada periode ini.<br>Catat lewat menu <a href="input.html">Input</a> dengan memilih bidang.</div>';
     else html = '<div class="tabel-wrap"><table class="t"><thead><tr><th>Bidang</th><th>RK (1 dokumen)</th><th class="num">Kegiatan</th><th class="num">Foto</th><th></th></tr></thead><tbody>' +
-      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${g.rk ? '🎯 ' + S.esc(g.rk.nama.length > 90 ? g.rk.nama.slice(0, 88) + '…' : g.rk.nama) + (g.rks.length > 1 ? ' <span style="color:#2E75B6">(' + g.rks.length + ' IKI)</span>' : '') : '<span style="color:#B45309">⚠ Tanpa RK — RK & IKI kosong</span>'}<div style="color:var(--teks2);font-size:11.5px;margin-top:3px;word-break:break-all"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg> ${S.esc(namaDok(g, p))}</div>${infoPb(g, p, i)}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button" title="${pbDari(g, p) ? 'Unduh versi perbaikan yang terakhir diunggah' : 'Unduh dokumen untuk diperiksa / diperbaiki di Word'}">⬇ Unduh${pbDari(g, p) ? ' perbaikan' : ''}</button> <button class="btn kecil" data-unggahpb="${i}" type="button" title="Unggah dokumen yang sudah diperbaiki di Word">⬆ Unggah perbaikan</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a" title="Simpan dokumen & foto ke Google Drive lalu hapus kegiatan & foto ini dari aplikasi"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg> Simpan &amp; arsipkan</button>` : ''}</td></tr>`).join('') +
+      grup.map((g, i) => `<tr><td>${S.esc(g.bidang)}</td><td style="font-size:12.5px">${g.rk ? '🎯 ' + S.esc(g.rk.nama.length > 90 ? g.rk.nama.slice(0, 88) + '…' : g.rk.nama) + (g.rks.length > 1 ? ' <span style="color:#2E75B6">(' + g.rks.length + ' IKI)</span>' : '') : '<span style="color:#B45309">⚠ Tanpa RK — RK & IKI kosong</span>'}<div style="color:var(--teks2);font-size:11.5px;margin-top:3px;word-break:break-all"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg> ${S.esc(namaDok(g, p))}</div>${infoGabung(g, p)}${infoPb(g, p, i)}</td><td class="num">${g.ks.length}</td><td class="num">${g.ks.reduce((a, k) => a + (k.fotoIds || []).length, 0)}</td><td style="text-align:right;white-space:nowrap"><button class="btn kecil" data-unduh="${i}" type="button" title="${pbDari(g, p) ? 'Unduh versi perbaikan yang terakhir diunggah' : 'Unduh dokumen untuk diperiksa / diperbaiki di Word'}">⬇ Unduh${pbDari(g, p) ? ' perbaikan' : ''}</button> <button class="btn kecil" data-unggahpb="${i}" type="button" title="Unggah dokumen yang sudah diperbaiki di Word">⬆ Unggah perbaikan</button> ${adaDrive() ? `<button class="btn kecil" data-drive="${i}" type="button" style="color:#0b6b3a" title="Simpan dokumen & foto ke Google Drive lalu hapus kegiatan & foto ini dari aplikasi"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg> Simpan &amp; arsipkan</button>` : ''}</td></tr>`).join('') +
       `</tbody></table></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn utama" type="button" id="btnZip">Unduh semua (${grup.length} dokumen, .zip)</button>${adaDrive() ? `<button class="btn" type="button" id="btnDriveSemua" style="color:#0b6b3a;border-color:#9fd3b5"><svg class="g i16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg> Simpan semua ke Drive &amp; arsipkan (${grup.length})</button>` : ''}</div>`;
     if (grup.length && adaDrive()) html += `<div style="margin-top:12px;padding:10px 12px;border-radius:10px;background:#fff7e6;border:1px solid #f1d39a;font-size:13px;color:#7a4b00">ℹ️ Setelah disimpan ke Drive, data di <b>Catat Kegiatan</b> akan dihapus. Data tetap dapat diakses melalui link Drive.</div>`;
     if (tanpa) html += `<p style="font-size:13px;color:#8a5300;margin:12px 0 0">⚠ ${tanpa} kegiatan belum memilih bidang sehingga tidak masuk dokumen. Lengkapi lewat ikon pensil di <a href="#dashboard">Dashboard</a>.</p>`;
@@ -1325,7 +1330,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
         <td style="white-space:nowrap;color:var(--teks2);font-size:12.5px">${d.dibuat ? S.esc(new Date(d.dibuat).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) : ''}</td>
         <td style="white-space:nowrap;text-align:right"><a class="btn kecil" href="${S.esc(d.url)}" target="_blank" rel="noopener">Buka</a> <button class="btn kecil" type="button" data-salin="${S.esc(d.id)}">Salin link</button> <button class="ikon hapus" type="button" data-hapusdok="${S.esc(d.id)}" title="Hapus dari Drive" aria-label="Hapus dari Drive"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></td></tr>`).join('') + '</tbody></table></div>'
       : '<div class="kosong">Belum ada dokumen yang disimpan ke Google Drive. Klik “☁ Simpan &amp; arsipkan” pada daftar di atas.</div>';
-    box.insertAdjacentHTML('beforeend', '<p style="font-size:12.5px;color:var(--teks2);margin:10px 0 0">Kegiatan dan foto yang sudah disimpan ke Drive dihapus dari aplikasi untuk menghemat ruang; dokumen di Drive adalah arsipnya. Kegiatan baru pada bidang &amp; periode yang sama disimpan sebagai dokumen tambahan.</p>');
+    box.insertAdjacentHTML('beforeend', '<p style="font-size:12.5px;color:var(--teks2);margin:10px 0 0">Kegiatan dan foto yang sudah disimpan ke Drive dihapus dari aplikasi untuk menghemat ruang; dokumen di Drive adalah arsipnya. Kegiatan baru dengan RK yang sama (bidang &amp; periode sama) digabung ke dokumen yang sudah ada: IKI sama masuk ke tabel IKI itu, IKI berbeda dibuat halaman baru.</p>');
   }
   async function salin(teks) { try { await navigator.clipboard.writeText(teks); S.toast('Link disalin'); } catch (e) { const t = document.createElement('textarea'); t.value = teks; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); S.toast('Link disalin'); } catch (x) { S.toast('Gagal menyalin — salin manual dari kolom Dokumen'); } t.remove(); } }
   /* Simpan ke Drive, lalu hapus kegiatan & foto dokumen itu dari database aplikasi (Drive menjadi arsipnya) */
@@ -1348,15 +1353,39 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     if (pb) { const ids = new Set(pb.ids || []); const isi = g.ks.filter(k => ids.has(k.id)); if (!isi.length) throw new Error('Kegiatan di dokumen perbaikan sudah tidak ada — hapus perbaikan lalu unduh ulang. Data tidak dihapus.'); g = Object.assign({}, g, { ks: isi }); }   // hanya kegiatan yang ada di dokumen perbaikan yang diarsipkan
     const nFoto = await simpanFotoKeDrive(g, lapor && ((i, n) => lapor('Menyimpan foto ' + i + ' dari ' + n + '…')));
     lapor && lapor('Menyimpan dokumen…');
-    const r = await dokumenUntuk(g, p);
-    // nama sama pernah diarsipkan → simpan sebagai dokumen tambahan agar arsip lama tidak tertimpa
-    const dasar = r.nama.replace(/\.docx$/, '');
-    const sudah = dokumen.filter(d => d.nama === r.nama || (d.nama || '').startsWith(dasar + ' (')).length;
-    const nama = sudah ? dasar + ' (' + (sudah + 1) + ').docx' : r.nama;
-    const hasil = await S.drive(driveCfg.url, 'simpan', { nama, periode: p.label, data: await S.blobKeBase64(r.blob) });
-    if (!hasil.id || !hasil.url || !(hasil.ukuran > 0)) throw new Error('Google Drive tidak mengonfirmasi file tersimpan; data tidak dihapus');
-    const doc = { id: 'd_' + S.uid(), bidang: g.bidang, periode: p.label, nama: hasil.nama || nama, driveId: hasil.id, url: hasil.url, ukuran: hasil.ukuran, dibuat: new Date().toISOString() };
-    await S.put('dokumen', doc); dokumen = [doc].concat(dokumen);
+    let hasil = null, doc = null, gabung = null;
+    // RK sama sudah pernah diarsipkan (dokumen ke-1 di Drive) → kegiatan baru digabung ke dokumen itu:
+    //   IKI sama → masuk tabel IKI itu (nomor melanjutkan); IKI berbeda → halaman baru di dokumen ke-1
+    const d1 = dokSama(g, p);
+    if (d1 && !pb) {
+      let lama = null;
+      try { lama = await S.drive(driveCfg.url, 'ambil', { id: d1.driveId }); }
+      catch (e) {
+        if (/tidak dikenal/i.test(e.message)) S.toast('Apps Script Google Drive belum diperbarui untuk penggabungan — dokumen disimpan terpisah. Minta admin memasang Code.gs terbaru.', 7000);
+        else if (!/not found|tidak ditemukan|No item|dihapus|sampah/i.test(e.message)) throw new Error('Gagal membuka dokumen lama di Drive (' + d1.nama + '): ' + e.message + '. Data tidak dihapus.');
+      }
+      if (lama && lama.data) {
+        lapor && lapor('Menggabungkan ke ' + d1.nama + '…');
+        const bagian = []; for (const x of perIki(g)) bagian.push({ iki: x.iki, items: await itemsDari(x.ks) });
+        const buf = Uint8Array.from(atob(lama.data), c => c.charCodeAt(0)).buffer;
+        gabung = await DOCX.gabungBukti({ lama: buf, template: await ambilTemplate(), judul: $('uJudul').value.trim() || ('Bukti Dukung SKP ' + p.label), nama: profil.nama || '', nip: profil.nip || '', rk: g.rk ? g.rk.nama : '', bagian });
+        hasil = await S.drive(driveCfg.url, 'perbarui', { id: d1.driveId, nama: d1.nama, periode: p.label, data: await S.blobKeBase64(gabung.blob) });
+        if (!hasil.id || !hasil.url || !(hasil.ukuran > 0)) throw new Error('Google Drive tidak mengonfirmasi dokumen gabungan tersimpan; data tidak dihapus');
+        doc = Object.assign({}, d1, { nama: hasil.nama || d1.nama, driveId: hasil.id, url: hasil.url, ukuran: hasil.ukuran, dibuat: new Date().toISOString() });
+        await S.put('dokumen', doc); dokumen = [doc].concat(dokumen.filter(x => x.id !== d1.id));
+      }
+    }
+    if (!doc) {
+      const r = await dokumenUntuk(g, p);
+      // dokumen ke-1 tidak bisa digabung (versi perbaikan / skrip lama) → simpan sebagai dokumen tambahan agar arsip lama tidak tertimpa
+      const dasar = r.nama.replace(/\.docx$/, '');
+      const sudah = dokumen.filter(d => d.nama === r.nama || (d.nama || '').startsWith(dasar + ' (')).length;
+      const nama = sudah ? dasar + ' (' + (sudah + 1) + ').docx' : r.nama;
+      hasil = await S.drive(driveCfg.url, 'simpan', { nama, periode: p.label, data: await S.blobKeBase64(r.blob) });
+      if (!hasil.id || !hasil.url || !(hasil.ukuran > 0)) throw new Error('Google Drive tidak mengonfirmasi file tersimpan; data tidak dihapus');
+      doc = { id: 'd_' + S.uid(), bidang: g.bidang, periode: p.label, nama: hasil.nama || nama, driveId: hasil.id, url: hasil.url, ukuran: hasil.ukuran, dibuat: new Date().toISOString() };
+      await S.put('dokumen', doc); dokumen = [doc].concat(dokumen);
+    }
     if (pb) { try { await PB.hapus(pb.kunci); } catch (e) { } perbaikan.delete(pb.kunci); }
     // arsip aman di Drive → hapus kegiatan & foto yang masuk dokumen ini
     const ar = await S.arsipkanKegiatan(g.ks);
@@ -1364,7 +1393,7 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
     const ids = new Set(g.ks.map(k => k.id)); kegiatan = kegiatan.filter(k => !ids.has(k.id));
     g.ks.forEach(k => { const r = ringkas.find(x => x.tanggal === k.tanggal); if (r) { r.jumlah++; r.foto += (k.fotoIds || []).length; } else ringkas.push({ tanggal: k.tanggal, jumlah: 1, foto: (k.fotoIds || []).length }); });
     g.ks.forEach(k => (k.fotoIds || []).forEach(f => fotoCache.delete(f)));
-    return { doc, terhapus: g.ks.length };
+    return { doc, terhapus: g.ks.length, gabung };
   }
   $('driveKartu').addEventListener('click', async e => {
     const sl = e.target.closest('[data-salin]'); if (sl) { const d = dokumen.find(x => x.id === sl.dataset.salin); if (d) salin(d.url); return; }
@@ -1412,18 +1441,35 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
   /* Nama file: Bidang_RK_Trw4_2026.docx */
   const bersihFile = (t, n) => String(t || '').replace(/[\\/:*?"<>|#%\n\r\t]+/g, ' ').replace(/[.\s]+$/, '').replace(/\s+/g, ' ').trim().slice(0, n).trim();
   const namaDok = (g, p) => bersihFile(g.bidang, 40) + '_' + bersihFile(g.rk ? g.rk.nama : 'Tanpa RK', 90) + '_' + (p.kode || bersihFile(p.label, 40)) + '.docx';
+  // satu kegiatan = satu uraian + fotonya; uraian sama digabung, foto tanpa uraian ikut kegiatan sebelumnya
+  async function itemsDari(ks) {
+    const items = [];
+    for (const k of ks) {
+      const fotos = []; for (const id of (k.fotoIds || [])) { const f = await ambilFoto(id); if (f && f.data) fotos.push(f); }
+      const t = (k.gabung || k.teks || '').trim(); const tanpaTeks = !t || t === '(foto bukti)';
+      let it = tanpaTeks ? items[items.length - 1] : items.find(x => x.teks === t);
+      if (!it) { it = { teks: tanpaTeks ? 'Dokumentasi kegiatan' : t, fotos: [] }; items.push(it); }
+      it.fotos.push(...fotos);
+    }
+    return items;
+  }
+  /* Kegiatan satu dokumen dipecah menurut IKI-nya (urutan kegiatan tetap) */
+  function perIki(g) {
+    const out = [], idx = new Map();
+    g.ks.forEach(k => { const r = rhkById(k.rhkId); const iki = r ? (r.indikator || '').trim() : ''; const kunci = kunciRk(iki);
+      let x = idx.get(kunci); if (!x) { x = { iki, ks: [] }; idx.set(kunci, x); out.push(x); } x.ks.push(k); });
+    return out;
+  }
+  /* Dokumen di Drive dengan RK, bidang & periode yang sama (dokumen ke-1) — kegiatan baru digabung ke sini */
+  function dokSama(g, p) {
+    const nama = namaDok(g, p), dasar = nama.replace(/\.docx$/, '');
+    const sama = dokumen.filter(d => d.driveId && (d.periode || '') === p.label && (d.bidang || '') === g.bidang && (d.nama === nama || (d.nama || '').startsWith(dasar + ' (')));
+    return sama.find(d => d.nama === nama) || sama[sama.length - 1] || null;   // dokumen pertama (tanpa nomor) diutamakan
+  }
   async function buatBukti(g, p) {
     const bagian = [];
     for (const kel of [{ rk: g.rk, rks: g.rks || [], ks: g.ks }]) {
-      // satu kegiatan = satu uraian + fotonya; uraian sama digabung, foto tanpa uraian ikut kegiatan sebelumnya
-      const items = [];
-      for (const k of kel.ks) {
-        const fotos = []; for (const id of (k.fotoIds || [])) { const f = await ambilFoto(id); if (f && f.data) fotos.push(f); }
-        const t = (k.gabung || k.teks || '').trim(); const tanpaTeks = !t || t === '(foto bukti)';
-        let it = tanpaTeks ? items[items.length - 1] : items.find(x => x.teks === t);
-        if (!it) { it = { teks: tanpaTeks ? 'Dokumentasi kegiatan' : t, fotos: [] }; items.push(it); }
-        it.fotos.push(...fotos);
-      }
+      const items = await itemsDari(kel.ks);
       bagian.push({ rk: kel.rk ? kel.rk.nama : '', iki: kel.rk ? ikiGabung(kel.rks) : '', items });
     }
     const blob = await DOCX.buktiDukung({ template: await ambilTemplate(), kop, judul: $('uJudul').value.trim() || ('Bukti Dukung SKP ' + p.label), nama: profil.nama || '', nip: profil.nip || '', bagian });
@@ -1447,9 +1493,9 @@ try { var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
         btn.disabled = false;
         if (!await konfirmasi(pilih.length === 1 ? 'Simpan ke Drive & arsipkan?' : 'Simpan ' + pilih.length + ' dokumen ke Drive & arsipkan?',
           (() => { const tp = window.SKPDinas ? SKPDinas.kegiatanTerpakai() : new Set(); const n = pilih.reduce((a, g) => a + g.ks.filter(k => tp.has(k.id)).length, 0); return n ? `⚠ ${n} kegiatan dipakai di Laporan Perjalanan Dinas — unduh laporannya dulu, karena setelah diarsipkan fotonya tidak ada lagi di aplikasi.\n\n` : ''; })() + (() => { const n = pilih.filter(g => pbDari(g, p)).length; return n ? `✏️ ${n === pilih.length && n === 1 ? 'Dokumen' : n + ' dokumen'} memakai versi perbaikan yang Anda unggah.\n\n` : ''; })() + `1. ${pilih.length} dokumen dan ${nf} foto akan disimpan ke Google Drive. Dokumen di Drive menjadi arsipnya dan link-nya tetap ada di daftar bawah.\n\n2. Kegiatan yang sudah disimpan ke Drive TIDAK BISA lagi dibuat Laporan Perjalanan Dinas. Bila ada kegiatan perjalanan dinas, buat & unduh laporannya dulu di menu Perjalanan Dinas.\n\nTindakan ini tidak bisa dibatalkan.`)) return;
-        btn.disabled = true; let terhapus = 0; sb = S.sibuk('Menyimpan ke Google Drive…');
-        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; const awal = pilih.length > 1 ? `Dokumen ${n} dari ${pilih.length} · ` : ''; sb.pesan(awal + 'Menyimpan ke Google Drive…'); const h = await simpanKeDrive(g, p, t => sb.pesan(awal + t)); terhapus += h.terhapus; renderDrive(); }
-        S.toast((pilih.length === 1 ? 'Tersimpan di Google Drive' : pilih.length + ' dokumen tersimpan di Google Drive') + ' · ' + terhapus + ' kegiatan diarsipkan & dihapus dari aplikasi', 5000);
+        btn.disabled = true; let terhapus = 0; const digabung = []; sb = S.sibuk('Menyimpan ke Google Drive…');
+        for (const g of pilih) { btn.textContent = 'Menyimpan ' + (++n) + '/' + pilih.length + '…'; const awal = pilih.length > 1 ? `Dokumen ${n} dari ${pilih.length} · ` : ''; sb.pesan(awal + 'Menyimpan ke Google Drive…'); const h = await simpanKeDrive(g, p, t => sb.pesan(awal + t)); terhapus += h.terhapus; if (h.gabung) digabung.push(h.doc.nama); renderDrive(); }
+        S.toast((pilih.length === 1 ? 'Tersimpan di Google Drive' : pilih.length + ' dokumen tersimpan di Google Drive') + ' · ' + terhapus + ' kegiatan diarsipkan & dihapus dari aplikasi' + (digabung.length ? ' · digabung ke dokumen yang sudah ada: ' + digabung.join(', ') : ''), digabung.length ? 7000 : 5000);
         sb.selesai(); renderUpload();
         $('driveKartu').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (x) { console.error(x); S.toast('Gagal menyimpan ke Drive: ' + (x.message || x), 6000); renderUpload(); }
